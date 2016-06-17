@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenglLes", "lessons\OpenglLes.vcxproj", "{9CB4C79B-C81C-4154-88AE-0B1B972FD644}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D8A44AAC-6BF9-41B0-955E-5A4CB1943329}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenglLes", "OpenglLes.vcxproj", "{9CB4C79B-C81C-4154-88AE-0B1B972FD644}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
