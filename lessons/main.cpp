@@ -20,7 +20,7 @@
 						Кастомный заголовок, постепенно увеличивающийся в ходе обучения 
 					*/
 
-#pragma comment( user, "Compiled on " __DATE__ " at " __TIME__ " by ") /*
+#pragma comment( user, "Compiled on " __DATE__ " at " __TIME__ " with ") /*
 						Строка "Compiled on ДАТА-КОМПИЛЯЦИИ at ВРЕМЯ-КОМПИЛЯЦИИ" будет записана в ЕХЕ файл
 						Ни на что влиять не будет, но будет видна в ЕХЕшнике в виде текста.
 					*/
@@ -39,7 +39,7 @@ static void RenderSceneCB()
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Привязываем указатель для отрисовки кадра
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); // Этот вызов говорит конвейеру как воспринимать данные внутри буфера.
 
-	glDrawArrays(GL_POINTS, 0, 1);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
 
 	glDisableVertexAttribArray(0); /*
 										Это признак хорошего тона отключать каждый атрибут вершины, как только отпадает необходимость в нем. 
@@ -61,8 +61,10 @@ static void InitializeGlutCallbacks()
 
 static void CreateVertexBuffer()
 {
-	Vector3f Vertices[1];
-	Vertices[0] = Vector3f(0.0f, 0.0f, 0.0f);
+	Vector3f Vertices[3];
+	Vertices[0] = Vector3f(-0.5, -0.5, 0.0);
+	Vertices[1] = Vector3f(0.5, -0.5, 0.0);
+	Vertices[2] = Vector3f(0.0, 0.5, 0.0);
 
 	glGenBuffers(1, &VBO); // Создаем буфер в общем типе. Для указания задачи используется следующая функция.
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Привязываем указатель для наполнения данными
