@@ -32,6 +32,7 @@
 					*/
 					
 GLuint VBO; // Глобальная переменная для хранения указателя на буфер вершин
+GLuint IBO; // То же самое для буфера индексов этих вершин
 GLuint gWorldLocation; /*
 							Мы используем этот указатель для доступа к всемирной матрице, 
 							представленной в виде uniform-переменной внутри шейдера. 
@@ -56,7 +57,7 @@ out vec4 Color;                                                                 
 void main()                                                                         \n\
 {                                                                                   \n\
     gl_Position = gWorld * vec4(Position, 1.0);                                     \n\
-    Color = vec4(clamp(Position, 0.25, 1), 1.0);                                   \n\
+    Color = vec4(clamp(Position, 0.0, 1), 1.0);                                     \n\
 }"; /*Вершинный шейдер*/
 
 static const char* pFS = "                                                          \n\
@@ -82,18 +83,19 @@ static void RenderSceneCB()
 
 	Matrix4f World;
 
-	World.m[0][0] = sinf(Scale)*sinf(Scale);	World.m[0][1] = -sinf(Scale)*sinf(Scale);	World.m[0][2] = 0.0;						World.m[0][3] = 0.0;
-	World.m[1][0] = sinf(Scale)*sinf(Scale);	World.m[1][1] = cosf(Scale)*sinf(Scale);	World.m[1][2] = 0.0;						World.m[1][3] = 0.0;
-	World.m[2][0] = 0.0;						World.m[2][1] = 0.0;						World.m[2][2] = cosf(Scale)*sinf(Scale);	World.m[2][3] = 0.0;
-	World.m[3][0] = 0.0;						World.m[3][1] = 0.0;						World.m[3][2] = 0.0;						World.m[3][3] = 1.0;
+	World.m[0][0] = cosf(Scale)*sinf(Scale);	World.m[0][1] = 0.0;			World.m[0][2] = -sinf(Scale)*sinf(Scale);	World.m[0][3] = 0.0;
+	World.m[1][0] = 0.0;						World.m[1][1] = sinf(Scale);	World.m[1][2] = 0.0;						World.m[1][3] = 0.0;
+	World.m[2][0] = sinf(Scale)*sinf(Scale);	World.m[2][1] = 0.0;			World.m[2][2] = cosf(Scale)*sinf(Scale);	World.m[2][3] = 0.0;
+	World.m[3][0] = 0.0;						World.m[3][1] = 0.0;			World.m[3][2] = 0.0;						World.m[3][3] = 1.0;
 
 	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &World.m[0][0]); // Плавно и красиво изменяем отображение фигуры на экране
 
 	glEnableVertexAttribArray(0); // Разрешаем использование атрибута вершины для доступа к нему через конвеер. Это необходимо для шейдеров
-	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Привязываем указатель для отрисовки кадра
+	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Привязываем указатель на вершины для отрисовки кадра
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); // Этот вызов говорит конвейеру как воспринимать данные внутри буфера.
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO); // Привязываем указатель на индексы для отрисовки кадра
 
-	glDrawArrays(GL_QUADS, 0, 4);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 	glDisableVertexAttribArray(0); /*
 										Это признак хорошего тона отключать каждый атрибут вершины, как только отпадает необходимость в нем. 
@@ -116,15 +118,39 @@ static void InitializeGlutCallbacks()
 
 static void CreateVertexBuffer()
 {
-	Vector3f Vertices[4];
-	Vertices[0] = Vector3f(-0.75, -0.75, 0.0);
-	Vertices[1] = Vector3f(0.75, -0.75, 0.0);
-	Vertices[2] = Vector3f(0.75, 0.75, 0.0);
-	Vertices[3] = Vector3f(-0.75, 0.75, 0.0);
+	Vector3f Vertices[8];
+	Vertices[0] = Vector3f(0.5, -0.5, -0.5);
+	Vertices[1] = Vector3f(-0.5, -0.5, -0.5);
+	Vertices[2] = Vector3f(-0.5, 0.5, -0.5);
+	Vertices[3] = Vector3f(0.5, 0.5, -0.5);
+	Vertices[4] = Vector3f(0.5, -0.5, 0.5);
+	Vertices[5] = Vector3f(-0.5, -0.5, 0.5);
+	Vertices[6] = Vector3f(-0.5, 0.5, 0.5);
+	Vertices[7] = Vector3f(0.5, 0.5, 0.5);
 
 	glGenBuffers(1, &VBO); // Создаем буфер в общем типе. Для указания задачи используется следующая функция.
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Привязываем указатель для наполнения данными
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW); // После связывания нашего объекта, мы наполняем его данными.
+}
+
+static void CreateIndexBuffer()
+{
+	unsigned int Indices[] = {  0, 1, 2,
+								2, 3, 0,
+								0, 4, 3,
+								3, 7, 4,
+								4, 0, 1,
+								1, 4, 5,
+								5, 1, 2,
+								2, 5, 6,
+								6, 2, 3,
+								3, 6, 7,
+								7, 4, 5,
+								5, 6, 7 };
+
+	glGenBuffers(1, &IBO); // Здесь и ниже: всё аналогично CreateVertexBuffer()
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
 }
 
 static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
@@ -231,6 +257,7 @@ int main(int argc, char** argv)
 	glClearColor(0.0, 0.0, 0.0, 0.0); // Установка "чистого" цвета фона
 
 	CreateVertexBuffer();
+	CreateIndexBuffer();
 
 	CompileShaders(); // Компилируем шейдеры
 
