@@ -20,7 +20,7 @@
 						Кастомный заголовок, постепенно увеличивающийся в ходе обучения 
 					*/
 
-#pragma comment( user, "Compiled on " __DATE__ " at " __TIME__ " with ") /*
+#pragma comment( user, "Compiled on " __DATE__ " at " __TIME__ " with") /*
 						Строка "Compiled on ДАТА-КОМПИЛЯЦИИ at ВРЕМЯ-КОМПИЛЯЦИИ" будет записана в ЕХЕ файл
 						Ни на что влиять не будет, но будет видна в ЕХЕшнике в виде текста.
 					*/
@@ -31,6 +31,32 @@
 					
 GLuint VBO; /* Глобальная переменная для хранения указателя на буфер вершин */
 
+/*
+	Из-за технических трудностей нижеследующий код шейдеров закомментировать не удалось.
+	Тем не менее, общая информация по синтаксису успешно гуглится (нет), так что не все так плохо.
+	Сорян =(
+*/
+static const char* pVS = "                                                    \n\
+#version 330                                                                  \n\
+                                                                              \n\
+layout (location = 0) in vec3 Position;                                       \n\
+                                                                              \n\
+void main()                                                                   \n\
+{                                                                             \n\
+    gl_Position = vec4(0.5 * Position.x, 0.5 * Position.y, Position.z, 1.0);  \n\
+}"; /*Вершинный шейдер*/
+
+static const char* pFS = "                                                    \n\
+#version 330                                                                  \n\
+                                                                              \n\
+out vec4 FragColor;                                                           \n\
+                                                                              \n\
+void main()                                                                   \n\
+{                                                                             \n\
+    FragColor = vec4(0.75, 0.25, 1.0, 1.0);                                     \n\
+}"; /*Пиксельный шейдер*/
+
+
 static void RenderSceneCB()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -39,7 +65,7 @@ static void RenderSceneCB()
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Привязываем указатель для отрисовки кадра
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); // Этот вызов говорит конвейеру как воспринимать данные внутри буфера.
 
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_QUADS, 0, 4);
 
 	glDisableVertexAttribArray(0); /*
 										Это признак хорошего тона отключать каждый атрибут вершины, как только отпадает необходимость в нем. 
@@ -61,14 +87,85 @@ static void InitializeGlutCallbacks()
 
 static void CreateVertexBuffer()
 {
-	Vector3f Vertices[3];
-	Vertices[0] = Vector3f(-0.5, -0.5, 0.0);
-	Vertices[1] = Vector3f(0.5, -0.5, 0.0);
-	Vertices[2] = Vector3f(0.0, 0.5, 0.0);
+	Vector3f Vertices[4];
+	Vertices[0] = Vector3f(-0.75, -0.75, 0.0);
+	Vertices[1] = Vector3f(0.75, -0.75, 0.0);
+	Vertices[2] = Vector3f(0.75, 0.75, 0.0);
+	Vertices[3] = Vector3f(-0.75, 0.75, 0.0);
 
 	glGenBuffers(1, &VBO); // Создаем буфер в общем типе. Для указания задачи используется следующая функция.
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Привязываем указатель для наполнения данными
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW); // После связывания нашего объекта, мы наполняем его данными.
+}
+
+static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
+{
+	GLuint ShaderObj = glCreateShader(ShaderType);
+
+	if (ShaderObj == 0) {
+		fprintf(stderr, "Error creating shader type %d\n", ShaderType);
+		exit(0);
+	}
+
+	const GLchar* p[1];
+	p[0] = pShaderText;
+	GLint Lengths[1];
+	Lengths[0] = strlen(pShaderText);
+	glShaderSource(ShaderObj, 1, p, Lengths);
+	glCompileShader(ShaderObj);
+	GLint success;
+	glGetShaderiv(ShaderObj, GL_COMPILE_STATUS, &success);
+	if (!success) {
+		GLchar InfoLog[1024];
+		glGetShaderInfoLog(ShaderObj, 1024, NULL, InfoLog);
+		fprintf(stderr, "Error compiling shader type %d: '%s'\n", ShaderType, InfoLog);
+		exit(1);
+	}
+
+	glAttachShader(ShaderProgram, ShaderObj); // Присоединяем скомпилированный объект шейдера к объекту программы
+}
+
+static void CompileShaders()
+{
+	GLuint ShaderProgram = glCreateProgram(); /*
+													Мы начинаем процесс разработки шейдеров через создание программного объекта. 
+													Позже мы слинкуем все шейдеры в этот объект.
+											  */
+
+	if (ShaderProgram == 0) {
+		fprintf(stderr, "Error creating shader program\n");
+		exit(1);
+	}
+
+	AddShader(ShaderProgram, pVS, GL_VERTEX_SHADER); // Создание вершинного шейдера
+	AddShader(ShaderProgram, pFS, GL_FRAGMENT_SHADER); // Создание фрагментного (пиксельного) шейдера
+
+	GLint Success = 0;
+	GLchar ErrorLog[1024] = { 0 };
+
+	glLinkProgram(ShaderProgram);
+	glGetProgramiv(ShaderProgram, GL_LINK_STATUS, &Success);
+	if (Success == 0) {
+		glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
+		fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
+		exit(1);
+	}
+
+	glValidateProgram(ShaderProgram);
+	glGetProgramiv(ShaderProgram, GL_VALIDATE_STATUS, &Success);
+	if (!Success) {
+		glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
+		fprintf(stderr, "Invalid shader program: '%s'\n", ErrorLog);
+		exit(1);
+	}
+
+	glUseProgram(ShaderProgram); /*
+										Для использования отлинкованной программы шейдеров мы назначаем её для конвейера используя вызов выше. 
+										Эта программа сохранит эффект для всех вызовов отрисовки, пока вы не замените её другой 
+										или не запретите её использование напрямую функцией glUseProgram с параметром NULL. 
+										Если вы создадите шейдерную программу, содержащую только 1 тип шейдеров, 
+										тогда другие этапы будут использовать свою функциональность по-умолчанию.
+								 */
 }
 
 
@@ -93,9 +190,11 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Установка "чистого" цвета фона
+	glClearColor(0.1, 0.1, 0.1, 0.0); // Установка "чистого" цвета фона
 
 	CreateVertexBuffer();
+
+	CompileShaders(); // Компилируем шейдеры
 
 	glutMainLoop(); /*
 						Этот вызов передаёт контроль GLUT’у, который теперь начнёт свой собственный цикл. 
