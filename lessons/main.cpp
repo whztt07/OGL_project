@@ -1,11 +1,16 @@
 /* 
 	Данный код является результатом уроков по OpenGL. Он не связан с проектом напрямую, но помогает понять базовые принципы работы с OpenGL.
-	Так как код является по большей части наглядным пособием, он изобилует комментариями разной степенью очевидности, вплоть до "это и ежу ясно". Я предупредил.
+	Так как код является по большей части наглядным пособием, он изобилует комментариями разной степенью очевидности, вплоть до "это и ежу ясно". Порою.
+	А порою комментарии отстутствуют там, где они очень нужны и "без поллитры не разберешься". 
+	Я предупредил.
 	Оригинальный сайт с уроками: http://ogldev.atspace.co.uk/index.html
 	Переводы: http://triplepointfive.github.io/ogltutor/
 */
 
 #include <stdio.h>
+#include <string.h>
+#include <assert.h>
+#include <math.h>
 #include "glew.h" /* 
 						Обеспечивает эффективные run-time механизмы для определения того, какие OpenGL расширения поддерживаются на целевой платформе. 
 						Если вы подключаете другие заголовки OpenGL, вам следует подключить его раньше остальных, иначе GLEW откажется работать. 
@@ -30,36 +35,45 @@
 					*/
 					
 GLuint VBO; /* Глобальная переменная для хранения указателя на буфер вершин */
+GLuint gScaleLocation;
 
 /*
 	Из-за технических трудностей нижеследующий код шейдеров закомментировать не удалось.
 	Тем не менее, общая информация по синтаксису успешно гуглится (нет), так что не все так плохо.
 	Сорян =(
 */
-static const char* pVS = "                                                    \n\
-#version 330                                                                  \n\
-                                                                              \n\
-layout (location = 0) in vec3 Position;                                       \n\
-                                                                              \n\
-void main()                                                                   \n\
-{                                                                             \n\
-    gl_Position = vec4(0.5 * Position.x, 0.5 * Position.y, Position.z, 1.0);  \n\
+static const char* pVS = "                                                          \n\
+#version 330                                                                        \n\
+                                                                                    \n\
+layout (location = 0) in vec3 Position;                                             \n\
+                                                                                    \n\
+uniform float gScale;                                                               \n\
+                                                                                    \n\
+void main()                                                                         \n\
+{                                                                                   \n\
+    gl_Position = vec4(gScale * Position.x, gScale * Position.y, Position.z, 1.0);  \n\
 }"; /*Вершинный шейдер*/
 
-static const char* pFS = "                                                    \n\
-#version 330                                                                  \n\
-                                                                              \n\
-out vec4 FragColor;                                                           \n\
-                                                                              \n\
-void main()                                                                   \n\
-{                                                                             \n\
-    FragColor = vec4(0.75, 0.25, 1.0, 1.0);                                     \n\
+static const char* pFS = "                                                          \n\
+#version 330                                                                        \n\
+                                                                                    \n\
+out vec4 FragColor;                                                                 \n\
+                                                                                    \n\
+void main()                                                                         \n\
+{                                                                                   \n\
+    FragColor = vec4(0.75, 0.25, 1.0, 1.0);                                         \n\
 }"; /*Пиксельный шейдер*/
 
 
 static void RenderSceneCB()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
+
+	static float Scale = 0;
+
+	Scale += 0.005;
+
+	glUniform1f(gScaleLocation, cosf(Scale)); // Плавно и красиво изменяем размер фигуры на экране
 
 	glEnableVertexAttribArray(0); // Разрешаем использование атрибута вершины для доступа к нему через конвеер. Это необходимо для шейдеров
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Привязываем указатель для отрисовки кадра
@@ -83,6 +97,7 @@ static void RenderSceneCB()
 static void InitializeGlutCallbacks()
 {
 	glutDisplayFunc(RenderSceneCB);
+	glutIdleFunc(RenderSceneCB); // Указываем функцию рендера в качестве "ленивой"
 }
 
 static void CreateVertexBuffer()
@@ -107,11 +122,11 @@ static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum Shad
 		exit(0);
 	}
 
-	const GLchar* p[1];
-	p[0] = pShaderText;
+	const GLchar* shdrTxt[1];
+	shdrTxt[0] = pShaderText;
 	GLint Lengths[1];
 	Lengths[0] = strlen(pShaderText);
-	glShaderSource(ShaderObj, 1, p, Lengths);
+	glShaderSource(ShaderObj, 1, shdrTxt, Lengths);
 	glCompileShader(ShaderObj);
 	GLint success;
 	glGetShaderiv(ShaderObj, GL_COMPILE_STATUS, &success);
@@ -140,20 +155,20 @@ static void CompileShaders()
 	AddShader(ShaderProgram, pVS, GL_VERTEX_SHADER); // Создание вершинного шейдера
 	AddShader(ShaderProgram, pFS, GL_FRAGMENT_SHADER); // Создание фрагментного (пиксельного) шейдера
 
-	GLint Success = 0;
+	GLint success = 0;
 	GLchar ErrorLog[1024] = { 0 };
 
 	glLinkProgram(ShaderProgram);
-	glGetProgramiv(ShaderProgram, GL_LINK_STATUS, &Success);
-	if (Success == 0) {
+	glGetProgramiv(ShaderProgram, GL_LINK_STATUS, &success);
+	if (success == 0) {
 		glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
 		fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
 		exit(1);
 	}
 
 	glValidateProgram(ShaderProgram);
-	glGetProgramiv(ShaderProgram, GL_VALIDATE_STATUS, &Success);
-	if (!Success) {
+	glGetProgramiv(ShaderProgram, GL_VALIDATE_STATUS, &success);
+	if (!success) {
 		glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
 		fprintf(stderr, "Invalid shader program: '%s'\n", ErrorLog);
 		exit(1);
@@ -166,6 +181,15 @@ static void CompileShaders()
 										Если вы создадите шейдерную программу, содержащую только 1 тип шейдеров, 
 										тогда другие этапы будут использовать свою функциональность по-умолчанию.
 								 */
+
+	gScaleLocation = glGetUniformLocation(ShaderProgram, "gScale"); // Запрашиваем позицию uniform-переменной в программном объекте
+	assert(gScaleLocation != 0xFFFFFFFF); /*
+												Очень важна проверка на ошибки (как мы и сделали тут), иначе обновления переменной не попадут в шейдер. 
+												Есть 2 основные причины ошибки у этой функции. 
+												Вы написали с ошибкой имя переменной или она была убрана компилятором с целью оптимизации. 
+												Если компилятор не обнаружит использования переменной, он без раздумий выбросит её. 
+												В этом случае glGetUniformLocation не даст результата.
+										  */
 }
 
 
@@ -190,7 +214,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	glClearColor(0.1, 0.1, 0.1, 0.0); // Установка "чистого" цвета фона
+	glClearColor(0.0, 0.0, 0.0, 0.0); // Установка "чистого" цвета фона
 
 	CreateVertexBuffer();
 
