@@ -15,9 +15,6 @@
 						Обеспечивает эффективные run-time механизмы для определения того, какие OpenGL расширения поддерживаются на целевой платформе. 
 						Если вы подключаете другие заголовки OpenGL, вам следует подключить его раньше остальных, иначе GLEW откажется работать. 
 					*/
-#include <gl/GL.h> /* 
-						Сам OpenGL 
-					*/
 #include "freeglut.h" /* 
 						API для управления оконной системой, а так же обработка событий, контроль ввода/вывода и ещё несколько других возможностей 
 					*/
@@ -35,7 +32,7 @@
 					*/
 					
 GLuint VBO; /* Глобальная переменная для хранения указателя на буфер вершин */
-GLuint gScaleLocation;
+GLuint gWorldLocation;
 
 /*
 	Из-за технических трудностей нижеследующий код шейдеров закомментировать не удалось.
@@ -47,11 +44,11 @@ static const char* pVS = "                                                      
                                                                                     \n\
 layout (location = 0) in vec3 Position;                                             \n\
                                                                                     \n\
-uniform float gScale;                                                               \n\
+uniform mat4 gWorld;                                                                \n\
                                                                                     \n\
 void main()                                                                         \n\
 {                                                                                   \n\
-    gl_Position = vec4(gScale * Position.x, gScale * Position.y, Position.z, 1.0);  \n\
+    gl_Position = gWorld * vec4(Position, 1.0);                                     \n\
 }"; /*Вершинный шейдер*/
 
 static const char* pFS = "                                                          \n\
@@ -61,7 +58,7 @@ out vec4 FragColor;                                                             
                                                                                     \n\
 void main()                                                                         \n\
 {                                                                                   \n\
-    FragColor = vec4(0.75, 0.25, 1.0, 1.0);                                         \n\
+    FragColor = vec4(0.5, 1.0, 1.0, 1.0);                                           \n\
 }"; /*Пиксельный шейдер*/
 
 
@@ -69,11 +66,18 @@ static void RenderSceneCB()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	static float Scale = 0;
+	static float Scale = 0.0;
 
 	Scale += 0.005;
 
-	glUniform1f(gScaleLocation, cosf(Scale)); // Плавно и красиво изменяем размер фигуры на экране
+	Matrix4f World;
+
+	World.m[0][0] = cosf(Scale); World.m[0][1] = 0.0; World.m[0][2] = 0.0; World.m[0][3] = 0.0;
+	World.m[1][0] = 0.0; World.m[1][1] = cosf(Scale); World.m[1][2] = 0.0; World.m[1][3] = 0.0;
+	World.m[2][0] = 0.0; World.m[2][1] = 0.0; World.m[2][2] = 1.0; World.m[2][3] = 0.0;
+	World.m[3][0] = 0.0; World.m[3][1] = 0.0; World.m[3][2] = 0.0; World.m[3][3] = 1.0;
+
+	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &World.m[0][0]); // Плавно и красиво изменяем размер фигуры на экране
 
 	glEnableVertexAttribArray(0); // Разрешаем использование атрибута вершины для доступа к нему через конвеер. Это необходимо для шейдеров
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Привязываем указатель для отрисовки кадра
@@ -103,10 +107,10 @@ static void InitializeGlutCallbacks()
 static void CreateVertexBuffer()
 {
 	Vector3f Vertices[4];
-	Vertices[0] = Vector3f(-0.75, -0.75, 0.0);
-	Vertices[1] = Vector3f(0.75, -0.75, 0.0);
-	Vertices[2] = Vector3f(0.75, 0.75, 0.0);
-	Vertices[3] = Vector3f(-0.75, 0.75, 0.0);
+	Vertices[0] = Vector3f(-0.5, -0.5, 0.0);
+	Vertices[1] = Vector3f(0.5, -0.5, 0.0);
+	Vertices[2] = Vector3f(0.5, 0.5, 0.0);
+	Vertices[3] = Vector3f(-0.5, 0.5, 0.0);
 
 	glGenBuffers(1, &VBO); // Создаем буфер в общем типе. Для указания задачи используется следующая функция.
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Привязываем указатель для наполнения данными
@@ -182,8 +186,8 @@ static void CompileShaders()
 										тогда другие этапы будут использовать свою функциональность по-умолчанию.
 								 */
 
-	gScaleLocation = glGetUniformLocation(ShaderProgram, "gScale"); // Запрашиваем позицию uniform-переменной в программном объекте
-	assert(gScaleLocation != 0xFFFFFFFF); /*
+	gWorldLocation = glGetUniformLocation(ShaderProgram, "gWorld"); // Запрашиваем позицию uniform-переменной в программном объекте
+	assert(gWorldLocation != 0xFFFFFFFF); /*
 												Очень важна проверка на ошибки (как мы и сделали тут), иначе обновления переменной не попадут в шейдер. 
 												Есть 2 основные причины ошибки у этой функции. 
 												Вы написали с ошибкой имя переменной или она была убрана компилятором с целью оптимизации. 
@@ -214,7 +218,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	glClearColor(0.0, 0.0, 0.0, 0.0); // Установка "чистого" цвета фона
+	glClearColor(0.5, 0.5, 0.5, 0.0); // Установка "чистого" цвета фона
 
 	CreateVertexBuffer();
 

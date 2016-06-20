@@ -38,4 +38,9 @@ struct Vector3f
 	}
 };
 
+struct Matrix4f
+{
+	float m[4][4];
+};
+
 #endif	/* MATH_3D_H */
