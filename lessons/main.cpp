@@ -51,19 +51,24 @@ layout (location = 0) in vec3 Position;                                         
                                                                                     \n\
 uniform mat4 gWorld;                                                                \n\
                                                                                     \n\
+out vec4 Color;                                                                     \n\
+                                                                                    \n\
 void main()                                                                         \n\
 {                                                                                   \n\
     gl_Position = gWorld * vec4(Position, 1.0);                                     \n\
+    Color = vec4(clamp(Position, 0.25, 1), 1.0);                                   \n\
 }"; /*Вершинный шейдер*/
 
 static const char* pFS = "                                                          \n\
 #version 330                                                                        \n\
                                                                                     \n\
+in vec4 Color;                                                                      \n\
+                                                                                    \n\
 out vec4 FragColor;                                                                 \n\
                                                                                     \n\
 void main()                                                                         \n\
 {                                                                                   \n\
-    FragColor = vec4(0.5, 1.0, 1.0, 1.0);                                           \n\
+    FragColor = Color;                                                              \n\
 }"; /*Пиксельный шейдер*/
 
 
@@ -77,12 +82,12 @@ static void RenderSceneCB()
 
 	Matrix4f World;
 
-	World.m[0][0] = sinf(Scale);	World.m[0][1] = -sinf(Scale);	World.m[0][2] = 0.0;	World.m[0][3] = 0.0;
-	World.m[1][0] = sinf(Scale);	World.m[1][1] = cosf(Scale);	World.m[1][2] = 0.0;	World.m[1][3] = 0.0;
-	World.m[2][0] = 0.0;						World.m[2][1] = 0.0;						World.m[2][2] = cosf(Scale);	World.m[2][3] = 0.0;
-	World.m[3][0] = 0.0;						World.m[3][1] = 0.0;						World.m[3][2] = 0.0;	World.m[3][3] = 1.0;
+	World.m[0][0] = sinf(Scale)*sinf(Scale);	World.m[0][1] = -sinf(Scale)*sinf(Scale);	World.m[0][2] = 0.0;						World.m[0][3] = 0.0;
+	World.m[1][0] = sinf(Scale)*sinf(Scale);	World.m[1][1] = cosf(Scale)*sinf(Scale);	World.m[1][2] = 0.0;						World.m[1][3] = 0.0;
+	World.m[2][0] = 0.0;						World.m[2][1] = 0.0;						World.m[2][2] = cosf(Scale)*sinf(Scale);	World.m[2][3] = 0.0;
+	World.m[3][0] = 0.0;						World.m[3][1] = 0.0;						World.m[3][2] = 0.0;						World.m[3][3] = 1.0;
 
-	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &World.m[0][0]); // Плавно и красиво изменяем размер фигуры на экране
+	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &World.m[0][0]); // Плавно и красиво изменяем отображение фигуры на экране
 
 	glEnableVertexAttribArray(0); // Разрешаем использование атрибута вершины для доступа к нему через конвеер. Это необходимо для шейдеров
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Привязываем указатель для отрисовки кадра
@@ -112,10 +117,10 @@ static void InitializeGlutCallbacks()
 static void CreateVertexBuffer()
 {
 	Vector3f Vertices[4];
-	Vertices[0] = Vector3f(-0.5, -0.5, 0.0);
-	Vertices[1] = Vector3f(0.5, -0.5, 0.0);
-	Vertices[2] = Vector3f(0.5, 0.5, 0.0);
-	Vertices[3] = Vector3f(-0.5, 0.5, 0.0);
+	Vertices[0] = Vector3f(-0.75, -0.75, 0.0);
+	Vertices[1] = Vector3f(0.75, -0.75, 0.0);
+	Vertices[2] = Vector3f(0.75, 0.75, 0.0);
+	Vertices[3] = Vector3f(-0.75, 0.75, 0.0);
 
 	glGenBuffers(1, &VBO); // Создаем буфер в общем типе. Для указания задачи используется следующая функция.
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Привязываем указатель для наполнения данными
@@ -223,7 +228,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	glClearColor(0.5, 0.5, 0.5, 0.0); // Установка "чистого" цвета фона
+	glClearColor(0.0, 0.0, 0.0, 0.0); // Установка "чистого" цвета фона
 
 	CreateVertexBuffer();
 
