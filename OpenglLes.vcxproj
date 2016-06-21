@@ -20,9 +20,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lessons\main.cpp" />
+    <ClCompile Include="lessons\pipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lessons\math_3d.h" />
+    <ClInclude Include="lessons\pipeline.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9CB4C79B-C81C-4154-88AE-0B1B972FD644}</ProjectGuid>

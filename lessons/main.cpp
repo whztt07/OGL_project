@@ -7,10 +7,10 @@
 	Переводы: http://triplepointfive.github.io/ogltutor/
 */
 
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
-#include <math.h>
+#include <cstdio>
+#include <cstring>
+#include <cassert>
+#include <cmath>
 #include "glew.h" /* 
 						Обеспечивает эффективные run-time механизмы для определения того, какие OpenGL расширения поддерживаются на целевой платформе. 
 						Если вы подключаете другие заголовки OpenGL, вам следует подключить его раньше остальных, иначе GLEW откажется работать. 
@@ -18,7 +18,8 @@
 #include "freeglut.h" /* 
 						API для управления оконной системой, а так же обработка событий, контроль ввода/вывода и ещё несколько других возможностей 
 					*/
-#include "math_3d.h" /* 
+
+#include "pipeline.h" /* 
 						Кастомный заголовок, постепенно увеличивающийся в ходе обучения 
 					*/
 
@@ -57,7 +58,7 @@ out vec4 Color;                                                                 
 void main()                                                                         \n\
 {                                                                                   \n\
     gl_Position = gWorld * vec4(Position, 1.0);                                     \n\
-    Color = vec4(clamp(Position, 0.0, 1), 1.0);                                     \n\
+    Color = vec4(clamp(Position, 0.0, 1.0), 1.0);                                   \n\
 }"; /*Вершинный шейдер*/
 
 static const char* pFS = "                                                          \n\
@@ -81,14 +82,12 @@ static void RenderSceneCB()
 
 	Scale += 0.01;
 
-	Matrix4f World;
+    Pipeline p;
+    p.Scale(sinf(Scale * 0.1), sinf(Scale * 0.1), sinf(Scale * 0.1));
+    p.WorldPos(sinf(Scale), 0.0, 0.0);
+    p.Rotate(sinf(Scale) * 90.0, sinf(Scale) * 90.0, sinf(Scale) * 90.0);
 
-	World.m[0][0] = cosf(Scale)*sinf(Scale);	World.m[0][1] = 0.0;			World.m[0][2] = -sinf(Scale)*sinf(Scale);	World.m[0][3] = 0.0;
-	World.m[1][0] = 0.0;						World.m[1][1] = sinf(Scale);	World.m[1][2] = 0.0;						World.m[1][3] = 0.0;
-	World.m[2][0] = sinf(Scale)*sinf(Scale);	World.m[2][1] = 0.0;			World.m[2][2] = cosf(Scale)*sinf(Scale);	World.m[2][3] = 0.0;
-	World.m[3][0] = 0.0;						World.m[3][1] = 0.0;			World.m[3][2] = 0.0;						World.m[3][3] = 1.0;
-
-	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &World.m[0][0]); // Плавно и красиво изменяем отображение фигуры на экране
+	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)p.GetTrans()); // Плавно и красиво изменяем отображение фигуры на экране
 
 	glEnableVertexAttribArray(0); // Разрешаем использование атрибута вершины для доступа к нему через конвеер. Это необходимо для шейдеров
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Привязываем указатель на вершины для отрисовки кадра
