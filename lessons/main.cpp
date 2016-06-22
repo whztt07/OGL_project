@@ -83,9 +83,9 @@ static void RenderSceneCB()
 	Scale += 0.01;
 
     Pipeline p;
-    p.Scale(sinf(Scale * 0.1), sinf(Scale * 0.1), sinf(Scale * 0.1));
-    p.WorldPos(sinf(Scale), 0.0, 0.0);
-    p.Rotate(sinf(Scale) * 90.0, sinf(Scale) * 90.0, sinf(Scale) * 90.0);
+    p.Scale(cosf(Scale * 0.05), cosf(Scale * 0.05), cosf(Scale * 0.05));
+    p.WorldPos(cosf(Scale), 0.0, 0.0);
+    p.Rotate(cosf(Scale) * 45.0, cosf(Scale) * 90.0, cosf(Scale) * 135.0);
 
 	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)p.GetTrans()); // Плавно и красиво изменяем отображение фигуры на экране
 
@@ -118,14 +118,14 @@ static void InitializeGlutCallbacks()
 static void CreateVertexBuffer()
 {
 	Vector3f Vertices[8];
-	Vertices[0] = Vector3f(0.5, -0.5, -0.5);
-	Vertices[1] = Vector3f(-0.5, -0.5, -0.5);
-	Vertices[2] = Vector3f(-0.5, 0.5, -0.5);
-	Vertices[3] = Vector3f(0.5, 0.5, -0.5);
-	Vertices[4] = Vector3f(0.5, -0.5, 0.5);
-	Vertices[5] = Vector3f(-0.5, -0.5, 0.5);
-	Vertices[6] = Vector3f(-0.5, 0.5, 0.5);
-	Vertices[7] = Vector3f(0.5, 0.5, 0.5);
+	Vertices[0] = Vector3f(0.5, 0.5, -0.5);
+	Vertices[1] = Vector3f(0.5, -0.5, -0.5);
+	Vertices[2] = Vector3f(-0.5, -0.5, -0.5);
+	Vertices[3] = Vector3f(-0.5, 0.5, -0.5);
+	Vertices[4] = Vector3f(0.5, 0.5, 0.5);
+	Vertices[5] = Vector3f(0.5, -0.5, 0.5);
+	Vertices[6] = Vector3f(-0.5, -0.5, 0.5);
+	Vertices[7] = Vector3f(-0.5, 0.5, 0.5);
 
 	glGenBuffers(1, &VBO); // Создаем буфер в общем типе. Для указания задачи используется следующая функция.
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Привязываем указатель для наполнения данными
@@ -134,7 +134,7 @@ static void CreateVertexBuffer()
 
 static void CreateIndexBuffer()
 {
-	unsigned int Indices[] = {  0, 1, 2,
+	unsigned int Indices[] = {	0, 1, 2,
 								2, 3, 0,
 								0, 4, 3,
 								3, 7, 4,
