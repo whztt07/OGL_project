@@ -51,10 +51,10 @@ public:
 
 		for (unsigned int i = 0; i < 4; i++) {
 			for (unsigned int j = 0; j < 4; j++) {
-				Ret.m[i][j] = m[i][0] * Right.m[0][j] +
-					m[i][1] * Right.m[1][j] +
-					m[i][2] * Right.m[2][j] +
-					m[i][3] * Right.m[3][j];
+				Ret.m[i][j] =	m[i][0] * Right.m[0][j] +
+								m[i][1] * Right.m[1][j] +
+								m[i][2] * Right.m[2][j] +
+								m[i][3] * Right.m[3][j];
 			}
 		}
 

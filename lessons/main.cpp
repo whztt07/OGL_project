@@ -20,7 +20,8 @@
 					*/
 
 #include "pipeline.h" /* 
-						Кастомный заголовок, постепенно увеличивающийся в ходе обучения 
+						Кастомный заголовок, постепенно увеличивающийся в ходе обучения.
+						Он содержит фиксированный конвеер функций, необходимых для работы с графическими объектами.
 					*/
 
 #pragma comment( user, "Compiled on " __DATE__ " at " __TIME__ " with") /*
@@ -31,6 +32,9 @@
 						В ЕХЕшник будет записано имя и версия компилятора. 
 						Ни на что не влияет, но можно будет потом посмотреть.
 					*/
+
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
 					
 GLuint VBO; // Глобальная переменная для хранения указателя на буфер вершин
 GLuint IBO; // То же самое для буфера индексов этих вершин
@@ -80,12 +84,12 @@ static void RenderSceneCB()
 
 	static float Scale = 0.0;
 
-	Scale += 0.01;
+	Scale += 0.2;
 
     Pipeline p;
-    p.Scale(cosf(Scale * 0.05), cosf(Scale * 0.05), cosf(Scale * 0.05));
-    p.WorldPos(cosf(Scale), 0.0, 0.0);
-    p.Rotate(cosf(Scale) * 45.0, cosf(Scale) * 90.0, cosf(Scale) * 135.0);
+	p.Rotate(0.0, Scale, 0.0);
+    p.WorldPos(0.0, 0.0, 5.0);
+	p.SetPerspectiveProj(30.0, WINDOW_WIDTH, WINDOW_HEIGHT, 0.0, 100.0);
 
 	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)p.GetTrans()); // Плавно и красиво изменяем отображение фигуры на экране
 
@@ -240,7 +244,7 @@ int main(int argc, char** argv)
 														GLUT_DOUBLE включает двойную буферизацию (отрисовка будет происходить в фоновый буфер, в то время как другой буфер отображается) 
 														и буфер цвета, непрерывно используемого для конечной цели рендеринга (т.е. на экране).
 												  */
-	glutInitWindowSize(800, 600);
+	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutInitWindowPosition(100, 100);
 	glutCreateWindow("Tutorial XX"); // Здесь задается заголовок окна. В оригинальных уроках у каждого туториала есть индивидуальный двузначный номер. Здесь он заменен на ХХ.
 
