@@ -38,7 +38,7 @@
 					
 GLuint VBO; // Глобальная переменная для хранения указателя на буфер вершин
 GLuint IBO; // То же самое для буфера индексов этих вершин
-GLuint gWorldLocation; /*
+GLuint gWVPLocation; /*
 							Мы используем этот указатель для доступа к всемирной матрице, 
 							представленной в виде uniform-переменной внутри шейдера. 
 							Всемирная она потому, что всё что мы делаем с объектом, это изменение его позиции в место, 
@@ -55,13 +55,13 @@ static const char* pVS = "                                                      
                                                                                     \n\
 layout (location = 0) in vec3 Position;                                             \n\
                                                                                     \n\
-uniform mat4 gWorld;                                                                \n\
+uniform mat4 gWVP;                                                                  \n\
                                                                                     \n\
 out vec4 Color;                                                                     \n\
                                                                                     \n\
 void main()                                                                         \n\
 {                                                                                   \n\
-    gl_Position = gWorld * vec4(Position, 1.0);                                     \n\
+    gl_Position = gWVP * vec4(Position, 1.0);                                       \n\
     Color = vec4(clamp(Position, 0.0, 1.0), 1.0);                                   \n\
 }"; /*Вершинный шейдер*/
 
@@ -88,10 +88,14 @@ static void RenderSceneCB()
 
     Pipeline p;
 	p.Rotate(0.0, Scale, 0.0);
-    p.WorldPos(0.0, 0.0, 5.0);
-	p.SetPerspectiveProj(30.0, WINDOW_WIDTH, WINDOW_HEIGHT, 0.0, 100.0);
+    p.WorldPos(0.0, 0.0, 3.0);
+	Vector3f CameraPos(0.0, 0.0, -3.0);
+	Vector3f CameraTarget(0.0, 0.0, 3.0);
+	Vector3f CameraUp(0.0, 1.0, 0.0);
+	p.SetCamera(CameraPos, CameraTarget, CameraUp);
+	p.SetPerspectiveProj(45.0, WINDOW_WIDTH, WINDOW_HEIGHT, 0.0, 100.0);
 
-	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)p.GetTrans()); // Плавно и красиво изменяем отображение фигуры на экране
+	glUniformMatrix4fv(gWVPLocation, 1, GL_TRUE, (const GLfloat*)p.GetTrans()); // Плавно и красиво изменяем отображение фигуры на экране
 
 	glEnableVertexAttribArray(0); // Разрешаем использование атрибута вершины для доступа к нему через конвеер. Это необходимо для шейдеров
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Привязываем указатель на вершины для отрисовки кадра
@@ -225,8 +229,8 @@ static void CompileShaders()
 										тогда другие этапы будут использовать свою функциональность по-умолчанию.
 								 */
 
-	gWorldLocation = glGetUniformLocation(ShaderProgram, "gWorld"); // Запрашиваем позицию uniform-переменной в программном объекте
-	assert(gWorldLocation != 0xFFFFFFFF); /*
+	gWVPLocation = glGetUniformLocation(ShaderProgram, "gWVP"); // Запрашиваем позицию uniform-переменной в программном объекте
+	assert(gWVPLocation != 0xFFFFFFFF); /*
 												Очень важна проверка на ошибки (как мы и сделали тут), иначе обновления переменной не попадут в шейдер. 
 												Есть 2 основные причины ошибки у этой функции. 
 												Вы написали с ошибкой имя переменной или она была убрана компилятором с целью оптимизации. 

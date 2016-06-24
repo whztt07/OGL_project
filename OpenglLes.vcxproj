@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lessons\main.cpp" />
+    <ClCompile Include="lessons\math_3d.cpp" />
     <ClCompile Include="lessons\pipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
