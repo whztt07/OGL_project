@@ -19,11 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="lessons\camera.cpp" />
     <ClCompile Include="lessons\main.cpp" />
     <ClCompile Include="lessons\math_3d.cpp" />
     <ClCompile Include="lessons\pipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="lessons\camera.h" />
     <ClInclude Include="lessons\math_3d.h" />
     <ClInclude Include="lessons\pipeline.h" />
   </ItemGroup>

@@ -7,6 +7,15 @@
 	Переводы: http://triplepointfive.github.io/ogltutor/
 */
 
+#pragma comment( user, "Compiled on " __DATE__ " at " __TIME__ " with") /*
+Строка "Compiled on ДАТА-КОМПИЛЯЦИИ at ВРЕМЯ-КОМПИЛЯЦИИ" будет записана в ЕХЕ файл
+Ни на что влиять не будет, но будет видна в ЕХЕшнике в виде текста.
+*/
+#pragma comment( compiler ) /*
+В ЕХЕшник будет записано имя и версия компилятора.
+Ни на что не влияет, но можно будет потом посмотреть.
+*/
+
 #include <cstdio>
 #include <cstring>
 #include <cassert>
@@ -23,14 +32,13 @@
 						Кастомный заголовок, постепенно увеличивающийся в ходе обучения.
 						Он содержит фиксированный конвеер функций, необходимых для работы с графическими объектами.
 					*/
-
-#pragma comment( user, "Compiled on " __DATE__ " at " __TIME__ " with") /*
-						Строка "Compiled on ДАТА-КОМПИЛЯЦИИ at ВРЕМЯ-КОМПИЛЯЦИИ" будет записана в ЕХЕ файл
-						Ни на что влиять не будет, но будет видна в ЕХЕшнике в виде текста.
-					*/
-#pragma comment( compiler ) /*
-						В ЕХЕшник будет записано имя и версия компилятора. 
-						Ни на что не влияет, но можно будет потом посмотреть.
+#include "camera.h" /*
+						Это объявление заголовочника класса камеры. 
+						Он хранит 3 свойства, которые характеризуют камеру - позиция, направление и верхний вектор. 
+						Так же добавлены 2 конструктора. 
+						По умолчанию просто располагает камеру в начале координат, 
+						направляет ее в сторону уменьшения Z, а верхний вектор устремляет в “небо” (0,1,0). 
+						Но есть возможность создать камеру с указанием значений атрибутов.
 					*/
 
 #define WINDOW_WIDTH 800
@@ -44,6 +52,8 @@ GLuint gWVPLocation; /*
 							Всемирная она потому, что всё что мы делаем с объектом, это изменение его позиции в место, 
 							которое мы указываем относительно координатной системы внутри нашего виртуального ‘мира’.
 					   */
+
+Camera* pGameCamera = NULL;
 
 /*
 	Из-за технических трудностей нижеследующий код шейдеров закомментировать не удалось.
@@ -80,6 +90,8 @@ void main()                                                                     
 
 static void RenderSceneCB()
 {
+	pGameCamera->OnRender();
+
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	static float Scale = 0.0;
@@ -89,11 +101,8 @@ static void RenderSceneCB()
     Pipeline p;
 	p.Rotate(0.0, Scale, 0.0);
     p.WorldPos(0.0, 0.0, 3.0);
-	Vector3f CameraPos(0.0, 0.0, -3.0);
-	Vector3f CameraTarget(0.0, 0.0, 3.0);
-	Vector3f CameraUp(0.0, 1.0, 0.0);
-	p.SetCamera(CameraPos, CameraTarget, CameraUp);
-	p.SetPerspectiveProj(45.0, WINDOW_WIDTH, WINDOW_HEIGHT, 0.0, 100.0);
+	p.SetCamera(pGameCamera->GetPos(), pGameCamera->GetTarget(), pGameCamera->GetUp());
+	p.SetPerspectiveProj(60.0, WINDOW_WIDTH, WINDOW_HEIGHT, 0.0, 100.0);
 
 	glUniformMatrix4fv(gWVPLocation, 1, GL_TRUE, (const GLfloat*)p.GetTrans()); // Плавно и красиво изменяем отображение фигуры на экране
 
@@ -117,10 +126,35 @@ static void RenderSceneCB()
 }
 
 
+static void SpecialKeyboardCB(int Key, int x, int y)
+{
+	pGameCamera->OnKeyboard(Key);
+} // Функция отправляет клавишу и позицию курсора в момент нажатия кнопки.
+
+static void KeyboardCB(unsigned char Key, int x, int y)
+{
+	switch (Key) {
+	case 'q':
+		exit(0);
+	}
+}
+
+static void PassiveMouseCB(int x, int y)
+{
+	pGameCamera->OnMouse(x, y);
+}
+
 static void InitializeGlutCallbacks()
 {
 	glutDisplayFunc(RenderSceneCB);
 	glutIdleFunc(RenderSceneCB); // Указываем функцию рендера в качестве "ленивой"
+	glutSpecialFunc(SpecialKeyboardCB); /*
+											Эта функция записывает нашу для вызова, если будет нажата “специальная” клавиша. 
+											В группу специальных клавиш входят: F{1..12}, стрелки и PAGE-UP / PAGE-DOWN / HOME / END / INSERT. 
+											Если вам нужны обычные кнопки (символы и цифры) используйте glutKeyboardFunc().
+										*/
+	glutPassiveMotionFunc(PassiveMouseCB); // Пассивное движение означает, что мышь движется без нажатия каких-либо кнопок.
+	glutKeyboardFunc(KeyboardCB);
 }
 
 static void CreateVertexBuffer()
@@ -252,7 +286,12 @@ int main(int argc, char** argv)
 	glutInitWindowPosition(100, 100);
 	glutCreateWindow("Tutorial XX"); // Здесь задается заголовок окна. В оригинальных уроках у каждого туториала есть индивидуальный двузначный номер. Здесь он заменен на ХХ.
 
+	glutGameModeString("1280x1024@32"); // Эта функция glut’а разрешает вашему приложению запускаться в полноэкранном режиме, называемом как ‘игровой режим’. 
+	glutEnterGameMode();
+
 	InitializeGlutCallbacks(); // Большая часть взаимодействий с системой происходит через функции обратного вызова
+
+	pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	/* Теперь мы инициализируем GLEW и проверяем на ошибки. GLUT необходимо инициализировать раньше. */
 	GLenum err = glewInit();
