@@ -40,10 +40,25 @@
 						направляет ее в сторону уменьшения Z, а верхний вектор устремляет в “небо” (0,1,0). 
 						Но есть возможность создать камеру с указанием значений атрибутов.
 					*/
+#include "texture.h"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
-					
+
+struct Vertex
+{
+	Vector3f m_pos;
+	Vector2f m_tex;
+
+	Vertex() {}
+
+	Vertex(Vector3f pos, Vector2f tex)
+	{
+		m_pos = pos;
+		m_tex = tex;
+	}
+};
+
 GLuint VBO; // Глобальная переменная для хранения указателя на буфер вершин
 GLuint IBO; // То же самое для буфера индексов этих вершин
 GLuint gWVPLocation; /*
@@ -52,7 +67,8 @@ GLuint gWVPLocation; /*
 							Всемирная она потому, что всё что мы делаем с объектом, это изменение его позиции в место, 
 							которое мы указываем относительно координатной системы внутри нашего виртуального ‘мира’.
 					   */
-
+GLuint gSampler;
+Texture* pTexture = NULL;
 Camera* pGameCamera = NULL;
 
 /*
@@ -64,27 +80,30 @@ static const char* pVS = "                                                      
 #version 330                                                                        \n\
                                                                                     \n\
 layout (location = 0) in vec3 Position;                                             \n\
+layout (location = 1) in vec2 TexCoord;                                             \n\
                                                                                     \n\
 uniform mat4 gWVP;                                                                  \n\
                                                                                     \n\
-out vec4 Color;                                                                     \n\
+out vec2 TexCoord0;                                                                 \n\
                                                                                     \n\
 void main()                                                                         \n\
 {                                                                                   \n\
     gl_Position = gWVP * vec4(Position, 1.0);                                       \n\
-    Color = vec4(clamp(Position, 0.0, 1.0), 1.0);                                   \n\
+    TexCoord0 = TexCoord;                                                           \n\
 }"; /*Вершинный шейдер*/
 
 static const char* pFS = "                                                          \n\
 #version 330                                                                        \n\
                                                                                     \n\
-in vec4 Color;                                                                      \n\
+in vec2 TexCoord0;                                                                  \n\
                                                                                     \n\
 out vec4 FragColor;                                                                 \n\
                                                                                     \n\
+uniform sampler2D gSampler;                                                         \n\
+                                                                                    \n\
 void main()                                                                         \n\
 {                                                                                   \n\
-    FragColor = Color;                                                              \n\
+    FragColor = texture2D(gSampler, TexCoord0.xy);                                  \n\
 }"; /*Пиксельный шейдер*/
 
 
@@ -107,16 +126,19 @@ static void RenderSceneCB()
 	glUniformMatrix4fv(gWVPLocation, 1, GL_TRUE, (const GLfloat*)p.GetTrans()); // Плавно и красиво изменяем отображение фигуры на экране
 
 	glEnableVertexAttribArray(0); // Разрешаем использование атрибута вершины для доступа к нему через конвеер. Это необходимо для шейдеров
+	glEnableVertexAttribArray(1); // Разрешаем использование атрибутов вершин 1 для координат текстур в дополнении к атрибуту 0, который уже занят для позиции.
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Привязываем указатель на вершины для отрисовки кадра
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); // Этот вызов говорит конвейеру как воспринимать данные внутри буфера.
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0); // Этот вызов говорит конвейеру как воспринимать данные внутри буфера вешин.
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)12); // Тоже самое для буфера текстур
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO); // Привязываем указатель на индексы для отрисовки кадра
-
+	pTexture->Bind(GL_TEXTURE0);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 	glDisableVertexAttribArray(0); /*
 										Это признак хорошего тона отключать каждый атрибут вершины, как только отпадает необходимость в нем. 
 										Оставить его включенным, пока шейдер не используется - лучший способ получить проблем.
 								   */
+	glDisableVertexAttribArray(1);
 
 	glutSwapBuffers(); /*
 							После рисования нужно просить OpenGL сменить экранные буфера при помощи glutSwapBuffers (), ведь у нас включена двойная буферизация. 
@@ -134,8 +156,8 @@ static void SpecialKeyboardCB(int Key, int x, int y)
 static void KeyboardCB(unsigned char Key, int x, int y)
 {
 	switch (Key) {
-	case 'q':
-		exit(0);
+	case 27 : // 27 == ESC
+		glutLeaveMainLoop();
 	}
 }
 
@@ -159,15 +181,15 @@ static void InitializeGlutCallbacks()
 
 static void CreateVertexBuffer()
 {
-	Vector3f Vertices[8];
-	Vertices[0] = Vector3f(0.5, 0.5, -0.5);
-	Vertices[1] = Vector3f(0.5, -0.5, -0.5);
-	Vertices[2] = Vector3f(-0.5, -0.5, -0.5);
-	Vertices[3] = Vector3f(-0.5, 0.5, -0.5);
-	Vertices[4] = Vector3f(0.5, 0.5, 0.5);
-	Vertices[5] = Vector3f(0.5, -0.5, 0.5);
-	Vertices[6] = Vector3f(-0.5, -0.5, 0.5);
-	Vertices[7] = Vector3f(-0.5, 0.5, 0.5);
+	Vertex Vertices[8];
+	Vertices[0] = Vertex(Vector3f(0.5, 0.5, -0.5), Vector2f(0.0, 0.0));
+	Vertices[1] = Vertex(Vector3f(0.5, -0.5, -0.5), Vector2f(1.0, 0.0));
+	Vertices[2] = Vertex(Vector3f(-0.5, -0.5, -0.5), Vector2f(1.0, 1.0));
+	Vertices[3] = Vertex(Vector3f(-0.5, 0.5, -0.5), Vector2f(0.0, 1.0));
+	Vertices[4] = Vertex(Vector3f(0.5, 0.5, 0.5), Vector2f(1.0, 0.0));
+	Vertices[5] = Vertex(Vector3f(0.5, -0.5, 0.5), Vector2f(1.0, 1.0));
+	Vertices[6] = Vertex(Vector3f(-0.5, -0.5, 0.5), Vector2f(0.0, 1.0));
+	Vertices[7] = Vertex(Vector3f(-0.5, 0.5, 0.5), Vector2f(0.0, 0.0));
 
 	glGenBuffers(1, &VBO); // Создаем буфер в общем типе. Для указания задачи используется следующая функция.
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Привязываем указатель для наполнения данными
@@ -263,7 +285,7 @@ static void CompileShaders()
 										тогда другие этапы будут использовать свою функциональность по-умолчанию.
 								 */
 
-	gWVPLocation = glGetUniformLocation(ShaderProgram, "gWVP"); // Запрашиваем позицию uniform-переменной в программном объекте
+	gWVPLocation = glGetUniformLocation(ShaderProgram, "gWVP"); // Запрашиваем позицию uniform-переменной gWP в программном объекте
 	assert(gWVPLocation != 0xFFFFFFFF); /*
 												Очень важна проверка на ошибки (как мы и сделали тут), иначе обновления переменной не попадут в шейдер. 
 												Есть 2 основные причины ошибки у этой функции. 
@@ -271,6 +293,8 @@ static void CompileShaders()
 												Если компилятор не обнаружит использования переменной, он без раздумий выбросит её. 
 												В этом случае glGetUniformLocation не даст результата.
 										  */
+	gSampler = glGetUniformLocation(ShaderProgram, "gSampler"); // Аналогично с gSampler
+	assert(gSampler != 0xFFFFFFFF);
 }
 
 
@@ -301,16 +325,28 @@ int main(int argc, char** argv)
 	}
 
 	glClearColor(0.0, 0.0, 0.0, 0.0); // Установка "чистого" цвета фона
+	glFrontFace(GL_CW);
+	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
 
 	CreateVertexBuffer();
 	CreateIndexBuffer();
 
 	CompileShaders(); // Компилируем шейдеры
 
+	glUniform1i(gSampler, 0);
+
+	pTexture = new Texture(GL_TEXTURE_2D, "test.png");
+
+	if (!pTexture->Load()) {
+		return 1;
+	}
+
 	glutMainLoop(); /*
 						Этот вызов передаёт контроль GLUT’у, который теперь начнёт свой собственный цикл. 
 						В этом цикле он ждёт событий от оконной системы и передаёт их через функции обратного вызова, которые мы задали ранее.
 					*/
 
+	system("Pause");
 	return 0;
 }

@@ -16,6 +16,23 @@ struct Vector2i
 	int y;
 };
 
+struct Vector2f
+{
+	float x;
+	float y;
+
+	Vector2f()
+	{
+	}
+
+	Vector2f(float _x, float _y)
+	{
+		x = _x;
+		y = _y;
+	}
+};
+
+
 struct Vector3f
 {
 	float x;
@@ -99,7 +116,6 @@ inline Vector3f operator*(const Vector3f& l, float f)
 
 	return Ret;
 }
-
 
 class Matrix4f
 {
