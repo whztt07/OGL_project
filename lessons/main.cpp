@@ -123,7 +123,7 @@ static void RenderSceneCB()
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)12); // Тоже самое для буфера текстур
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO); // Привязываем указатель на индексы для отрисовки кадра
 	pTexture->Bind(GL_TEXTURE0);
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_QUADS, 24, GL_UNSIGNED_INT, 0);
 
 	glDisableVertexAttribArray(0); /*
 										Это признак хорошего тона отключать каждый атрибут вершины, как только отпадает необходимость в нем. 
@@ -189,18 +189,12 @@ static void CreateVertexBuffer()
 
 static void CreateIndexBuffer()
 {
-	unsigned int Indices[] = {	0, 1, 2,
-								2, 3, 0,
-								0, 4, 3,
-								3, 7, 4,
-								4, 0, 1,
-								1, 4, 5,
-								5, 1, 2,
-								2, 5, 6,
-								6, 2, 3,
-								3, 6, 7,
-								7, 4, 5,
-								5, 6, 7 };
+	unsigned int Indices[] = {	0, 1, 5, 4,
+								3, 0, 4, 7,
+								2, 3, 7, 6,
+								1, 2, 6, 5,
+								0, 1, 2, 3,
+								4, 5, 6, 7 };
 
 	glGenBuffers(1, &IBO); // Здесь и ниже: всё аналогично CreateVertexBuffer()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
@@ -315,9 +309,9 @@ int main(int argc, char** argv)
 	}
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Установка "чистого" цвета фона
-	//glFrontFace(GL_CW);
-	//glCullFace(GL_BACK);
-	//glEnable(GL_CULL_FACE);
+	glFrontFace(GL_CW);
+	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
 
 	CreateVertexBuffer();
 	CreateIndexBuffer();
@@ -326,8 +320,8 @@ int main(int argc, char** argv)
 
 	glUniform1i(gSampler, 0);
 
-	pTexture = new Texture(GL_TEXTURE_2D, "../thirdparty/content/test.png");
-	//pTexture = new Texture(GL_TEXTURE_2D, "thirdparty/content/test.png");
+	//pTexture = new Texture(GL_TEXTURE_2D, "../thirdparty/content/test.png");
+	pTexture = new Texture(GL_TEXTURE_2D, "thirdparty/content/test.png");
 
 	if (!pTexture->Load()) {
 		return 1;
