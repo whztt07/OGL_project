@@ -193,7 +193,7 @@ static void CreateIndexBuffer()
 								3, 0, 4, 7,
 								2, 3, 7, 6,
 								1, 2, 6, 5,
-								0, 1, 2, 3,
+								3, 2, 1, 0,
 								4, 5, 6, 7 };
 
 	glGenBuffers(1, &IBO); // Здесь и ниже: всё аналогично CreateVertexBuffer()
