@@ -173,14 +173,14 @@ static void InitializeGlutCallbacks()
 static void CreateVertexBuffer()
 {
 	Vertex Vertices[8];
-	Vertices[0] = Vertex(Vector3f(0.5, 0.5, -0.5), Vector2f(0.0, 0.0));
-	Vertices[1] = Vertex(Vector3f(0.5, -0.5, -0.5), Vector2f(1.0, 0.0));
-	Vertices[2] = Vertex(Vector3f(-0.5, -0.5, -0.5), Vector2f(1.0, 1.0));
-	Vertices[3] = Vertex(Vector3f(-0.5, 0.5, -0.5), Vector2f(0.0, 1.0));
-	Vertices[4] = Vertex(Vector3f(0.5, 0.5, 0.5), Vector2f(1.0, 0.0));
-	Vertices[5] = Vertex(Vector3f(0.5, -0.5, 0.5), Vector2f(1.0, 1.0));
-	Vertices[6] = Vertex(Vector3f(-0.5, -0.5, 0.5), Vector2f(0.0, 1.0));
-	Vertices[7] = Vertex(Vector3f(-0.5, 0.5, 0.5), Vector2f(0.0, 0.0));
+	Vertices[0] = Vertex(Vector3f(0.5, -0.5, -0.5), Vector2f(0.0, 0.0));
+	Vertices[1] = Vertex(Vector3f(-0.5, -0.5, -0.5), Vector2f(1.0, 0.0));
+	Vertices[2] = Vertex(Vector3f(-0.5, -0.5, 0.5), Vector2f(1.0, 1.0));
+	Vertices[3] = Vertex(Vector3f(0.5, -0.5, 0.5), Vector2f(0.0, 1.0));
+	Vertices[4] = Vertex(Vector3f(0.5, 0.5, -0.5), Vector2f(1.0, 0.0));
+	Vertices[5] = Vertex(Vector3f(-0.5, 0.5, -0.5), Vector2f(1.0, 1.0));
+	Vertices[6] = Vertex(Vector3f(-0.5, 0.5, 0.5), Vector2f(0.0, 1.0));
+	Vertices[7] = Vertex(Vector3f(0.5, 0.5, 0.5), Vector2f(0.0, 0.0));
 
 	glGenBuffers(1, &VBO); // Создаем буфер в общем типе. Для указания задачи используется следующая функция.
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); // Привязываем указатель для наполнения данными
