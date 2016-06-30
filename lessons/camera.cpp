@@ -1,4 +1,5 @@
-#include "freeglut.h"
+#include <GL/freeglut.h>
+
 #include "camera.h"
 
 const static float STEP_SCALE = 0.1f;

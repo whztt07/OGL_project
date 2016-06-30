@@ -1,5 +1,5 @@
 /* 
-	Данный код является результатом уроков по OpenGL. Он не связан с проектом напрямую, но помогает понять базовые принципы работы с OpenGL.
+	Данный код является результатом уроков по OpenGL, и он помогает понять базовые принципы работы с OpenGL.
 	Так как код является по большей части наглядным пособием, он изобилует комментариями разной степенью очевидности, вплоть до "это и ежу ясно". Порою.
 	А порою комментарии отстутствуют там, где они очень нужны и "без поллитры не разберешься". 
 	Я предупредил.
@@ -7,24 +7,15 @@
 	Переводы: http://triplepointfive.github.io/ogltutor/
 */
 
-#pragma comment( user, "Compiled on " __DATE__ " at " __TIME__ " with") /*
-Строка "Compiled on ДАТА-КОМПИЛЯЦИИ at ВРЕМЯ-КОМПИЛЯЦИИ" будет записана в ЕХЕ файл
-Ни на что влиять не будет, но будет видна в ЕХЕшнике в виде текста.
-*/
-#pragma comment( compiler ) /*
-В ЕХЕшник будет записано имя и версия компилятора.
-Ни на что не влияет, но можно будет потом посмотреть.
-*/
-
-#include <cstdio>
-#include <cstring>
-#include <cassert>
-#include <cmath>
-#include "glew.h" /* 
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
+#include <math.h>
+#include <GL/glew.h> /* 
 						Обеспечивает эффективные run-time механизмы для определения того, какие OpenGL расширения поддерживаются на целевой платформе. 
 						Если вы подключаете другие заголовки OpenGL, вам следует подключить его раньше остальных, иначе GLEW откажется работать. 
 					*/
-#include "freeglut.h" /* 
+#include <GL/freeglut.h> /* 
 						API для управления оконной системой, а так же обработка событий, контроль ввода/вывода и ещё несколько других возможностей 
 					*/
 
@@ -113,15 +104,15 @@ static void RenderSceneCB()
 
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	static float Scale = 0.0;
+	static float Scale = 0.0f;
 
-	Scale += 0.2;
+	Scale += 0.1f;
 
     Pipeline p;
-	p.Rotate(0.0, Scale, 0.0);
-    p.WorldPos(0.0, 0.0, 3.0);
+	p.Rotate(0.0f, 0.0f, 0.0f);
+    p.WorldPos(0.0f, 0.0f, 3.0f);
 	p.SetCamera(pGameCamera->GetPos(), pGameCamera->GetTarget(), pGameCamera->GetUp());
-	p.SetPerspectiveProj(60.0, WINDOW_WIDTH, WINDOW_HEIGHT, 0.0, 100.0);
+	p.SetPerspectiveProj(60.0, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 100.0f);
 
 	glUniformMatrix4fv(gWVPLocation, 1, GL_TRUE, (const GLfloat*)p.GetTrans()); // Плавно и красиво изменяем отображение фигуры на экране
 
@@ -222,7 +213,7 @@ static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum Shad
 
 	if (ShaderObj == 0) {
 		fprintf(stderr, "Error creating shader type %d\n", ShaderType);
-		exit(0);
+		exit(1);
 	}
 
 	const GLchar* shdrTxt[1];
@@ -309,9 +300,8 @@ int main(int argc, char** argv)
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutInitWindowPosition(100, 100);
 	glutCreateWindow("Tutorial XX"); // Здесь задается заголовок окна. В оригинальных уроках у каждого туториала есть индивидуальный двузначный номер. Здесь он заменен на ХХ.
-
-	glutGameModeString("1280x1024@32"); // Эта функция glut’а разрешает вашему приложению запускаться в полноэкранном режиме, называемом как ‘игровой режим’. 
-	glutEnterGameMode();
+	glutGameModeString("800x600@32"); // Эта функция glut’а разрешает вашему приложению запускаться в полноэкранном режиме, называемом как ‘игровой режим’. 
+	//glutEnterGameMode();
 
 	InitializeGlutCallbacks(); // Большая часть взаимодействий с системой происходит через функции обратного вызова
 
@@ -324,10 +314,10 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	glClearColor(0.0, 0.0, 0.0, 0.0); // Установка "чистого" цвета фона
-	glFrontFace(GL_CW);
-	glCullFace(GL_BACK);
-	glEnable(GL_CULL_FACE);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Установка "чистого" цвета фона
+	//glFrontFace(GL_CW);
+	//glCullFace(GL_BACK);
+	//glEnable(GL_CULL_FACE);
 
 	CreateVertexBuffer();
 	CreateIndexBuffer();
@@ -336,7 +326,8 @@ int main(int argc, char** argv)
 
 	glUniform1i(gSampler, 0);
 
-	pTexture = new Texture(GL_TEXTURE_2D, "test.png");
+	pTexture = new Texture(GL_TEXTURE_2D, "../thirdparty/content/test.png");
+	//pTexture = new Texture(GL_TEXTURE_2D, "thirdparty/content/test.png");
 
 	if (!pTexture->Load()) {
 		return 1;

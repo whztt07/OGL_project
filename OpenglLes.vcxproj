@@ -85,7 +85,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(MSBuildProjectDirectory)\src\headers;$(MSBuildProjectDirectory)\thirdparty\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)src\headers;$(SolutionDir)thirdparty\include;$(SolutionDir)thirdparty\include\ImageMagick;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -107,8 +107,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32.lib;glew32s.lib;freeglut.lib;CORE_RL_Magick++_.lib;CORE_RL_MagickCore_.lib;CORE_RL_MagickWand_.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)\thirdparty\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);glew32.lib;CORE_DB_Magick++_.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)thirdparty\lib;$(ConfigurationName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

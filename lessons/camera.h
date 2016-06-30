@@ -5,7 +5,6 @@
 
 #include "math_3d.h"
 
-
 class Camera
 {
 public:

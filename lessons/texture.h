@@ -3,9 +3,10 @@
 #ifndef TEXTURE_H
 #define	TEXTURE_H
 
-#include <cstring>
-#include "glew.h"
-#include "Magick++.h"
+#include <string>
+
+#include <GL/glew.h>
+#include <ImageMagick/Magick++.h>
 
 class Texture
 {
