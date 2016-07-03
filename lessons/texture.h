@@ -25,5 +25,4 @@ private:
 	Magick::Blob m_blob;
 };
 
-
 #endif	/* TEXTURE_H */

@@ -20,15 +20,22 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lessons\camera.cpp" />
+    <ClCompile Include="lessons\glut_backend.cpp" />
+    <ClCompile Include="lessons\lighting_technique.cpp" />
     <ClCompile Include="lessons\main.cpp" />
     <ClCompile Include="lessons\math_3d.cpp" />
     <ClCompile Include="lessons\pipeline.cpp" />
+    <ClCompile Include="lessons\technique.cpp" />
     <ClCompile Include="lessons\texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="lessons\callbacks.h" />
     <ClInclude Include="lessons\camera.h" />
+    <ClInclude Include="lessons\glut_backend.h" />
+    <ClInclude Include="lessons\lighting_technique.h" />
     <ClInclude Include="lessons\math_3d.h" />
     <ClInclude Include="lessons\pipeline.h" />
+    <ClInclude Include="lessons\technique.h" />
     <ClInclude Include="lessons\texture.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
