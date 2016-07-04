@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef PIPELINE_H
 #define	PIPELINE_H
 
@@ -10,9 +8,9 @@ class Pipeline
 public:
 	Pipeline()
 	{
-		m_scale		 = Vector3f(1.0, 1.0, 1.0);
-		m_worldPos	 = Vector3f(0.0, 0.0, 0.0);
-		m_rotateInfo = Vector3f(0.0, 0.0, 0.0);
+		m_scale = Vector3f(1.0f, 1.0f, 1.0f);
+		m_worldPos = Vector3f(0.0f, 0.0f, 0.0f);
+		m_rotateInfo = Vector3f(0.0f, 0.0f, 0.0f);
 	}
 
 	void Scale(float ScaleX, float ScaleY, float ScaleZ)
@@ -52,7 +50,11 @@ public:
 		m_camera.Up = Up;
 	}
 
-	const Matrix4f* GetTrans();
+
+	const Matrix4f& GetWVPTrans();
+
+	const Matrix4f& GetWorldTrans();
+
 
 private:
 	Vector3f m_scale;
@@ -73,8 +75,8 @@ private:
 		Vector3f Up;
 	} m_camera;
 
-	Matrix4f m_transformation;
+	Matrix4f m_WVPtransformation;
+	Matrix4f m_WorldTransformation;
 };
-
 
 #endif	/* PIPELINE_H */
