@@ -11,8 +11,8 @@
 #include <math.h>
 #endif
 
-#define ToRadian(x) ((x) * M_PI / 180.0)
-#define ToDegree(x) ((x) * 180.0 / M_PI)
+#define ToRadian(x) (float)(((x) * M_PI / 180.0f))
+#define ToDegree(x) (float)(((x) * 180.0f / M_PI))
 
 struct Vector2i
 {
