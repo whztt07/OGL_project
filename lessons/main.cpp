@@ -50,8 +50,8 @@ public:
 		m_pEffect = NULL;
 		m_scale = 0.0f;
 		m_directionalLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
-		m_directionalLight.AmbientIntensity = 0.5f;
-		m_directionalLight.DiffuseIntensity = 0.75f;
+		m_directionalLight.AmbientIntensity = 0.2f;
+		m_directionalLight.DiffuseIntensity = 0.0f;
 		m_directionalLight.Direction = Vector3f(1.0f, 0.0f, 0.0f);
 	}
 
@@ -118,20 +118,38 @@ public:
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		m_scale += 0.3f;
+		m_scale += 0.03f;
+
+		PointLight pl[3];
+		pl[0].DiffuseIntensity = 0.5f;
+		pl[0].Color = Vector3f(1.0f, 0.0f, 0.0f);
+		pl[0].Position = Vector3f(sinf(m_scale) * 10, 1.0f, cosf(m_scale) * 10);
+		pl[0].Attenuation.Linear = 0.1f;
+
+		pl[1].DiffuseIntensity = 0.5f;
+		pl[1].Color = Vector3f(0.0f, 1.0f, 0.0f);
+		pl[1].Position = Vector3f(sinf(m_scale + 2.1f) * 10, 1.0f, cosf(m_scale + 2.1f) * 10);
+		pl[1].Attenuation.Linear = 0.1f;
+
+		pl[2].DiffuseIntensity = 0.5f;
+		pl[2].Color = Vector3f(0.0f, 0.0f, 1.0f);
+		pl[2].Position = Vector3f(sinf(m_scale + 4.2f) * 10, 1.0f, cosf(m_scale + 4.2f) * 10);
+		pl[2].Attenuation.Linear = 0.1f;
+
+		m_pEffect->SetPointLights(3, pl);
 
 		Pipeline p;
-		p.Rotate(m_scale, m_scale, m_scale);
+		p.Rotate(10.0f*m_scale, 10.0f*m_scale, 10.0f*m_scale);
 		p.WorldPos(0.0f, 0.0f, 1.0f);
 		p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
-		p.SetPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 100.0f);
+		p.SetPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 0.1f, 100.0f);
 		m_pEffect->SetWVP(p.GetWVPTrans());
 		const Matrix4f& WorldTransformation = p.GetWorldTrans();
 		m_pEffect->SetWorldMatrix(WorldTransformation);
 		m_pEffect->SetDirectionalLight(m_directionalLight);
 		m_pEffect->SetEyeWorldPos(m_pGameCamera->GetPos());
 		m_pEffect->SetMatSpecularIntensity(1.0f);
-		m_pEffect->SetMatSpecularPower(32);
+		m_pEffect->SetMatSpecularPower(16);
 
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
@@ -250,7 +268,7 @@ private:
 	Texture* m_pTexture;
 	Camera* m_pGameCamera;
 	float m_scale;
-	DirectionLight m_directionalLight;
+	DirectionalLight m_directionalLight;
 };
 
 
