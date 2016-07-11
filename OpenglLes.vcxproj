@@ -25,6 +25,7 @@
     <ClCompile Include="lessons\main.cpp" />
     <ClCompile Include="lessons\math_3d.cpp" />
     <ClCompile Include="lessons\pipeline.cpp" />
+    <ClCompile Include="lessons\mesh.cpp" />
     <ClCompile Include="lessons\technique.cpp" />
     <ClCompile Include="lessons\texture.cpp" />
   </ItemGroup>
@@ -34,6 +35,7 @@
     <ClInclude Include="lessons\glut_backend.h" />
     <ClInclude Include="lessons\lighting_technique.h" />
     <ClInclude Include="lessons\math_3d.h" />
+    <ClInclude Include="lessons\mesh.h" />
     <ClInclude Include="lessons\pipeline.h" />
     <ClInclude Include="lessons\technique.h" />
     <ClInclude Include="lessons\texture.h" />
@@ -115,7 +117,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);glew32.lib;CORE_DB_Magick++_.lib</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);glew32.lib;assimp.lib;CORE_DB_Magick++_.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)thirdparty\lib;$(ConfigurationName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
