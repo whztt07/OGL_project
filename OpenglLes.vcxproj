@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lessons\camera.cpp" />
+    <ClCompile Include="lessons\cubemap_texture.cpp" />
     <ClCompile Include="lessons\glut_backend.cpp" />
     <ClCompile Include="lessons\lighting_technique.cpp" />
     <ClCompile Include="lessons\main.cpp" />
@@ -28,12 +29,15 @@
     <ClCompile Include="lessons\mesh.cpp" />
     <ClCompile Include="lessons\shadow_map_fbo.cpp" />
     <ClCompile Include="lessons\shadow_map_technique.cpp" />
+    <ClCompile Include="lessons\skybox.cpp" />
+    <ClCompile Include="lessons\skybox_technique.cpp" />
     <ClCompile Include="lessons\technique.cpp" />
     <ClCompile Include="lessons\texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lessons\callbacks.h" />
     <ClInclude Include="lessons\camera.h" />
+    <ClInclude Include="lessons\cubemap_texture.h" />
     <ClInclude Include="lessons\glut_backend.h" />
     <ClInclude Include="lessons\lighting_technique.h" />
     <ClInclude Include="lessons\math_3d.h" />
@@ -41,6 +45,8 @@
     <ClInclude Include="lessons\pipeline.h" />
     <ClInclude Include="lessons\shadow_map_fbo.h" />
     <ClInclude Include="lessons\shadow_map_technique.h" />
+    <ClInclude Include="lessons\skybox.h" />
+    <ClInclude Include="lessons\skybox_technique.h" />
     <ClInclude Include="lessons\technique.h" />
     <ClInclude Include="lessons\texture.h" />
     <ClInclude Include="lessons\util.h" />
