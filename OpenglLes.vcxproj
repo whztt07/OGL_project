@@ -26,6 +26,8 @@
     <ClCompile Include="lessons\math_3d.cpp" />
     <ClCompile Include="lessons\pipeline.cpp" />
     <ClCompile Include="lessons\mesh.cpp" />
+    <ClCompile Include="lessons\shadow_map_fbo.cpp" />
+    <ClCompile Include="lessons\shadow_map_technique.cpp" />
     <ClCompile Include="lessons\technique.cpp" />
     <ClCompile Include="lessons\texture.cpp" />
   </ItemGroup>
@@ -37,6 +39,8 @@
     <ClInclude Include="lessons\math_3d.h" />
     <ClInclude Include="lessons\mesh.h" />
     <ClInclude Include="lessons\pipeline.h" />
+    <ClInclude Include="lessons\shadow_map_fbo.h" />
+    <ClInclude Include="lessons\shadow_map_technique.h" />
     <ClInclude Include="lessons\technique.h" />
     <ClInclude Include="lessons\texture.h" />
     <ClInclude Include="lessons\util.h" />

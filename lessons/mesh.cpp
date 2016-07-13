@@ -153,12 +153,6 @@ bool Mesh::InitMaterials(const aiScene* pScene, const std::string& Filename)
 				}
 			}
 		}
-
-		// Загружаем белую текстуру если модель не имеет собственной
-		if (!m_Textures[i]) {
-			m_Textures[i] = new Texture(GL_TEXTURE_2D, "../Content/white.png");
-			Ret = m_Textures[i]->Load();
-		}
 	}
 
 	return Ret;
