@@ -48,7 +48,7 @@ private:
 
 	float m_AngleH;
 	float m_AngleV;
-	
+
 	Vector2i m_mousePos;
 };
 

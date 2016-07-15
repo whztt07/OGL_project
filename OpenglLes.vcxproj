@@ -38,6 +38,7 @@
     <ClInclude Include="lessons\callbacks.h" />
     <ClInclude Include="lessons\camera.h" />
     <ClInclude Include="lessons\cubemap_texture.h" />
+    <ClInclude Include="lessons\engine_common.h" />
     <ClInclude Include="lessons\glut_backend.h" />
     <ClInclude Include="lessons\lighting_technique.h" />
     <ClInclude Include="lessons\math_3d.h" />
