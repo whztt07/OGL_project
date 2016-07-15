@@ -1,4 +1,7 @@
+#include <stdlib.h>
+
 #include "math_3d.h"
+#include "util.h"
 
 Vector3f Vector3f::Cross(const Vector3f& v) const
 {
@@ -32,6 +35,7 @@ void Vector3f::Rotate(float Angle, const Vector3f& Axe)
 	Quaternion RotationQ(Rx, Ry, Rz, Rw);
 
 	Quaternion ConjugateQ = RotationQ.Conjugate();
+	//  ConjugateQ.Normalize();
 	Quaternion W = RotationQ * (*this) * ConjugateQ;
 
 	x = W.x;
@@ -102,10 +106,10 @@ void Matrix4f::InitPersProjTransform(const PersProjInfo& p)
 	const float zRange = p.zNear - p.zFar;
 	const float tanHalfFOV = tanf(ToRadian(p.FOV / 2.0f));
 
-	m[0][0] = 1.0f / (tanHalfFOV * ar); m[0][1] = 0.0f;            m[0][2] = 0.0f;            m[0][3] = 0.0f;
-	m[1][0] = 0.0f;                   m[1][1] = 1.0f / tanHalfFOV; m[1][2] = 0.0f;            m[1][3] = 0.0f;
+	m[0][0] = 1.0f / (tanHalfFOV * ar); m[0][1] = 0.0f;            m[0][2] = 0.0f;            m[0][3] = 0.0;
+	m[1][0] = 0.0f;                   m[1][1] = 1.0f / tanHalfFOV; m[1][2] = 0.0f;            m[1][3] = 0.0;
 	m[2][0] = 0.0f;                   m[2][1] = 0.0f;            m[2][2] = (-p.zNear - p.zFar) / zRange; m[2][3] = 2.0f*p.zFar*p.zNear / zRange;
-	m[3][0] = 0.0f;                   m[3][1] = 0.0f;            m[3][2] = 1.0f;            m[3][3] = 0.0f;
+	m[3][0] = 0.0f;                   m[3][1] = 0.0f;            m[3][2] = 1.0f;            m[3][3] = 0.0;
 }
 
 Quaternion::Quaternion(float _x, float _y, float _z, float _w)
@@ -154,4 +158,10 @@ Quaternion operator*(const Quaternion& q, const Vector3f& v)
 	Quaternion ret(x, y, z, w);
 
 	return ret;
+}
+
+float RandomFloat()
+{
+	float Max = RAND_MAX;
+	return ((float)RANDOM() / Max);
 }

@@ -63,6 +63,8 @@ bool GLUTBackendCreateWindow(unsigned int Width, unsigned int Height, unsigned i
 		glutCreateWindow(pTitle);
 	}
 
+	glewExperimental = GL_TRUE;
+	// Must be done after glut is initialized!
 	GLenum res = glewInit();
 	if (res != GLEW_OK) {
 		fprintf(stderr, "Error: '%s'\n", glewGetErrorString(res));

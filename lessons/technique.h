@@ -26,9 +26,11 @@ protected:
 
 	GLint GetUniformLocation(const char* pUniformName);
 
-private:
+	GLint GetProgramParam(GLint param);
 
 	GLuint m_shaderProg;
+
+private:
 
 	typedef std::list<GLuint> ShaderObjList;
 	ShaderObjList m_shaderObjList;
