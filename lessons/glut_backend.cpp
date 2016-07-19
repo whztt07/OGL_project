@@ -7,6 +7,8 @@
 
 #include "glut_backend.h"
 
+// Points to the object implementing the ICallbacks interface which was delivered to
+// GLUTBackendRun(). All events are forwarded to this object.
 static ICallbacks* s_pCallbacks = NULL;
 
 static void SpecialKeyboardCB(int Key, int x, int y)
@@ -34,6 +36,11 @@ static void IdleCB()
 	s_pCallbacks->IdleCB();
 }
 
+static void MouseCB(int Button, int State, int x, int y)
+{
+	s_pCallbacks->MouseCB(Button, State, x, y);
+}
+
 static void InitCallbacks()
 {
 	glutDisplayFunc(RenderSceneCB);
@@ -41,6 +48,7 @@ static void InitCallbacks()
 	glutSpecialFunc(SpecialKeyboardCB);
 	glutPassiveMotionFunc(PassiveMouseCB);
 	glutKeyboardFunc(KeyboardCB);
+	glutMouseFunc(MouseCB);
 }
 
 void GLUTBackendInit(int argc, char** argv)
@@ -63,15 +71,12 @@ bool GLUTBackendCreateWindow(unsigned int Width, unsigned int Height, unsigned i
 		glutCreateWindow(pTitle);
 	}
 
-	glewExperimental = GL_TRUE;
 	// Must be done after glut is initialized!
 	GLenum res = glewInit();
 	if (res != GLEW_OK) {
 		fprintf(stderr, "Error: '%s'\n", glewGetErrorString(res));
 		return false;
 	}
-
-	glutSetCursor(GLUT_CURSOR_NONE);
 
 	return true;
 }

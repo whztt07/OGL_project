@@ -19,46 +19,32 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="lessons\billboard_list.cpp" />
     <ClCompile Include="lessons\camera.cpp" />
-    <ClCompile Include="lessons\cubemap_texture.cpp" />
     <ClCompile Include="lessons\glut_backend.cpp" />
     <ClCompile Include="lessons\lighting_technique.cpp" />
     <ClCompile Include="lessons\main.cpp" />
     <ClCompile Include="lessons\math_3d.cpp" />
-    <ClCompile Include="lessons\particle_system.cpp" />
+    <ClCompile Include="lessons\picking_technique.cpp" />
+    <ClCompile Include="lessons\picking_texture.cpp" />
     <ClCompile Include="lessons\pipeline.cpp" />
     <ClCompile Include="lessons\mesh.cpp" />
-    <ClCompile Include="lessons\ps_update_technique.cpp" />
-    <ClCompile Include="lessons\random_texture.cpp" />
-    <ClCompile Include="lessons\shadow_map_fbo.cpp" />
-    <ClCompile Include="lessons\shadow_map_technique.cpp" />
-    <ClCompile Include="lessons\skybox.cpp" />
-    <ClCompile Include="lessons\skybox_technique.cpp" />
-    <ClCompile Include="lessons\billboard_technique.cpp" />
+    <ClCompile Include="lessons\simple_color_technique.cpp" />
     <ClCompile Include="lessons\technique.cpp" />
     <ClCompile Include="lessons\texture.cpp" />
-    <ClCompile Include="lessons\util.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="lessons\billboard_list.h" />
-    <ClInclude Include="lessons\billboard_technique.h" />
     <ClInclude Include="lessons\callbacks.h" />
     <ClInclude Include="lessons\camera.h" />
-    <ClInclude Include="lessons\cubemap_texture.h" />
     <ClInclude Include="lessons\engine_common.h" />
     <ClInclude Include="lessons\glut_backend.h" />
     <ClInclude Include="lessons\lighting_technique.h" />
     <ClInclude Include="lessons\math_3d.h" />
     <ClInclude Include="lessons\mesh.h" />
-    <ClInclude Include="lessons\particle_system.h" />
+    <ClInclude Include="lessons\picking_technique.h" />
+    <ClInclude Include="lessons\picking_texture.h" />
     <ClInclude Include="lessons\pipeline.h" />
-    <ClInclude Include="lessons\ps_update_technique.h" />
-    <ClInclude Include="lessons\random_texture.h" />
-    <ClInclude Include="lessons\shadow_map_fbo.h" />
-    <ClInclude Include="lessons\shadow_map_technique.h" />
-    <ClInclude Include="lessons\skybox.h" />
-    <ClInclude Include="lessons\skybox_technique.h" />
+    <ClInclude Include="lessons\render_callbacks.h" />
+    <ClInclude Include="lessons\simple_color_technique.h" />
     <ClInclude Include="lessons\technique.h" />
     <ClInclude Include="lessons\texture.h" />
     <ClInclude Include="lessons\util.h" />

@@ -17,7 +17,7 @@ public:
 
 	virtual void IdleCB() = 0;
 
-	//virtual ~ICallbacks() {};
+	virtual void MouseCB(int Button, int State, int x, int y) = 0;
 };
 
-#endif	/* I3DAPPLICATION_H */
+#endif	/* CALLBACKS_H */

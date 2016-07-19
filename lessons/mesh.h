@@ -10,27 +10,24 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-
 #include "util.h"
 #include "math_3d.h"
 #include "texture.h"
+#include "render_callbacks.h"
 
 struct Vertex
 {
 	Vector3f m_pos;
 	Vector2f m_tex;
 	Vector3f m_normal;
-	Vector3f m_tangent;
 
 	Vertex() {}
 
-	Vertex(const Vector3f& pos, const Vector2f& tex, const Vector3f& normal, const Vector3f& Tangent)
+	Vertex(const Vector3f& pos, const Vector2f& tex, const Vector3f& normal)
 	{
 		m_pos = pos;
 		m_tex = tex;
 		m_normal = normal;
-		m_tangent = Tangent;
-
 	}
 };
 
@@ -43,7 +40,9 @@ public:
 
 	bool LoadMesh(const std::string& Filename);
 
-	void Render();
+	void Render(IRenderCallbacks* pRenderCallbacks);
+
+	void Render(unsigned int DrawIndex, unsigned int PrimID);
 
 private:
 	bool InitFromScene(const aiScene* pScene, const std::string& Filename);
@@ -58,7 +57,7 @@ private:
 
 		~MeshEntry();
 
-		void Init(const std::vector<Vertex>& Vertices,
+		bool Init(const std::vector<Vertex>& Vertices,
 			const std::vector<unsigned int>& Indices);
 
 		GLuint VB;

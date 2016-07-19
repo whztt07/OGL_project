@@ -1,10 +1,7 @@
-#include <stdlib.h>
 #include <math.h>
-
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
-#include "engine_common.h"
 #include "util.h"
 #include "pipeline.h"
 #include "camera.h"
@@ -12,7 +9,9 @@
 #include "lighting_technique.h"
 #include "glut_backend.h"
 #include "mesh.h"
-#include "particle_system.h"
+#include "picking_texture.h"
+#include "picking_technique.h"
+#include "simple_color_technique.h"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -23,77 +22,60 @@ public:
 
 	Main()
 	{
-		m_pLightingTechnique = NULL;
 		m_pGameCamera = NULL;
-		m_pGround = NULL;
-		m_pTexture = NULL;
-		m_pNormalMap = NULL;
-
-		m_dirLight.AmbientIntensity = 0.2f;
-		m_dirLight.DiffuseIntensity = 0.8f;
-		m_dirLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
-		m_dirLight.Direction = Vector3f(1.0f, 0.0f, 0.0f);
+		m_directionalLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
+		m_directionalLight.AmbientIntensity = 1.0f;
+		m_directionalLight.DiffuseIntensity = 0.01f;
+		m_directionalLight.Direction = Vector3f(1.0f, -1.0, 0.0);
+		m_leftMouseButton.IsPressed = false;
+		m_worldPos[0] = Vector3f(-10.0f, 0.0f, 5.0f);
+		m_worldPos[1] = Vector3f(10.0f, 0.0f, 5.0f);
 
 		m_persProjInfo.FOV = 60.0f;
 		m_persProjInfo.Height = WINDOW_HEIGHT;
 		m_persProjInfo.Width = WINDOW_WIDTH;
 		m_persProjInfo.zNear = 1.0f;
 		m_persProjInfo.zFar = 100.0f;
-
-		m_currentTimeMillis = GetCurrentTimeMillis();
 	}
 
 	virtual ~Main()
 	{
-		SAFE_DELETE(m_pLightingTechnique);
 		SAFE_DELETE(m_pGameCamera);
-		SAFE_DELETE(m_pGround);
-		SAFE_DELETE(m_pTexture);
-		SAFE_DELETE(m_pNormalMap);
+		SAFE_DELETE(m_pMesh);
 	}
 
 	bool Init()
 	{
-		Vector3f Pos(0.0f, 0.4f, -0.5f);
-		Vector3f Target(0.0f, 0.2f, 1.0f);
+		Vector3f Pos(0.0f, 5.0f, -22.0f);
+		Vector3f Target(0.0f, -0.2f, 1.0f);
 		Vector3f Up(0.0, 1.0f, 0.0f);
 
 		m_pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, Pos, Target, Up);
 
-		m_pLightingTechnique = new LightingTechnique();
-
-		if (!m_pLightingTechnique->Init()) {
+		if (!m_lightingEffect.Init()) {
 			printf("Error initializing the lighting technique\n");
 			return false;
 		}
 
-		m_pLightingTechnique->Enable();
-		m_pLightingTechnique->SetDirectionalLight(m_dirLight);
-		m_pLightingTechnique->SetColorTextureUnit(COLOR_TEXTURE_UNIT_INDEX);
-		m_pLightingTechnique->SetNormalMapTextureUnit(NORMAL_TEXTURE_UNIT_INDEX);
+		m_lightingEffect.Enable();
+		m_lightingEffect.SetTextureUnit(0);
+		m_lightingEffect.SetDirectionalLight(m_directionalLight);
 
-		m_pGround = new Mesh();
-		if (!m_pGround->LoadMesh("thirdparty/content/quad.obj")) {
+		if (!m_pickingTexture.Init(WINDOW_WIDTH, WINDOW_HEIGHT)) {
 			return false;
 		}
 
-		m_pTexture = new Texture(GL_TEXTURE_2D, "thirdparty/content/bricks.jpg");
-
-		if (!m_pTexture->Load()) {
+		if (!m_pickingEffect.Init()) {
 			return false;
 		}
 
-		m_pTexture->Bind(COLOR_TEXTURE_UNIT);
-
-		m_pNormalMap = new Texture(GL_TEXTURE_2D, "thirdparty/content/normal_map.jpg");
-
-		if (!m_pNormalMap->Load()) {
+		if (!m_simpleColorEffect.Init()) {
 			return false;
 		}
 
-		Vector3f ParticleSystemPos = Vector3f(0.0f, 0.0f, 1.0f);
+		m_pMesh = new Mesh();
 
-		return m_particleSystem.InitParticleSystem(ParticleSystemPos);
+		return m_pMesh->LoadMesh("thirdparty/content/spider.obj");
 	}
 
 	void Run()
@@ -103,33 +85,72 @@ public:
 
 	virtual void RenderSceneCB()
 	{
-		long long TimeNowMillis = GetCurrentTimeMillis();
-		assert(TimeNowMillis >= m_currentTimeMillis);
-		unsigned int DeltaTimeMillis = (unsigned int)(TimeNowMillis - m_currentTimeMillis);
-		m_currentTimeMillis = TimeNowMillis;
 		m_pGameCamera->OnRender();
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		PickingPhase();
+		RenderPhase();
 
-		m_pLightingTechnique->Enable();
+		glutSwapBuffers();
+	}
 
-		m_pTexture->Bind(COLOR_TEXTURE_UNIT);
-		m_pNormalMap->Bind(NORMAL_TEXTURE_UNIT);
-
+	void PickingPhase()
+	{
 		Pipeline p;
-		p.Scale(20.0f, 20.0f, 1.0f);
-		p.Rotate(90.0f, 0.0, 0.0f);
+		p.Scale(0.1f, 0.1f, 0.1f);
+		p.Rotate(0.0f, 90.0f, 0.0f);
 		p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
 		p.SetPerspectiveProj(m_persProjInfo);
 
-		m_pLightingTechnique->SetWVP(p.GetWVPTrans());
-		m_pLightingTechnique->SetWorldMatrix(p.GetWorldTrans());
+		m_pickingTexture.EnableWriting();
 
-		m_pGround->Render();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		m_particleSystem.Render(DeltaTimeMillis, p.GetVPTrans(), m_pGameCamera->GetPos());
+		m_pickingEffect.Enable();
 
-		glutSwapBuffers();
+		for (unsigned int i = 0; i < ARRAY_SIZE_IN_ELEMENTS(m_worldPos); i++) {
+			p.WorldPos(m_worldPos[i]);
+			m_pickingEffect.SetObjectIndex(i);
+			m_pickingEffect.SetWVP(p.GetWVPTrans());
+			m_pMesh->Render(&m_pickingEffect);
+		}
+
+		m_pickingTexture.DisableWriting();
+	}
+
+	void RenderPhase()
+	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		Pipeline p;
+		p.Scale(0.1f, 0.1f, 0.1f);
+		p.Rotate(0.0f, 90.0f, 0.0f);
+		p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
+		p.SetPerspectiveProj(m_persProjInfo);
+
+		// If the left mouse button is clicked check if it hit a triangle
+		// and color it red
+		if (m_leftMouseButton.IsPressed) {
+			PickingTexture::PixelInfo Pixel = m_pickingTexture.ReadPixel(m_leftMouseButton.x, WINDOW_HEIGHT - m_leftMouseButton.y - 1);
+
+			if (Pixel.PrimID != 0) {
+				m_simpleColorEffect.Enable();
+				p.WorldPos(m_worldPos[Pixel.ObjectID]);
+				m_simpleColorEffect.SetWVP(p.GetWVPTrans());
+				// Must compensate for the decrement in the FS!
+				m_pMesh->Render(Pixel.DrawID, Pixel.PrimID - 1);
+			}
+		}
+
+		// render the objects as usual
+		m_lightingEffect.Enable();
+		m_lightingEffect.SetEyeWorldPos(m_pGameCamera->GetPos());
+
+		for (unsigned int i = 0; i < ARRAY_SIZE_IN_ELEMENTS(m_worldPos); i++) {
+			p.WorldPos(m_worldPos[i]);
+			m_lightingEffect.SetWVP(p.GetWVPTrans());
+			m_lightingEffect.SetWorldMatrix(p.GetWorldTrans());
+			m_pMesh->Render(NULL);
+		}
 	}
 
 	virtual void IdleCB()
@@ -148,6 +169,22 @@ public:
 			case 27: 
 				glutLeaveMainLoop();
 				break;
+
+			case 'a':
+				m_directionalLight.AmbientIntensity += 0.05f;
+				break;
+
+			case 's':
+				m_directionalLight.AmbientIntensity -= 0.05f;
+				break;
+
+			case 'z':
+				m_directionalLight.DiffuseIntensity += 0.05f;
+				break;
+
+			case 'x':
+				m_directionalLight.DiffuseIntensity -= 0.05f;
+				break;
 		}
 	}
 
@@ -156,23 +193,36 @@ public:
 		m_pGameCamera->OnMouse(x, y);
 	}
 
- private:
 
-	 long long m_currentTimeMillis;
-	 LightingTechnique* m_pLightingTechnique;
-	 Camera* m_pGameCamera;
-	 DirectionalLight m_dirLight;
-	 Mesh* m_pGround;
-	 Texture* m_pTexture;
-	 Texture* m_pNormalMap;
-	 PersProjInfo m_persProjInfo;
-	 ParticleSystem m_particleSystem;
+	virtual void MouseCB(int Button, int State, int x, int y)
+	{
+		if (Button == GLUT_LEFT_BUTTON) {
+			m_leftMouseButton.IsPressed = (State == GLUT_DOWN);
+			m_leftMouseButton.x = x;
+			m_leftMouseButton.y = y;
+		}
+	}
+
+private:
+
+	LightingTechnique m_lightingEffect;
+	PickingTechnique m_pickingEffect;
+	SimpleColorTechnique m_simpleColorEffect;
+	Camera* m_pGameCamera;
+	DirectionalLight m_directionalLight;
+	Mesh* m_pMesh;
+	PickingTexture m_pickingTexture;
+	struct {
+		bool IsPressed;
+		int x;
+		int y;
+	} m_leftMouseButton;
+	Vector3f m_worldPos[2];
+	PersProjInfo m_persProjInfo;
 };
 
 int main(int argc, char** argv)
 {
-	SRANDOM;
-
 	GLUTBackendInit(argc, argv);
 
 	if (!GLUTBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, 32, false, "OGLDev Tutorials")) {
