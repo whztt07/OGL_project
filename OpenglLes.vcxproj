@@ -24,11 +24,8 @@
     <ClCompile Include="lessons\lighting_technique.cpp" />
     <ClCompile Include="lessons\main.cpp" />
     <ClCompile Include="lessons\math_3d.cpp" />
-    <ClCompile Include="lessons\picking_technique.cpp" />
-    <ClCompile Include="lessons\picking_texture.cpp" />
     <ClCompile Include="lessons\pipeline.cpp" />
     <ClCompile Include="lessons\mesh.cpp" />
-    <ClCompile Include="lessons\simple_color_technique.cpp" />
     <ClCompile Include="lessons\technique.cpp" />
     <ClCompile Include="lessons\texture.cpp" />
   </ItemGroup>
@@ -40,11 +37,8 @@
     <ClInclude Include="lessons\lighting_technique.h" />
     <ClInclude Include="lessons\math_3d.h" />
     <ClInclude Include="lessons\mesh.h" />
-    <ClInclude Include="lessons\picking_technique.h" />
-    <ClInclude Include="lessons\picking_texture.h" />
     <ClInclude Include="lessons\pipeline.h" />
     <ClInclude Include="lessons\render_callbacks.h" />
-    <ClInclude Include="lessons\simple_color_technique.h" />
     <ClInclude Include="lessons\technique.h" />
     <ClInclude Include="lessons\texture.h" />
     <ClInclude Include="lessons\util.h" />

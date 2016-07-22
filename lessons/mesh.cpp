@@ -1,5 +1,6 @@
 #include <assert.h>
 
+#include "engine_common.h"
 #include "mesh.h"
 
 Mesh::MeshEntry::MeshEntry()
@@ -192,14 +193,14 @@ void Mesh::Render(IRenderCallbacks* pRenderCallbacks)
 		const unsigned int MaterialIndex = m_Entries[i].MaterialIndex;
 
 		if (MaterialIndex < m_Textures.size() && m_Textures[MaterialIndex]) {
-			m_Textures[MaterialIndex]->Bind(GL_TEXTURE0);
+			m_Textures[MaterialIndex]->Bind(COLOR_TEXTURE_UNIT);
 		}
 
 		if (pRenderCallbacks) {
 			pRenderCallbacks->DrawStartCB(i);
 		}
 
-		glDrawElements(GL_TRIANGLES, m_Entries[i].NumIndices, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_PATCHES, m_Entries[i].NumIndices, GL_UNSIGNED_INT, 0);
 	}
 
 	glDisableVertexAttribArray(0);
