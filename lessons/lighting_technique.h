@@ -73,21 +73,19 @@ public:
 
 	virtual bool Init();
 
-	void SetVP(const Matrix4f& VP);
+	void SetWVP(const Matrix4f& WVP);
 	void SetWorldMatrix(const Matrix4f& WVP);
 	void SetColorTextureUnit(unsigned int TextureUnit);
-	void SetDisplacementMapTextureUnit(unsigned int TextureUnit);
 	void SetDirectionalLight(const DirectionalLight& Light);
 	void SetPointLights(unsigned int NumLights, const PointLight* pLights);
 	void SetSpotLights(unsigned int NumLights, const SpotLight* pLights);
 	void SetEyeWorldPos(const Vector3f& EyeWorldPos);
 	void SetMatSpecularIntensity(float Intensity);
 	void SetMatSpecularPower(float Power);
-	void SetTessellationLevel(float TL);
 
 private:
 
-	GLuint m_VPLocation;
+	GLuint m_WVPLocation;
 	GLuint m_WorldMatrixLocation;
 	GLuint m_colorTextureLocation;
 	GLuint m_eyeWorldPosLocation;
@@ -95,7 +93,6 @@ private:
 	GLuint m_matSpecularPowerLocation;
 	GLuint m_numPointLightsLocation;
 	GLuint m_numSpotLightsLocation;
-	GLuint m_TLLocation;
 
 	struct {
 		GLuint Color;

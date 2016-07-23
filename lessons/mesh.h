@@ -13,7 +13,6 @@
 #include "util.h"
 #include "math_3d.h"
 #include "texture.h"
-#include "render_callbacks.h"
 
 struct Vertex
 {
@@ -40,29 +39,41 @@ public:
 
 	bool LoadMesh(const std::string& Filename);
 
-	void Render(IRenderCallbacks* pRenderCallbacks);
-
-	void Render(unsigned int DrawIndex, unsigned int PrimID);
+	void Render();
 
 private:
 	bool InitFromScene(const aiScene* pScene, const std::string& Filename);
-	void InitMesh(unsigned int Index, const aiMesh* paiMesh);
+	void InitMesh(const aiMesh* paiMesh,
+		std::vector<Vector3f>& Positions,
+		std::vector<Vector3f>& Normals,
+		std::vector<Vector2f>& TexCoords,
+		std::vector<unsigned int>& Indices);
+
 	bool InitMaterials(const aiScene* pScene, const std::string& Filename);
 	void Clear();
 
 #define INVALID_MATERIAL 0xFFFFFFFF
 
+#define INDEX_BUFFER 0    
+#define POS_VB       1
+#define NORMAL_VB    2
+#define TEXCOORD_VB  3       
+
+	GLuint m_VAO;
+	GLuint m_Buffers[4];
+
 	struct MeshEntry {
-		MeshEntry();
+		MeshEntry()
+		{
+			NumIndices = 0;
+			BaseVertex = 0;
+			BaseIndex = 0;
+			MaterialIndex = INVALID_MATERIAL;
+		}
 
-		~MeshEntry();
-
-		bool Init(const std::vector<Vertex>& Vertices,
-			const std::vector<unsigned int>& Indices);
-
-		GLuint VB;
-		GLuint IB;
 		unsigned int NumIndices;
+		unsigned int BaseVertex;
+		unsigned int BaseIndex;
 		unsigned int MaterialIndex;
 	};
 
