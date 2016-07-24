@@ -1,10 +1,8 @@
-#ifndef WIN32
-#include <unistd.h>
-#endif
 #include <stdio.h>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
+#include "util.h"
 #include "glut_backend.h"
 
 // Points to the object implementing the ICallbacks interface which was delivered to
@@ -62,7 +60,7 @@ bool GLUTBackendCreateWindow(unsigned int Width, unsigned int Height, unsigned i
 {
 	if (isFullScreen) {
 		char ModeString[64] = { 0 };
-		snprintf(ModeString, sizeof(ModeString), "%dx%d@%d", Width, Height, bpp);
+		SNPRINTF(ModeString, sizeof(ModeString), "%dx%d@%d", Width, Height, bpp);
 		glutGameModeString(ModeString);
 		glutEnterGameMode();
 	}
@@ -89,7 +87,7 @@ void GLUTBackendRun(ICallbacks* pCallbacks)
 	}
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glFrontFace(GL_CW);
+	glFrontFace(GL_CCW);
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);

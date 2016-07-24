@@ -24,17 +24,23 @@ using namespace std;
 #define SNPRINTF _snprintf_s
 #define RANDOM rand
 #define SRANDOM srand((unsigned)time(NULL))
+#if (_MSC_VER == 1900)
+#elif (_MSC_VER == 1800)
+#else
+float fmax(float a, float b);
+#endif
 #else
 #define SNPRINTF snprintf
 #define RANDOM random
 #define SRANDOM srandom(getpid())
 #endif
 
+#define INVALID_UNIFORM_LOCATION 0xffffffff
 #define INVALID_OGL_VALUE 0xffffffff
 
 #define SAFE_DELETE(p) if (p) { delete p; p = NULL; }
 
-#define GLExitIfError()                                                         \
+#define GLExitIfError                                                          \
 {                                                                               \
     GLenum Error = glGetError();                                                \
                                                                                 \

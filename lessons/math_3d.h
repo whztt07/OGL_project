@@ -164,7 +164,6 @@ public:
 	{
 	}
 
-
 	Matrix4f Transpose() const
 	{
 		Matrix4f n;
@@ -177,7 +176,6 @@ public:
 
 		return n;
 	}
-
 
 	inline void InitIdentity()
 	{

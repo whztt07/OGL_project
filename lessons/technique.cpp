@@ -1,139 +1,50 @@
 #include <stdio.h>
-#include <string.h>
+#include <string>
 #include <assert.h>
+#include <GL/glfx.h>
 
 #include "technique.h"
 #include "util.h"
 
-static const char* pVSName = "VS";
-static const char* pTessCSName = "TessCS";
-static const char* pTessESName = "TessES";
-static const char* pGSName = "GS";
-static const char* pFSName = "FS";
+using namespace std;
 
-const char* ShaderType2ShaderName(GLuint Type)
+Technique::Technique(const char* pEffectFile)
 {
-	switch (Type) {
-	case GL_VERTEX_SHADER:
-		return pVSName;
-	case GL_TESS_CONTROL_SHADER:
-		return pTessCSName;
-	case GL_TESS_EVALUATION_SHADER:
-		return pTessESName;
-	case GL_GEOMETRY_SHADER:
-		return pGSName;
-	case GL_FRAGMENT_SHADER:
-		return pFSName;
-	default:
-		assert(0);
-	}
-
-	return NULL;
-}
-
-Technique::Technique()
-{
+	m_pEffectFile = pEffectFile;
 	m_shaderProg = 0;
+	m_effect = glfxGenEffect();
 }
 
 Technique::~Technique()
 {
-	// Delete the intermediate shader objects that have been added to the program
-	// The list will only contain something if shaders were compiled but the object itself
-	// was destroyed prior to linking.
-	for (ShaderObjList::iterator it = m_shaderObjList.begin(); it != m_shaderObjList.end(); it++)
-	{
-		glDeleteShader(*it);
-	}
-
 	if (m_shaderProg != 0)
 	{
 		glDeleteProgram(m_shaderProg);
 		m_shaderProg = 0;
 	}
+
+	glfxDeleteEffect(m_effect);
 }
 
-bool Technique::Init()
+bool Technique::CompileProgram(const char* pProgram)
 {
-	m_shaderProg = glCreateProgram();
+	if (!glfxParseEffectFromFile(m_effect, m_pEffectFile)) {
+		string log = glfxGetEffectLog(m_effect);
+		printf("Error creating effect from file '%s':\n", m_pEffectFile);
+		printf("%s\n", log.c_str());
+		return false;
+	}
 
-	if (m_shaderProg == 0) {
-		fprintf(stderr, "Error creating shader program\n");
+	m_shaderProg = glfxCompileProgram(m_effect, pProgram);
+
+	if (m_shaderProg < 0) {
+		string log = glfxGetEffectLog(m_effect);
+		printf("Error compiling program '%s' in effect file '%s':\n", pProgram, m_pEffectFile);
+		printf("%s\n", log.c_str());
 		return false;
 	}
 
 	return true;
-}
-
-// Use this method to add shaders to the program. When finished - call finalize()
-bool Technique::AddShader(GLenum ShaderType, const char* pShaderText)
-{
-	GLuint ShaderObj = glCreateShader(ShaderType);
-
-	if (ShaderObj == 0) {
-		fprintf(stderr, "Error creating shader type %d\n", ShaderType);
-		return false;
-	}
-
-	// Save the shader object - will be deleted in the destructor
-	m_shaderObjList.push_back(ShaderObj);
-
-	const GLchar* p[1];
-	p[0] = pShaderText;
-	GLint Lengths[1];
-	Lengths[0] = strlen(pShaderText);
-	glShaderSource(ShaderObj, 1, p, Lengths);
-
-	glCompileShader(ShaderObj);
-
-	GLint success;
-	glGetShaderiv(ShaderObj, GL_COMPILE_STATUS, &success);
-
-	if (!success) {
-		GLchar InfoLog[1024];
-		glGetShaderInfoLog(ShaderObj, 1024, NULL, InfoLog);
-		fprintf(stderr, "Error compiling %s: '%s'\n", ShaderType2ShaderName(ShaderType), InfoLog);
-		return false;
-	}
-
-	glAttachShader(m_shaderProg, ShaderObj);
-
-	return GLCheckError();
-}
-
-// After all the shaders have been added to the program call this function
-// to link and validate the program.
-bool Technique::Finalize()
-{
-	GLint Success = 0;
-	GLchar ErrorLog[1024] = { 0 };
-
-	glLinkProgram(m_shaderProg);
-
-	glGetProgramiv(m_shaderProg, GL_LINK_STATUS, &Success);
-	if (Success == 0) {
-		glGetProgramInfoLog(m_shaderProg, sizeof(ErrorLog), NULL, ErrorLog);
-		fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
-		return false;
-	}
-
-	glValidateProgram(m_shaderProg);
-	glGetProgramiv(m_shaderProg, GL_VALIDATE_STATUS, &Success);
-	if (!Success) {
-		glGetProgramInfoLog(m_shaderProg, sizeof(ErrorLog), NULL, ErrorLog);
-		fprintf(stderr, "Invalid shader program: '%s'\n", ErrorLog);
-		return false;
-	}
-
-	// Delete the intermediate shader objects that have been added to the program
-	for (ShaderObjList::iterator it = m_shaderObjList.begin(); it != m_shaderObjList.end(); it++)
-	{
-		glDeleteShader(*it);
-	}
-
-	m_shaderObjList.clear();
-
-	return GLCheckError();
 }
 
 void Technique::Enable()
