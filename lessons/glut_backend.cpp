@@ -87,7 +87,7 @@ void GLUTBackendRun(ICallbacks* pCallbacks)
 	}
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glFrontFace(GL_CCW);
+	glFrontFace(GL_CW);
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);

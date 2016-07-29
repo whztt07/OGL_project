@@ -20,10 +20,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lessons\camera.cpp" />
+    <ClCompile Include="lessons\ds_dir_light_pass_tech.cpp" />
+    <ClCompile Include="lessons\ds_geom_pass_tech.cpp" />
+    <ClCompile Include="lessons\ds_light_pass_tech.cpp" />
+    <ClCompile Include="lessons\ds_point_light_pass_tech.cpp" />
+    <ClCompile Include="lessons\gbuffer.cpp" />
     <ClCompile Include="lessons\glut_backend.cpp" />
-    <ClCompile Include="lessons\lighting_technique.cpp" />
     <ClCompile Include="lessons\main.cpp" />
     <ClCompile Include="lessons\math_3d.cpp" />
+    <ClCompile Include="lessons\null_technique.cpp" />
     <ClCompile Include="lessons\pipeline.cpp" />
     <ClCompile Include="lessons\mesh.cpp" />
     <ClCompile Include="lessons\technique.cpp" />
@@ -32,18 +37,26 @@
   <ItemGroup>
     <ClInclude Include="lessons\callbacks.h" />
     <ClInclude Include="lessons\camera.h" />
+    <ClInclude Include="lessons\ds_dir_light_pass_tech.h" />
+    <ClInclude Include="lessons\ds_geom_pass_tech.h" />
+    <ClInclude Include="lessons\ds_light_pass_tech.h" />
+    <ClInclude Include="lessons\ds_point_light_pass_tech.h" />
     <ClInclude Include="lessons\engine_common.h" />
+    <ClInclude Include="lessons\gbuffer.h" />
     <ClInclude Include="lessons\glut_backend.h" />
-    <ClInclude Include="lessons\lighting_technique.h" />
+    <ClInclude Include="lessons\lights_common.h" />
     <ClInclude Include="lessons\math_3d.h" />
     <ClInclude Include="lessons\mesh.h" />
+    <ClInclude Include="lessons\null_technique.h" />
     <ClInclude Include="lessons\pipeline.h" />
     <ClInclude Include="lessons\technique.h" />
     <ClInclude Include="lessons\texture.h" />
     <ClInclude Include="lessons\util.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="lessons\shaders\lighting.glsl" />
+    <None Include="lessons\shaders\geometry_pass.glsl" />
+    <None Include="lessons\shaders\light_pass.glsl" />
+    <None Include="lessons\shaders\null_technique.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9CB4C79B-C81C-4154-88AE-0B1B972FD644}</ProjectGuid>
