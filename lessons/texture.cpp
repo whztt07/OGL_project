@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "util.h"
+#include "ogldev_util.h"
 #include "texture.h"
 
 Texture::Texture(GLenum TextureTarget, const std::string& FileName)

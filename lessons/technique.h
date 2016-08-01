@@ -6,7 +6,7 @@
 #include <list>
 #include <GL/glew.h>
 
-#include "util.h"
+#include "ogldev_util.h"
 
 class Technique
 {

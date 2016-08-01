@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef UTIL_H
-#define	UTIL_H
+#ifndef OGLDEV_UTIL_H
+#define	OGLDEV_UTIL_H
 
 #ifndef WIN32
 #include <unistd.h>
@@ -11,8 +11,14 @@
 #include <string>
 #include <string.h>
 #include <assert.h>
+#include "ogldev_types.h"
 
 using namespace std;
+
+bool ReadFile(const char* fileName, string& outFile);
+
+void OgldevError(const char* pFileName, uint line, const char* pError);
+void OgldevFileError(const char* pFileName, uint line, const char* pFileError);
 
 #define OGLDEV_ERROR(Error) OgldevError(__FILE__, __LINE__, Error);
 #define OGLDEV_FILE_ERROR(FileError) OgldevFileError(__FILE__, __LINE__, FileError);
@@ -52,4 +58,6 @@ float fmax(float a, float b);
 
 #define GLCheckError() (glGetError() == GL_NO_ERROR)
 
-#endif	/* UTIL_H */
+long long GetCurrentTimeMillis();
+
+#endif	/* OGLDEV_UTIL_H */
