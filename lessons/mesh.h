@@ -5,7 +5,7 @@
 
 #include <map>
 #include <vector>
-#include <assert.h>
+
 #include <GL/glew.h>
 #include <assimp/Importer.hpp>  // C++ importer interface
 #include <assimp/scene.h>       // Output data structure
@@ -17,6 +17,131 @@
 
 using namespace std;
 
+// Stores an edge by its vertices and force an order between them
+struct Edge
+{
+	Edge(uint _a, uint _b)
+	{
+		assert(_a != _b);
+
+		if (_a < _b)
+		{
+			a = _a;
+			b = _b;
+		}
+		else
+		{
+			a = _b;
+			b = _a;
+		}
+	}
+
+	void Print()
+	{
+		printf("Edge %d %d\n", a, b);
+	}
+
+	uint a;
+	uint b;
+};
+
+struct Neighbors
+{
+	uint n1;
+	uint n2;
+
+	Neighbors()
+	{
+		n1 = n2 = (uint)-1;
+	}
+
+	void AddNeigbor(uint n)
+	{
+		if (n1 == -1) {
+			n1 = n;
+		}
+		else if (n2 == -1) {
+			n2 = n;
+		}
+		else {
+			assert(0);
+		}
+	}
+
+	uint GetOther(uint me) const
+	{
+		if (n1 == me) {
+			return n2;
+		}
+		else if (n2 == me) {
+			return n1;
+		}
+		else {
+			assert(0);
+		}
+
+		return 0;
+	}
+};
+
+struct CompareEdges
+{
+	bool operator()(const Edge& Edge1, const Edge& Edge2)
+	{
+		if (Edge1.a < Edge2.a) {
+			return true;
+		}
+		else if (Edge1.a == Edge2.a) {
+			return (Edge1.b < Edge2.b);
+		}
+		else {
+			return false;
+		}
+	}
+};
+
+struct CompareVectors
+{
+	bool operator()(const aiVector3D& a, const aiVector3D& b)
+	{
+		if (a.x < b.x) {
+			return true;
+		}
+		else if (a.x == b.x) {
+			if (a.y < b.y) {
+				return true;
+			}
+			else if (a.y == b.y) {
+				if (a.z < b.z) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+};
+
+struct Face
+{
+	uint Indices[3];
+
+	uint GetOppositeIndex(const Edge& e) const
+	{
+		for (uint i = 0; i < ARRAY_SIZE_IN_ELEMENTS(Indices); i++) {
+			uint Index = Indices[i];
+
+			if (Index != e.a && Index != e.b) {
+				return Index;
+			}
+		}
+
+		assert(0);
+
+		return 0;
+	}
+};
+
 class Mesh
 {
 public:
@@ -24,7 +149,7 @@ public:
 
 	~Mesh();
 
-	bool LoadMesh(const string& Filename);
+	bool LoadMesh(const string& Filename, bool WithAdjacencies);
 
 	void Render();
 
@@ -78,6 +203,7 @@ private:
 	const aiNodeAnim* FindNodeAnim(const aiAnimation* pAnimation, const string NodeName);
 	void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform);
 	bool InitFromScene(const aiScene* pScene, const string& Filename);
+	void FindAdjacencies(const aiMesh* paiMesh, vector<unsigned int>& Indices);
 	void InitMesh(uint MeshIndex,
 		const aiMesh* paiMesh,
 		vector<Vector3f>& Positions,
@@ -125,6 +251,11 @@ private:
 	uint m_NumBones;
 	vector<BoneInfo> m_BoneInfo;
 	Matrix4f m_GlobalInverseTransform;
+
+	std::map<Edge, Neighbors, CompareEdges> m_indexMap;
+	std::map<aiVector3D, uint, CompareVectors> m_posMap;
+	std::vector<Face> m_uniqueFaces;
+	bool m_withAdjacencies;
 
 	const aiScene* m_pScene;
 	Assimp::Importer m_Importer;

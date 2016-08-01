@@ -1,3 +1,10 @@
+struct VSInput 
+{
+    vec3 Position;                                             
+    vec2 TexCoord;                                             
+    vec3 Normal;                                               
+};
+
 interface VSOutput
 {                                                                                    
     vec2 TexCoord;                                                                 
@@ -15,17 +22,16 @@ struct VSOutput1
 uniform mat4 gWVP;                                                  
 uniform mat4 gWorld;                                                
                                                                                     
-shader VSmain(in vec3 Position, in vec2 TexCoord, in vec3 Normal, out VSOutput VSout)                                                                         
+shader VSmain(in VSInput VSin:0, out VSOutput VSout)                                                                         
 {                                                                                   
-    gl_Position      = gWVP * vec4(Position, 1.0);                                        
-    VSout.TexCoord   = TexCoord;                                                         
-    VSout.Normal     = (gWorld * vec4(Normal, 0.0)).xyz;                                  
-    VSout.WorldPos   = (gWorld * vec4(Position, 1.0)).xyz;                                
+    gl_Position      = gWVP * vec4(VSin.Position, 1.0);                                        
+    VSout.TexCoord   = VSin.TexCoord;                                                         
+    VSout.Normal     = (gWorld * vec4(VSin.Normal, 0.0)).xyz;                                  
+    VSout.WorldPos   = (gWorld * vec4(VSin.Position, 1.0)).xyz;                                
 }
                                                                                  
 const int MAX_POINT_LIGHTS = 2;                                                     
-const int MAX_SPOT_LIGHTS = 2;                                                      
-                                                                                                                                                                      
+const int MAX_SPOT_LIGHTS = 2;                                                                                                                                       
                                                                                    
 struct BaseLight                                                                    
 {                                                                                   
@@ -59,7 +65,7 @@ struct SpotLight
     PointLight Base;                                                                 
     vec3 Direction;                                                                         
     float Cutoff;                                                                           
-};                                                                                          
+};                                                                                        
                                                                                             
 uniform int gNumPointLights;                                                                
 uniform int gNumSpotLights;                                                                 
@@ -69,8 +75,7 @@ uniform SpotLight gSpotLights[MAX_SPOT_LIGHTS];
 uniform sampler2D gColorMap;                                                                
 uniform vec3 gEyeWorldPos;                                                                  
 uniform float gMatSpecularIntensity;                                                        
-uniform float gSpecularPower;                                                               
-uniform vec4 gColor;                                                                     
+uniform float gSpecularPower;                                                             
                                                                                             
 vec4 CalcLightInternal(BaseLight Light, vec3 LightDirection, VSOutput1 In)            
 {                                                                                           
@@ -127,7 +132,7 @@ vec4 CalcSpotLight(SpotLight l, VSOutput1 In)
     else {                                                                                  
         return vec4(0,0,0,0);                                                               
     }                                                                                       
-}                                                                                           
+}                                                                                         
                                                                                             
 shader FSmain(in VSOutput FSin, out vec4 FragColor)
 {                                    
@@ -146,11 +151,11 @@ shader FSmain(in VSOutput FSin, out vec4 FragColor)
         TotalLight += CalcSpotLight(gSpotLights[i], In);                                
     }                                                                                       
                                                                                             
-    FragColor = texture(gColorMap, In.TexCoord.xy) * TotalLight + gColor;     
+    FragColor = texture(gColorMap, In.TexCoord.xy) * TotalLight;     
 }
 
 program Lighting
 {
-    vs(330)=VSmain();
-    fs(330)=FSmain();
+    vs(410)=VSmain();
+    fs(410)=FSmain();
 };

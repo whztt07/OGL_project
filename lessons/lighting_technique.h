@@ -94,7 +94,6 @@ private:
 	GLuint m_matSpecularPowerLocation;
 	GLuint m_numPointLightsLocation;
 	GLuint m_numSpotLightsLocation;
-	GLuint m_colorLocation;
 
 	struct {
 		GLuint Color;
