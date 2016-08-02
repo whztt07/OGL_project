@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef CUBEMAP_H
-#define	CUBEMAP_H
+#ifndef OGLDEV_CUBEMAP_TEXTURE_H
+#define	OGLDEV_CUBEMAP_TEXTURE_H
 
 #include <string>
 #include <GL/glew.h>
@@ -33,4 +33,4 @@ private:
 	GLuint m_textureObj;
 };
 
-#endif	/* CUBEMAP_H */
+#endif	/* OGLDEV_CUBEMAP_TEXTURE_H */

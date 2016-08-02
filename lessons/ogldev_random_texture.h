@@ -1,23 +1,25 @@
 #pragma once
 
-#ifndef RANDOM_TEXTURE_H
-#define	RANDOM_TEXTURE_H
+#ifndef OGLDEV_RANDOM_TEXTURE_H
+#define OGLDEV_RANDOM_TEXTURE_H
 
 #include <GL/glew.h>
+
+#include "ogldev_types.h"
 
 class RandomTexture
 {
 public:
-	RandomTexture();
-
-	~RandomTexture();
-
-	bool InitRandomTexture(unsigned int Size);
-
-	void Bind(GLenum TextureUnit);
-
+    RandomTexture();
+    
+    bool Init(uint size);
+    
+    ~RandomTexture();
+    
+    void Bind(GLenum TextureUnit);
+    
 private:
-	GLuint m_textureObj;
+    uint m_texture;
 };
 
-#endif	/* RANDOM_TEXTURE_H */
+#endif

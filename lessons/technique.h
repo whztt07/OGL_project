@@ -6,30 +6,34 @@
 #include <list>
 #include <GL/glew.h>
 
-#include "ogldev_util.h"
-
 class Technique
 {
 public:
 
-	Technique(const char* pEffectFile);
+    Technique();
 
-	~Technique();
+    virtual ~Technique();
 
-	void Enable();
+    virtual bool Init();
+
+    void Enable();
 
 protected:
 
-	bool CompileProgram(const char* pProgram);
+    bool AddShader(GLenum ShaderType, const char* pFilename);
 
-	GLint GetUniformLocation(const char* pUniformName);
+    bool Finalize();
 
-	GLint GetProgramParam(GLint param);
-
+    GLint GetUniformLocation(const char* pUniformName);
+    
+    GLint GetProgramParam(GLint param);
+    
+    GLuint m_shaderProg;    
+    
 private:
-	GLint m_effect;
-	GLint m_shaderProg;
-	const char* m_pEffectFile;
+
+    typedef std::list<GLuint> ShaderObjList;
+    ShaderObjList m_shaderObjList;
 };
 
 #endif	/* TECHNIQUE_H */

@@ -1,8 +1,7 @@
-#include <GL/freeglut.h>
+#include "ogldev_camera.h"
 
-#include "camera.h"
-
-const static float STEP_SCALE = 0.1f;
+const static float STEP_SCALE = 1.0f;
+const static float EDGE_STEP = 0.5f;
 const static int MARGIN = 10;
 
 Camera::Camera(int WindowWidth, int WindowHeight)
@@ -69,30 +68,30 @@ void Camera::Init()
 	m_mousePos.x = m_windowWidth / 2;
 	m_mousePos.y = m_windowHeight / 2;
 
-	glutWarpPointer(m_mousePos.x, m_mousePos.y);
+	// glutWarpPointer(m_mousePos.x, m_mousePos.y);
 }
 
-bool Camera::OnKeyboard(int Key)
+bool Camera::OnKeyboard(OGLDEV_KEY Key)
 {
 	bool Ret = false;
 
 	switch (Key) {
 
-	case GLUT_KEY_UP:
+	case OGLDEV_KEY_UP:
 	{
 		m_pos += (m_target * STEP_SCALE);
 		Ret = true;
 	}
 	break;
 
-	case GLUT_KEY_DOWN:
+	case OGLDEV_KEY_DOWN:
 	{
 		m_pos -= (m_target * STEP_SCALE);
 		Ret = true;
 	}
 	break;
 
-	case GLUT_KEY_LEFT:
+	case OGLDEV_KEY_LEFT:
 	{
 		Vector3f Left = m_target.Cross(m_up);
 		Left.Normalize();
@@ -102,7 +101,7 @@ bool Camera::OnKeyboard(int Key)
 	}
 	break;
 
-	case GLUT_KEY_RIGHT:
+	case OGLDEV_KEY_RIGHT:
 	{
 		Vector3f Right = m_up.Cross(m_target);
 		Right.Normalize();
@@ -112,12 +111,15 @@ bool Camera::OnKeyboard(int Key)
 	}
 	break;
 
-	case GLUT_KEY_PAGE_UP:
+	case OGLDEV_KEY_PAGE_UP:
 		m_pos.y += STEP_SCALE;
 		break;
 
-	case GLUT_KEY_PAGE_DOWN:
+	case OGLDEV_KEY_PAGE_DOWN:
 		m_pos.y -= STEP_SCALE;
+		break;
+
+	default:
 		break;
 	}
 
@@ -171,23 +173,23 @@ void Camera::OnRender()
 	bool ShouldUpdate = false;
 
 	if (m_OnLeftEdge) {
-		m_AngleH -= 0.1f;
+		m_AngleH -= EDGE_STEP;
 		ShouldUpdate = true;
 	}
 	else if (m_OnRightEdge) {
-		m_AngleH += 0.1f;
+		m_AngleH += EDGE_STEP;
 		ShouldUpdate = true;
 	}
 
 	if (m_OnUpperEdge) {
 		if (m_AngleV > -90.0f) {
-			m_AngleV -= 0.1f;
+			m_AngleV -= EDGE_STEP;
 			ShouldUpdate = true;
 		}
 	}
 	else if (m_OnLowerEdge) {
 		if (m_AngleV < 90.0f) {
-			m_AngleV += 0.1f;
+			m_AngleV += EDGE_STEP;
 			ShouldUpdate = true;
 		}
 	}

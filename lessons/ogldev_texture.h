@@ -11,18 +11,18 @@
 class Texture
 {
 public:
-	Texture(GLenum TextureTarget, const std::string& FileName);
+    Texture(GLenum TextureTarget, const std::string& FileName);
 
-	bool Load();
+    bool Load();
 
-	void Bind(GLenum TextureUnit);
+    void Bind(GLenum TextureUnit);
 
 private:
-	std::string m_fileName;
-	GLenum m_textureTarget;
-	GLuint m_textureObj;
-	Magick::Image* m_pImage;
-	Magick::Blob m_blob;
+    std::string m_fileName;
+    GLenum m_textureTarget;
+    GLuint m_textureObj;
+    Magick::Image m_image;
+    Magick::Blob m_blob;
 };
 
 #endif	/* TEXTURE_H */

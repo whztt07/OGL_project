@@ -3,62 +3,68 @@
 #ifndef LIGHTS_COMMON_H
 #define	LIGHTS_COMMON_H
 
-#include "math_3d.h"
+#include "ogldev_math_3d.h"
 
-struct BaseLight
+class BaseLight
 {
-	Vector3f Color;
-	float AmbientIntensity;
-	float DiffuseIntensity;
+public:
+    std::string Name;
+    Vector3f Color;
+    float AmbientIntensity;
+    float DiffuseIntensity;
 
-	BaseLight()
-	{
-		Color = Vector3f(0.0f, 0.0f, 0.0f);
-		AmbientIntensity = 0.0f;
-		DiffuseIntensity = 0.0f;
-	}
+    BaseLight()
+    {
+        Color = Vector3f(0.0f, 0.0f, 0.0f);
+        AmbientIntensity = 0.0f;
+        DiffuseIntensity = 0.0f;
+    }
 };
 
-struct DirectionalLight : public BaseLight
-{
-	Vector3f Direction;
+class DirectionalLight : public BaseLight
+{      
+public:
+    Vector3f Direction;
 
-	DirectionalLight()
-	{
-		Direction = Vector3f(0.0f, 0.0f, 0.0f);
-	}
+    DirectionalLight()
+    {
+        Direction = Vector3f(0.0f, 0.0f, 0.0f);
+    }
 };
 
-struct PointLight : public BaseLight
+struct LightAttenuation
 {
-	Vector3f Position;
-
-	struct
-	{
-		float Constant;
-		float Linear;
-		float Exp;
-	} Attenuation;
-
-	PointLight()
-	{
-		Position = Vector3f(0.0f, 0.0f, 0.0f);
-		Attenuation.Constant = 0.0f;
-		Attenuation.Linear = 0.0f;
-		Attenuation.Exp = 0.0f;
-	}
+    float Constant;
+    float Linear;
+    float Exp;
 };
 
-struct SpotLight : public PointLight
+class PointLight : public BaseLight
 {
-	Vector3f Direction;
-	float Cutoff;
+public:
+    Vector3f Position;
+    LightAttenuation Attenuation;
 
-	SpotLight()
-	{
-		Direction = Vector3f(0.0f, 0.0f, 0.0f);
-		Cutoff = 0.0f;
-	}
+    PointLight()
+    {
+        Position = Vector3f(0.0f, 0.0f, 0.0f);
+        Attenuation.Constant = 0.0f;
+        Attenuation.Linear = 0.0f;
+        Attenuation.Exp = 0.0f;
+    }
+};
+
+class SpotLight : public PointLight
+{
+public:
+    Vector3f Direction;
+    float Cutoff;
+
+    SpotLight()
+    {
+        Direction = Vector3f(0.0f, 0.0f, 0.0f);
+        Cutoff = 0.0f;
+    }
 };
 
 #define COLOR_WHITE Vector3f(1.0f, 1.0f, 1.0f)
