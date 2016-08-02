@@ -6,33 +6,37 @@
 #include <sys/time.h>
 #include <unistd.h>
 #endif
+#include <sys/types.h>
 
-#include "engine_common.h"
+#include "ogldev_engine_common.h"
+#include "ogldev_app.h"
 #include "ogldev_util.h"
-#include "pipeline.h"
-#include "camera.h"
-#include "texture.h"
-#include "shadow_volume_technique.h"
-#include "lighting_technique.h"
-#include "glut_backend.h"
-#include "mesh.h"
-#include "null_technique.h"
+#include "ogldev_pipeline.h"
+#include "ogldev_camera.h"
+#include "skinning_technique.h"
+#include "motion_blur_technique.h"
+#include "ogldev_glut_backend.h"
+#include "ogldev_skinned_mesh.h"
+#include "intermediate_buffer.h"
 
 using namespace std;
 
 #define WINDOW_WIDTH  1280  
 #define WINDOW_HEIGHT 1024
 
-class Main : public ICallbacks
+class Main : public ICallbacks, public OgldevApp
 {
 public:
 
 	Main()
 	{
 		m_pGameCamera = NULL;
-		m_scale = 0.0f;
-		m_pointLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
-		m_pointLight.Position = Vector3f(0.0f, 15.0f, 0.0f);
+		m_pSkinningTech = NULL;
+		m_pMotionBlurTech = NULL;
+		m_directionalLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
+		m_directionalLight.AmbientIntensity = 0.66f;
+		m_directionalLight.DiffuseIntensity = 1.0f;
+		m_directionalLight.Direction = Vector3f(1.0f, 0.0, 0.0);
 
 		m_persProjInfo.FOV = 60.0f;
 		m_persProjInfo.Height = WINDOW_HEIGHT;
@@ -40,58 +44,63 @@ public:
 		m_persProjInfo.zNear = 1.0f;
 		m_persProjInfo.zFar = 100.0f;
 
-		m_boxPos = Vector3f(0.0f, 2.0f, 0.0);
+		m_position = Vector3f(0.0f, 0.0f, 6.0f);
 	}
 
 	virtual ~Main()
 	{
+		SAFE_DELETE(m_pSkinningTech);
+		SAFE_DELETE(m_pMotionBlurTech);
 		SAFE_DELETE(m_pGameCamera);
 	}
 
 	bool Init()
 	{
-		Vector3f Pos(0.0f, 2.0f, -7.0f);
+		Vector3f Pos(0.0f, 3.0f, -1.0f);
 		Vector3f Target(0.0f, 0.0f, 1.0f);
 		Vector3f Up(0.0, 1.0f, 0.0f);
 
 		m_pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, Pos, Target, Up);
 
-		if (!m_nullTech.Init()) {
-			printf("Error initializing the null technique\n");
+		if (!m_intermediateBuffer.Init(WINDOW_WIDTH, WINDOW_HEIGHT)) {
+			printf("Error initializing the intermediate buffer\n");
 			return false;
 		}
 
-		if (!m_ShadowVolTech.Init()) {
-			printf("Error initializing the shadow volume technique\n");
+		m_pSkinningTech = new SkinningTechnique();
+
+		if (!m_pSkinningTech->Init()) {
+			printf("Error initializing the skinning technique\n");
 			return false;
 		}
 
-		if (!m_LightingTech.Init()) {
-			printf("Error initializing the lighting technique\n");
+		m_pSkinningTech->Enable();
+
+		m_pSkinningTech->SetColorTextureUnit(COLOR_TEXTURE_UNIT_INDEX);
+		m_pSkinningTech->SetDirectionalLight(m_directionalLight);
+		m_pSkinningTech->SetMatSpecularIntensity(0.0f);
+		m_pSkinningTech->SetMatSpecularPower(0);
+
+		m_pMotionBlurTech = new MotionBlurTechnique();
+
+		if (!m_pMotionBlurTech->Init()) {
+			printf("Error initializing the motion blur technique\n");
 			return false;
 		}
 
-		m_LightingTech.Enable();
+		m_pMotionBlurTech->Enable();
+		m_pMotionBlurTech->SetColorTextureUnit(COLOR_TEXTURE_UNIT_INDEX);
+		m_pMotionBlurTech->SetMotionTextureUnit(MOTION_TEXTURE_UNIT_INDEX);
 
-		m_LightingTech.SetColorTextureUnit(COLOR_TEXTURE_UNIT_INDEX);
-		m_LightingTech.SetPointLights(1, &m_pointLight);
-		m_LightingTech.SetMatSpecularIntensity(0.0f);
-		m_LightingTech.SetMatSpecularPower(0);
-
-		if (!m_box.LoadMesh("thirdparty/content/box.obj", true)) {
+		if (!m_mesh.LoadMesh("thirdparty/content/boblampclean.md5mesh")) {
 			printf("Mesh load failed\n");
 			return false;
 		}
-   	
-		m_startTime = GetCurrentTimeMillis();
 
-		if (!m_quad.LoadMesh("thirdparty/content/quad.obj", false)) {
-			return false;
-		}
+		m_mesh.BoneTransform(0.0f, m_prevTransforms);
 
-		m_pGroundTex = new Texture(GL_TEXTURE_2D, "thirdparty/content/test.png");
-
-		if (!m_pGroundTex->Load()) {
+		if (!m_quad.LoadMesh("thirdparty/content/quad_r.obj")) {
+			printf("Quad mesh load failed\n");
 			return false;
 		}
 
@@ -105,43 +114,75 @@ public:
 
 	virtual void RenderSceneCB()
 	{
-		m_scale += 0.1f;
+		CalcFPS();
 
 		m_pGameCamera->OnRender();
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		RenderPass();
 
-		RenderSceneIntoDepth();
+		MotionBlurPass();
 
-		glEnable(GL_STENCIL_TEST);
-
-		RenderShadowVolIntoStencil();
-
-		RenderShadowedScene();
-
-		glDisable(GL_STENCIL_TEST);
-
-		RenderAmbientLight();
+		RenderFPS();
 
 		glutSwapBuffers();
 	}
 
-	virtual void IdleCB()
+	void RenderPass()
 	{
-		RenderSceneCB();
+		m_intermediateBuffer.BindForWriting();
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		m_pSkinningTech->Enable();
+
+		vector<Matrix4f> Transforms;
+
+		float RunningTime = GetRunningTime();
+
+		m_mesh.BoneTransform(RunningTime, Transforms);
+
+		for (uint i = 0; i < Transforms.size(); i++) {
+			m_pSkinningTech->SetBoneTransform(i, Transforms[i]);
+			m_pSkinningTech->SetPrevBoneTransform(i, m_prevTransforms[i]);
+		}
+
+		m_pSkinningTech->SetEyeWorldPos(m_pGameCamera->GetPos());
+
+		m_pipeline.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
+		m_pipeline.SetPerspectiveProj(m_persProjInfo);
+		m_pipeline.Scale(0.1f, 0.1f, 0.1f);
+
+		Vector3f Pos(m_position);
+		m_pipeline.WorldPos(Pos);
+		m_pipeline.Rotate(270.0f, 180.0f, 0.0f);
+		m_pSkinningTech->SetWVP(m_pipeline.GetWVPTrans());
+		m_pSkinningTech->SetWorldMatrix(m_pipeline.GetWorldTrans());
+
+		m_mesh.Render();
+
+		m_prevTransforms = Transforms;
 	}
 
-	virtual void SpecialKeyboardCB(int Key, int x, int y)
+	void MotionBlurPass()
 	{
-		m_pGameCamera->OnKeyboard(Key);
+		m_intermediateBuffer.BindForReading();
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		m_pMotionBlurTech->Enable();
+
+		m_quad.Render();
 	}
 
-	virtual void KeyboardCB(unsigned char Key, int x, int y)
+	virtual void KeyboardCB(OGLDEV_KEY OgldevKey)
 	{
-		switch (Key) {
-		case 27:
-			glutLeaveMainLoop();
+		switch (OgldevKey) {
+		//case OGLDEV_KEY_ESCAPE:
+		case OGLDEV_KEY_q:
+			GLUTBackendLeaveMainLoop();
 			break;
+		default:
+			m_pGameCamera->OnKeyboard(OgldevKey);
 		}
 	}
 
@@ -150,161 +191,27 @@ public:
 		m_pGameCamera->OnMouse(x, y);
 	}
 
-	virtual void MouseCB(int Button, int State, int x, int y)
-	{
-	}
-
 private:
 
-	void RenderSceneIntoDepth()
-	{
-		glDrawBuffer(GL_NONE);
-		glDepthMask(GL_TRUE);
-
-		m_nullTech.Enable();
-
-		Pipeline p;
-
-		p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
-		p.SetPerspectiveProj(m_persProjInfo);
-
-		p.WorldPos(m_boxPos);
-		p.Rotate(0, m_scale, 0);
-		m_nullTech.SetWVP(p.GetWVPTrans());
-		m_box.Render();
-
-		p.Scale(10.0f, 10.0f, 10.0f);
-		p.WorldPos(0.0f, 0.0f, 0.0f);
-		p.Rotate(90.0f, 0.0f, 0.0f);
-		m_nullTech.SetWVP(p.GetWVPTrans());
-		m_quad.Render();
-	}
-
-	void RenderShadowVolIntoStencil()
-	{
-		glDrawBuffer(GL_NONE);
-		glDepthMask(GL_FALSE);
-
-		glDisable(GL_CULL_FACE);
-
-		// We need the stencil test to be enabled but we want it
-		// to succeed always. Only the depth test matters.
-		glStencilFunc(GL_ALWAYS, 0, 0xff);
-
-		glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
-		glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
-
-		m_ShadowVolTech.Enable();
-
-		m_ShadowVolTech.SetLightPos(m_pointLight.Position);
-
-		Pipeline p;
-		p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
-		p.SetPerspectiveProj(m_persProjInfo);
-		p.WorldPos(m_boxPos);
-		p.Rotate(0, m_scale, 0);
-		m_ShadowVolTech.SetWorldMatrix(p.GetWorldTrans());
-		m_ShadowVolTech.SetVP(p.GetVPTrans());
-
-		m_box.Render();
-
-		glEnable(GL_CULL_FACE);
-	}
-
-	void RenderShadowedScene()
-	{
-		glDrawBuffer(GL_BACK);
-
-		// prevent update to the stencil buffer
-		glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_KEEP);
-		glStencilFunc(GL_EQUAL, 0x0, 0xFF);
-
-		m_LightingTech.Enable();
-
-		m_pointLight.AmbientIntensity = 0.0f;
-		m_pointLight.DiffuseIntensity = 0.8f;
-
-		m_LightingTech.SetPointLights(1, &m_pointLight);
-
-		Pipeline p;
-		p.SetPerspectiveProj(m_persProjInfo);
-		p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
-
-		p.WorldPos(m_boxPos);
-		p.Rotate(0, m_scale, 0);
-		m_LightingTech.SetWVP(p.GetWVPTrans());
-		m_LightingTech.SetWorldMatrix(p.GetWorldTrans());
-		m_box.Render();
-
-		p.Scale(10.0f, 10.0f, 10.0f);
-		p.WorldPos(0.0f, 0.0f, 0.0f);
-		p.Rotate(90.0f, 0.0f, 0.0f);
-		m_LightingTech.SetWVP(p.GetWVPTrans());
-		m_LightingTech.SetWorldMatrix(p.GetWorldTrans());
-		m_pGroundTex->Bind(COLOR_TEXTURE_UNIT);
-		m_quad.Render();
-	}
-
-	void RenderAmbientLight()
-	{
-		glDrawBuffer(GL_BACK);
-		glDepthMask(GL_TRUE);
-
-		glEnable(GL_BLEND);
-		glBlendEquation(GL_FUNC_ADD);
-		glBlendFunc(GL_ONE, GL_ONE);
-
-		m_LightingTech.Enable();
-
-		m_pointLight.AmbientIntensity = 0.2f;
-		m_pointLight.DiffuseIntensity = 0.0f;
-
-		m_LightingTech.SetPointLights(1, &m_pointLight);
-
-		m_pGroundTex->Bind(COLOR_TEXTURE_UNIT);
-
-		Pipeline p;
-		p.SetPerspectiveProj(m_persProjInfo);
-		p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
-
-		p.WorldPos(m_boxPos);
-		p.Rotate(0, m_scale, 0);
-		m_LightingTech.SetWVP(p.GetWVPTrans());
-		m_LightingTech.SetWorldMatrix(p.GetWorldTrans());
-		m_box.Render();
-
-		p.Scale(10.0f, 10.0f, 10.0f);
-		p.WorldPos(0.0f, 0.0f, 0.0f);
-		p.Rotate(90.0f, 0.0f, 0.0f);
-		m_LightingTech.SetWVP(p.GetWVPTrans());
-		m_LightingTech.SetWorldMatrix(p.GetWorldTrans());
-
-		m_quad.Render();
-
-		glDisable(GL_BLEND);
-	}
-
-	ShadowVolumeTechnique m_ShadowVolTech;
-	LightingTechnique m_LightingTech;
-	NullTechnique m_nullTech;
+	SkinningTechnique* m_pSkinningTech;
+	MotionBlurTechnique* m_pMotionBlurTech;
 	Camera* m_pGameCamera;
-	float m_scale;
-	PointLight m_pointLight;
-	Vector3f m_boxPos;
-	Mesh m_box;
-	Mesh m_quad;
-	Texture* m_pGroundTex;
+	DirectionalLight m_directionalLight;
+	SkinnedMesh m_mesh;
+	SkinnedMesh m_quad;
+	Vector3f m_position;
 	PersProjInfo m_persProjInfo;
-
-	long long m_startTime;
+	IntermediateBuffer m_intermediateBuffer;
+	Pipeline m_pipeline;
+	vector<Matrix4f> m_prevTransforms;
 };
 
 int main(int argc, char** argv)
 {
 	Magick::InitializeMagick(*argv);
-	GLUTBackendInit(argc, argv);
+	GLUTBackendInit(argc, argv, true, false);
 
-	if (!GLUTBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, 32, false, "OGLDev Tutotials")) {
+	if (!GLUTBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false, "OGLDEV Tutorials")) {
 		return 1;
 	}
 

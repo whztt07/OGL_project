@@ -1,7 +1,5 @@
 #include <limits.h>
-#include "math_3d.h"
 #include <string>
-#include <GL/glfx.h>
 #include <assert.h>
 
 #include "skinning_technique.h"
@@ -9,15 +7,25 @@
 
 using namespace std;
 
-static const char* pEffectFile = "lessons/shaders/skinning.glsl";
-
-SkinningTechnique::SkinningTechnique() : Technique(pEffectFile)
+SkinningTechnique::SkinningTechnique()
 {
 }
 
 bool SkinningTechnique::Init()
 {
-	if (!CompileProgram("Lighting")) {
+	if (!Technique::Init()) {
+		return false;
+	}
+
+	if (!AddShader(GL_VERTEX_SHADER, "lessons/shaders/skinning.vs")) {
+		return false;
+	}
+
+	if (!AddShader(GL_FRAGMENT_SHADER, "lessons/shaders/skinning.fs")) {
+		return false;
+	}
+
+	if (!Finalize()) {
 		return false;
 	}
 
@@ -132,6 +140,8 @@ bool SkinningTechnique::Init()
 		memset(Name, 0, sizeof(Name));
 		SNPRINTF(Name, sizeof(Name), "gBones[%d]", i);
 		m_boneLocation[i] = GetUniformLocation(Name);
+		SNPRINTF(Name, sizeof(Name), "gPrevBones[%d]", i);
+		m_prevBoneLocation[i] = GetUniformLocation(Name);
 	}
 
 	return true;
@@ -139,12 +149,12 @@ bool SkinningTechnique::Init()
 
 void SkinningTechnique::SetWVP(const Matrix4f& WVP)
 {
-	glUniformMatrix4fv(m_WVPLocation, 1, GL_TRUE, (const GLfloat*)WVP.m);
+	glUniformMatrix4fv(m_WVPLocation, 1, GL_TRUE, (const GLfloat*)WVP);
 }
 
-void SkinningTechnique::SetWorldMatrix(const Matrix4f& WorldInverse)
+void SkinningTechnique::SetWorldMatrix(const Matrix4f& World)
 {
-	glUniformMatrix4fv(m_WorldMatrixLocation, 1, GL_TRUE, (const GLfloat*)WorldInverse.m);
+	glUniformMatrix4fv(m_WorldMatrixLocation, 1, GL_TRUE, (const GLfloat*)World);
 }
 
 void SkinningTechnique::SetColorTextureUnit(unsigned int TextureUnit)
@@ -214,6 +224,11 @@ void SkinningTechnique::SetSpotLights(unsigned int NumLights, const SpotLight* p
 void SkinningTechnique::SetBoneTransform(uint Index, const Matrix4f& Transform)
 {
 	assert(Index < MAX_BONES);
-	//Transform.Print();
-	glUniformMatrix4fv(m_boneLocation[Index], 1, GL_TRUE, (const GLfloat*)Transform.m);
+	glUniformMatrix4fv(m_boneLocation[Index], 1, GL_TRUE, (const GLfloat*)Transform);
+}
+
+void SkinningTechnique::SetPrevBoneTransform(uint Index, const Matrix4f& Transform)
+{
+	assert(Index < MAX_BONES);
+	glUniformMatrix4fv(m_prevBoneLocation[Index], 1, GL_TRUE, (const GLfloat*)Transform);
 }

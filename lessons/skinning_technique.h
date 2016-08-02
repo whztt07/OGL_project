@@ -1,10 +1,10 @@
 #pragma once
 
-#ifndef LIGHTING_TECHNIQUE_H
-#define	LIGHTING_TECHNIQUE_H
+#ifndef SKINNING_TECHNIQUE_H
+#define	SKINNING_TECHNIQUE_H
 
 #include "technique.h"
-#include "math_3d.h"
+#include "ogldev_math_3d.h"
 
 struct BaseLight
 {
@@ -74,6 +74,7 @@ public:
 	virtual bool Init();
 
 	void SetWVP(const Matrix4f& WVP);
+	void SetPrevWVP(const Matrix4f& PrevWVP);
 	void SetWorldMatrix(const Matrix4f& WVP);
 	void SetColorTextureUnit(uint TextureUnit);
 	void SetDirectionalLight(const DirectionalLight& Light);
@@ -83,6 +84,7 @@ public:
 	void SetMatSpecularIntensity(float Intensity);
 	void SetMatSpecularPower(float Power);
 	void SetBoneTransform(uint Index, const Matrix4f& Transform);
+	void SetPrevBoneTransform(uint Index, const Matrix4f& Transform);
 
 private:
 
@@ -129,6 +131,7 @@ private:
 	} m_spotLightsLocation[MAX_SPOT_LIGHTS];
 
 	GLuint m_boneLocation[MAX_BONES];
+	GLuint m_prevBoneLocation[MAX_BONES];
 };
 
-#endif	/* LIGHTING_TECHNIQUE_H */
+#endif	/* SKINNING_TECHNIQUE_H */
