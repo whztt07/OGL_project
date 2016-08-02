@@ -24,10 +24,11 @@
     <ClCompile Include="lessons\lighting_technique.cpp" />
     <ClCompile Include="lessons\main.cpp" />
     <ClCompile Include="lessons\math_3d.cpp" />
+    <ClCompile Include="lessons\null_technique.cpp" />
     <ClCompile Include="lessons\ogldev_util.cpp" />
     <ClCompile Include="lessons\pipeline.cpp" />
     <ClCompile Include="lessons\mesh.cpp" />
-    <ClCompile Include="lessons\silhouette_technique.cpp" />
+    <ClCompile Include="lessons\shadow_volume_technique.cpp" />
     <ClCompile Include="lessons\technique.cpp" />
     <ClCompile Include="lessons\texture.cpp" />
   </ItemGroup>
@@ -39,16 +40,18 @@
     <ClInclude Include="lessons\lighting_technique.h" />
     <ClInclude Include="lessons\math_3d.h" />
     <ClInclude Include="lessons\mesh.h" />
+    <ClInclude Include="lessons\null_technique.h" />
     <ClInclude Include="lessons\ogldev_types.h" />
     <ClInclude Include="lessons\pipeline.h" />
-    <ClInclude Include="lessons\silhouette_technique.h" />
+    <ClInclude Include="lessons\shadow_volume_technique.h" />
     <ClInclude Include="lessons\technique.h" />
     <ClInclude Include="lessons\texture.h" />
     <ClInclude Include="lessons\ogldev_util.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="lessons\shaders\lighting.glsl" />
-    <None Include="lessons\shaders\silhouette.glsl" />
+    <None Include="lessons\shaders\null_technique.glsl" />
+    <None Include="lessons\shaders\shadow_volume.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9CB4C79B-C81C-4154-88AE-0B1B972FD644}</ProjectGuid>

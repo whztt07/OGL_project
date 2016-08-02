@@ -6,7 +6,8 @@
 #include "technique.h"
 #include "math_3d.h"
 
-class NullTechnique : public Technique {
+class NullTechnique : public Technique
+{
 public:
 
 	NullTechnique();

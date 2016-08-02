@@ -15,7 +15,7 @@
 #include "math_3d.h"
 #include "texture.h"
 
-//using namespace std;
+using namespace std;
 
 // Stores an edge by its vertices and force an order between them
 struct Edge
