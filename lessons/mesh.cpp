@@ -1,6 +1,5 @@
-#include <assert.h>
-
 #include "mesh.h"
+#include "engine_common.h"
 
 #define POSITION_LOCATION    0
 #define TEX_COORD_LOCATION   1
@@ -28,6 +27,7 @@ Mesh::Mesh()
 	ZERO_MEM(m_Buffers);
 	m_NumBones = 0;
 	m_pScene = NULL;
+	m_withAdjacencies = false;
 }
 
 Mesh::~Mesh()
@@ -51,8 +51,10 @@ void Mesh::Clear()
 	}
 }
 
-bool Mesh::LoadMesh(const string& Filename)
+bool Mesh::LoadMesh(const string& Filename, bool WithAdjacencies)
 {
+	m_withAdjacencies = WithAdjacencies;
+
 	// Release the previously loaded mesh (if it exists)
 	Clear();
 
@@ -65,8 +67,10 @@ bool Mesh::LoadMesh(const string& Filename)
 
 	bool Ret = false;
 
-	m_pScene = m_Importer.ReadFile(Filename.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
-
+	m_pScene = m_Importer.ReadFile(Filename.c_str(), aiProcess_Triangulate |
+		aiProcess_GenSmoothNormals |
+		aiProcess_FlipUVs |
+		aiProcess_JoinIdenticalVertices);
 	if (m_pScene) {
 		m_GlobalInverseTransform = m_pScene->mRootNode->mTransformation;
 		m_GlobalInverseTransform.Inverse();
@@ -96,10 +100,12 @@ bool Mesh::InitFromScene(const aiScene* pScene, const string& Filename)
 	uint NumVertices = 0;
 	uint NumIndices = 0;
 
+	uint VerticesPerPrim = m_withAdjacencies ? 6 : 3;
+
 	// Count the number of vertices and indices
 	for (uint i = 0; i < m_Entries.size(); i++) {
 		m_Entries[i].MaterialIndex = pScene->mMeshes[i]->mMaterialIndex;
-		m_Entries[i].NumIndices = pScene->mMeshes[i]->mNumFaces * 3;
+		m_Entries[i].NumIndices = pScene->mMeshes[i]->mNumFaces * VerticesPerPrim;
 		m_Entries[i].BaseVertex = NumVertices;
 		m_Entries[i].BaseIndex = NumIndices;
 
@@ -153,6 +159,77 @@ bool Mesh::InitFromScene(const aiScene* pScene, const string& Filename)
 	return GLCheckError();
 }
 
+static uint GetOppositeIndex(const aiFace& Face, const Edge& e)
+{
+	for (uint i = 0; i < 3; i++) {
+		uint Index = Face.mIndices[i];
+
+		if (Index != e.a && Index != e.b) {
+			return Index;
+		}
+	}
+
+	assert(0);
+
+	return 0;
+}
+
+void Mesh::FindAdjacencies(const aiMesh* paiMesh, vector<unsigned int>& Indices)
+{
+	// Step 1 - find the two triangles that share every edge
+	for (uint i = 0; i < paiMesh->mNumFaces; i++) {
+		const aiFace& face = paiMesh->mFaces[i];
+
+		Face Unique;
+
+		// If a position vector is duplicated in the VB we fetch the 
+		// index of the first occurrence.
+		for (uint j = 0; j < 3; j++) {
+			uint Index = face.mIndices[j];
+			aiVector3D& v = paiMesh->mVertices[Index];
+
+			if (m_posMap.find(v) == m_posMap.end()) {
+				m_posMap[v] = Index;
+			}
+			else {
+				Index = m_posMap[v];
+			}
+
+			Unique.Indices[j] = Index;
+		}
+
+		m_uniqueFaces.push_back(Unique);
+
+		Edge e1(Unique.Indices[0], Unique.Indices[1]);
+		Edge e2(Unique.Indices[1], Unique.Indices[2]);
+		Edge e3(Unique.Indices[2], Unique.Indices[0]);
+
+		m_indexMap[e1].AddNeigbor(i);
+		m_indexMap[e2].AddNeigbor(i);
+		m_indexMap[e3].AddNeigbor(i);
+	}
+
+	// Step 2 - build the index buffer with the adjacency info
+	for (uint i = 0; i < paiMesh->mNumFaces; i++) {
+		const Face& face = m_uniqueFaces[i];
+
+		for (uint j = 0; j < 3; j++) {
+			Edge e(face.Indices[j], face.Indices[(j + 1) % 3]);
+			assert(m_indexMap.find(e) != m_indexMap.end());
+			Neighbors n = m_indexMap[e];
+			uint OtherTri = n.GetOther(i);
+
+			assert(OtherTri != -1);
+
+			const Face& OtherFace = m_uniqueFaces[OtherTri];
+			uint OppositeIndex = OtherFace.GetOppositeIndex(e);
+
+			Indices.push_back(face.Indices[j]);
+			Indices.push_back(OppositeIndex);
+		}
+	}
+}
+
 void Mesh::InitMesh(uint MeshIndex,
 	const aiMesh* paiMesh,
 	vector<Vector3f>& Positions,
@@ -176,13 +253,18 @@ void Mesh::InitMesh(uint MeshIndex,
 
 	LoadBones(MeshIndex, paiMesh, Bones);
 
-	// Populate the index buffer
-	for (uint i = 0; i < paiMesh->mNumFaces; i++) {
-		const aiFace& Face = paiMesh->mFaces[i];
-		assert(Face.mNumIndices == 3);
-		Indices.push_back(Face.mIndices[0]);
-		Indices.push_back(Face.mIndices[1]);
-		Indices.push_back(Face.mIndices[2]);
+	if (m_withAdjacencies) {
+		FindAdjacencies(paiMesh, Indices);
+	}
+	else {
+		// Populate the index buffer
+		for (uint i = 0; i < paiMesh->mNumFaces; i++) {
+			const aiFace& Face = paiMesh->mFaces[i];
+			assert(Face.mNumIndices == 3);
+			Indices.push_back(Face.mIndices[0]);
+			Indices.push_back(Face.mIndices[1]);
+			Indices.push_back(Face.mIndices[2]);
+		}
 	}
 }
 
@@ -271,16 +353,18 @@ void Mesh::Render()
 {
 	glBindVertexArray(m_VAO);
 
+	uint Topology = m_withAdjacencies ? GL_TRIANGLES_ADJACENCY : GL_TRIANGLES;
+
 	for (uint i = 0; i < m_Entries.size(); i++) {
 		const uint MaterialIndex = m_Entries[i].MaterialIndex;
 
 		assert(MaterialIndex < m_Textures.size());
 
 		if (m_Textures[MaterialIndex]) {
-			m_Textures[MaterialIndex]->Bind(GL_TEXTURE0);
+			m_Textures[MaterialIndex]->Bind(COLOR_TEXTURE_UNIT);
 		}
 
-		glDrawElementsBaseVertex(GL_TRIANGLES,
+		glDrawElementsBaseVertex(Topology,
 			m_Entries[i].NumIndices,
 			GL_UNSIGNED_INT,
 			(void*)(sizeof(uint) * m_Entries[i].BaseIndex),

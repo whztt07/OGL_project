@@ -6,16 +6,17 @@
 #include <sys/time.h>
 #include <unistd.h>
 #endif
-#include <sys/types.h>
 
 #include "engine_common.h"
 #include "ogldev_util.h"
 #include "pipeline.h"
 #include "camera.h"
 #include "texture.h"
-#include "skinning_technique.h"
+#include "shadow_volume_technique.h"
+#include "lighting_technique.h"
 #include "glut_backend.h"
 #include "mesh.h"
+#include "null_technique.h"
 
 using namespace std;
 
@@ -29,12 +30,9 @@ public:
 	Main()
 	{
 		m_pGameCamera = NULL;
-		m_pEffect = NULL;
 		m_scale = 0.0f;
-		m_directionalLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
-		m_directionalLight.AmbientIntensity = 0.55f;
-		m_directionalLight.DiffuseIntensity = 0.9f;
-		m_directionalLight.Direction = Vector3f(1.0f, 0.0, 0.0);
+		m_pointLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
+		m_pointLight.Position = Vector3f(0.0f, 15.0f, 0.0f);
 
 		m_persProjInfo.FOV = 60.0f;
 		m_persProjInfo.Height = WINDOW_HEIGHT;
@@ -42,43 +40,60 @@ public:
 		m_persProjInfo.zNear = 1.0f;
 		m_persProjInfo.zFar = 100.0f;
 
-		m_position = Vector3f(0.0f, 0.0f, 6.0f);
+		m_boxPos = Vector3f(0.0f, 2.0f, 0.0);
 	}
 
 	virtual ~Main()
 	{
-		SAFE_DELETE(m_pEffect);
 		SAFE_DELETE(m_pGameCamera);
 	}
 
 	bool Init()
 	{
-		Vector3f Pos(0.0f, 3.0f, -1.0f);
+		Vector3f Pos(0.0f, 2.0f, -7.0f);
 		Vector3f Target(0.0f, 0.0f, 1.0f);
 		Vector3f Up(0.0, 1.0f, 0.0f);
 
 		m_pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, Pos, Target, Up);
 
-		m_pEffect = new SkinningTechnique();
+		if (!m_nullTech.Init()) {
+			printf("Error initializing the null technique\n");
+			return false;
+		}
 
-		if (!m_pEffect->Init()) {
+		if (!m_ShadowVolTech.Init()) {
+			printf("Error initializing the shadow volume technique\n");
+			return false;
+		}
+
+		if (!m_LightingTech.Init()) {
 			printf("Error initializing the lighting technique\n");
 			return false;
 		}
 
-		m_pEffect->Enable();
+		m_LightingTech.Enable();
 
-		m_pEffect->SetColorTextureUnit(COLOR_TEXTURE_UNIT_INDEX);
-		m_pEffect->SetDirectionalLight(m_directionalLight);
-		m_pEffect->SetMatSpecularIntensity(0.0f);
-		m_pEffect->SetMatSpecularPower(0);
+		m_LightingTech.SetColorTextureUnit(COLOR_TEXTURE_UNIT_INDEX);
+		m_LightingTech.SetPointLights(1, &m_pointLight);
+		m_LightingTech.SetMatSpecularIntensity(0.0f);
+		m_LightingTech.SetMatSpecularPower(0);
 
-		if (!m_mesh.LoadMesh("thirdparty/content/boblampclean.md5mesh")) {
+		if (!m_box.LoadMesh("thirdparty/content/box.obj", true)) {
 			printf("Mesh load failed\n");
 			return false;
 		}
    	
 		m_startTime = GetCurrentTimeMillis();
+
+		if (!m_quad.LoadMesh("thirdparty/content/quad.obj", false)) {
+			return false;
+		}
+
+		m_pGroundTex = new Texture(GL_TEXTURE_2D, "thirdparty/content/test.png");
+
+		if (!m_pGroundTex->Load()) {
+			return false;
+		}
 
 		return true;
 	}
@@ -90,38 +105,23 @@ public:
 
 	virtual void RenderSceneCB()
 	{
-		m_scale += 0.005f;
+		m_scale += 0.1f;
 
 		m_pGameCamera->OnRender();
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		m_pEffect->Enable();
+		RenderSceneIntoDepth();
 
-		vector<Matrix4f> Transforms;
+		glEnable(GL_STENCIL_TEST);
 
-		float RunningTime = (float)((double)GetCurrentTimeMillis() - (double)m_startTime) / 1000.0f;
+		RenderShadowVolIntoStencil();
 
-		m_mesh.BoneTransform(RunningTime, Transforms);
+		RenderShadowedScene();
 
-		for (uint i = 0; i < Transforms.size(); i++) {
-			m_pEffect->SetBoneTransform(i, Transforms[i]);
-		}
+		glDisable(GL_STENCIL_TEST);
 
-		m_pEffect->SetEyeWorldPos(m_pGameCamera->GetPos());
-
-		Pipeline p;
-		p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
-		p.SetPerspectiveProj(m_persProjInfo);
-		p.Scale(0.1f, 0.1f, 0.1f);
-
-		Vector3f Pos(m_position);
-		p.WorldPos(Pos);
-		p.Rotate(270.0f, 180.0f, 0.0f);
-		m_pEffect->SetWVP(p.GetWVPTrans());
-		m_pEffect->SetWorldMatrix(p.GetWorldTrans());
-
-		m_mesh.Render();
+		RenderAmbientLight();
 
 		glutSwapBuffers();
 	}
@@ -156,12 +156,144 @@ public:
 
 private:
 
-	SkinningTechnique* m_pEffect;
+	void RenderSceneIntoDepth()
+	{
+		glDrawBuffer(GL_NONE);
+		glDepthMask(GL_TRUE);
+
+		m_nullTech.Enable();
+
+		Pipeline p;
+
+		p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
+		p.SetPerspectiveProj(m_persProjInfo);
+
+		p.WorldPos(m_boxPos);
+		p.Rotate(0, m_scale, 0);
+		m_nullTech.SetWVP(p.GetWVPTrans());
+		m_box.Render();
+
+		p.Scale(10.0f, 10.0f, 10.0f);
+		p.WorldPos(0.0f, 0.0f, 0.0f);
+		p.Rotate(90.0f, 0.0f, 0.0f);
+		m_nullTech.SetWVP(p.GetWVPTrans());
+		m_quad.Render();
+	}
+
+	void RenderShadowVolIntoStencil()
+	{
+		glDrawBuffer(GL_NONE);
+		glDepthMask(GL_FALSE);
+
+		glDisable(GL_CULL_FACE);
+
+		// We need the stencil test to be enabled but we want it
+		// to succeed always. Only the depth test matters.
+		glStencilFunc(GL_ALWAYS, 0, 0xff);
+
+		glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+		glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+
+		m_ShadowVolTech.Enable();
+
+		m_ShadowVolTech.SetLightPos(m_pointLight.Position);
+
+		Pipeline p;
+		p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
+		p.SetPerspectiveProj(m_persProjInfo);
+		p.WorldPos(m_boxPos);
+		p.Rotate(0, m_scale, 0);
+		m_ShadowVolTech.SetWorldMatrix(p.GetWorldTrans());
+		m_ShadowVolTech.SetVP(p.GetVPTrans());
+
+		m_box.Render();
+
+		glEnable(GL_CULL_FACE);
+	}
+
+	void RenderShadowedScene()
+	{
+		glDrawBuffer(GL_BACK);
+
+		// prevent update to the stencil buffer
+		glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_KEEP);
+		glStencilFunc(GL_EQUAL, 0x0, 0xFF);
+
+		m_LightingTech.Enable();
+
+		m_pointLight.AmbientIntensity = 0.0f;
+		m_pointLight.DiffuseIntensity = 0.8f;
+
+		m_LightingTech.SetPointLights(1, &m_pointLight);
+
+		Pipeline p;
+		p.SetPerspectiveProj(m_persProjInfo);
+		p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
+
+		p.WorldPos(m_boxPos);
+		p.Rotate(0, m_scale, 0);
+		m_LightingTech.SetWVP(p.GetWVPTrans());
+		m_LightingTech.SetWorldMatrix(p.GetWorldTrans());
+		m_box.Render();
+
+		p.Scale(10.0f, 10.0f, 10.0f);
+		p.WorldPos(0.0f, 0.0f, 0.0f);
+		p.Rotate(90.0f, 0.0f, 0.0f);
+		m_LightingTech.SetWVP(p.GetWVPTrans());
+		m_LightingTech.SetWorldMatrix(p.GetWorldTrans());
+		m_pGroundTex->Bind(COLOR_TEXTURE_UNIT);
+		m_quad.Render();
+	}
+
+	void RenderAmbientLight()
+	{
+		glDrawBuffer(GL_BACK);
+		glDepthMask(GL_TRUE);
+
+		glEnable(GL_BLEND);
+		glBlendEquation(GL_FUNC_ADD);
+		glBlendFunc(GL_ONE, GL_ONE);
+
+		m_LightingTech.Enable();
+
+		m_pointLight.AmbientIntensity = 0.2f;
+		m_pointLight.DiffuseIntensity = 0.0f;
+
+		m_LightingTech.SetPointLights(1, &m_pointLight);
+
+		m_pGroundTex->Bind(COLOR_TEXTURE_UNIT);
+
+		Pipeline p;
+		p.SetPerspectiveProj(m_persProjInfo);
+		p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
+
+		p.WorldPos(m_boxPos);
+		p.Rotate(0, m_scale, 0);
+		m_LightingTech.SetWVP(p.GetWVPTrans());
+		m_LightingTech.SetWorldMatrix(p.GetWorldTrans());
+		m_box.Render();
+
+		p.Scale(10.0f, 10.0f, 10.0f);
+		p.WorldPos(0.0f, 0.0f, 0.0f);
+		p.Rotate(90.0f, 0.0f, 0.0f);
+		m_LightingTech.SetWVP(p.GetWVPTrans());
+		m_LightingTech.SetWorldMatrix(p.GetWorldTrans());
+
+		m_quad.Render();
+
+		glDisable(GL_BLEND);
+	}
+
+	ShadowVolumeTechnique m_ShadowVolTech;
+	LightingTechnique m_LightingTech;
+	NullTechnique m_nullTech;
 	Camera* m_pGameCamera;
 	float m_scale;
-	DirectionalLight m_directionalLight;
-	Mesh m_mesh;
-	Vector3f m_position;
+	PointLight m_pointLight;
+	Vector3f m_boxPos;
+	Mesh m_box;
+	Mesh m_quad;
+	Texture* m_pGroundTex;
 	PersProjInfo m_persProjInfo;
 
 	long long m_startTime;

@@ -2,7 +2,7 @@
 #include <string.h>
 
 #include "null_technique.h"
-#include "util.h"
+#include "ogldev_util.h"
 
 static const char* pEffectFile = "lessons/shaders/null_technique.glsl";
 
