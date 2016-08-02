@@ -22,8 +22,14 @@
     <ClCompile Include="lessons\camera.cpp" />
     <ClCompile Include="lessons\cubemap_texture.cpp" />
     <ClCompile Include="lessons\glut_backend.cpp" />
+    <ClCompile Include="lessons\io_buffer.cpp" />
     <ClCompile Include="lessons\math_3d.cpp" />
     <ClCompile Include="lessons\ogldev_app.cpp" />
+    <ClCompile Include="lessons\ogldev_atb.cpp" />
+    <ClCompile Include="lessons\ogldev_backend.cpp" />
+    <ClCompile Include="lessons\ogldev_basic_lighting.cpp" />
+    <ClCompile Include="lessons\ogldev_basic_mesh.cpp" />
+    <ClCompile Include="lessons\ogldev_glfw_backend.cpp" />
     <ClCompile Include="lessons\ogldev_shadow_map_fbo.cpp" />
     <ClCompile Include="lessons\ogldev_skinned_mesh.cpp" />
     <ClCompile Include="lessons\ogldev_texture.cpp" />
@@ -34,11 +40,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lessons\ogldev_app.h" />
+    <ClInclude Include="lessons\ogldev_backend.h" />
+    <ClInclude Include="lessons\ogldev_basic_lighting.h" />
+    <ClInclude Include="lessons\ogldev_basic_mesh.h" />
     <ClInclude Include="lessons\ogldev_callbacks.h" />
     <ClInclude Include="lessons\ogldev_camera.h" />
     <ClInclude Include="lessons\ogldev_cubemap_texture.h" />
     <ClInclude Include="lessons\ogldev_engine_common.h" />
+    <ClInclude Include="lessons\ogldev_glfw_backend.h" />
     <ClInclude Include="lessons\ogldev_glut_backend.h" />
+    <ClInclude Include="lessons\ogldev_io_buffer.h" />
     <ClInclude Include="lessons\ogldev_keys.h" />
     <ClInclude Include="lessons\ogldev_lights_common.h" />
     <ClInclude Include="lessons\ogldev_math_3d.h" />
@@ -50,6 +61,10 @@
     <ClInclude Include="lessons\ogldev_types.h" />
     <ClInclude Include="lessons\ogldev_util.h" />
     <ClInclude Include="lessons\technique.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="lessons\shaders\basic_lighting.fs" />
+    <None Include="lessons\shaders\basic_lighting.vs" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1BFDFA1D-6366-4EE0-A148-0084C000C117}</ProjectGuid>

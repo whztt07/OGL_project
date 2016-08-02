@@ -3,6 +3,8 @@
 #ifndef LIGHTS_COMMON_H
 #define	LIGHTS_COMMON_H
 
+#include <AntTweakBar.h>
+
 #include "ogldev_math_3d.h"
 
 class BaseLight
@@ -19,6 +21,8 @@ public:
         AmbientIntensity = 0.0f;
         DiffuseIntensity = 0.0f;
     }
+        
+    virtual void AddToATB(TwBar *bar);
 };
 
 class DirectionalLight : public BaseLight
@@ -30,6 +34,8 @@ public:
     {
         Direction = Vector3f(0.0f, 0.0f, 0.0f);
     }
+    
+    virtual void AddToATB(TwBar *bar);
 };
 
 struct LightAttenuation
@@ -52,6 +58,8 @@ public:
         Attenuation.Linear = 0.0f;
         Attenuation.Exp = 0.0f;
     }
+    
+    virtual void AddToATB(TwBar *bar);
 };
 
 class SpotLight : public PointLight
@@ -65,6 +73,8 @@ public:
         Direction = Vector3f(0.0f, 0.0f, 0.0f);
         Cutoff = 0.0f;
     }
+    
+    virtual void AddToATB(TwBar *bar);
 };
 
 #define COLOR_WHITE Vector3f(1.0f, 1.0f, 1.0f)
