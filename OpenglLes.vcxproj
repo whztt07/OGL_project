@@ -21,7 +21,7 @@
   <ItemGroup>
     <ClCompile Include="lessons\lighting_technique.cpp" />
     <ClCompile Include="lessons\main.cpp" />
-    <ClCompile Include="lessons\shadow_map_fbo.cpp" />
+    <ClCompile Include="lessons\shadow_cube_map_fbo.cpp" />
     <ClCompile Include="lessons\shadow_map_technique.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -32,7 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lessons\lighting_technique.h" />
-    <ClInclude Include="lessons\shadow_map_fbo.h" />
+    <ClInclude Include="lessons\shadow_cube_map_fbo.h" />
     <ClInclude Include="lessons\shadow_map_technique.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
