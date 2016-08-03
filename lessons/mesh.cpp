@@ -1,6 +1,7 @@
 #include <assert.h>
 
 #include "mesh.h"
+#include "ogldev_engine_common.h"
 
 using namespace std;
 
@@ -198,7 +199,7 @@ bool Mesh::InitMaterials(const aiScene* pScene, const string& Filename)
 					printf("Error loading texture '%s'\n", FullPath.c_str());
 					delete m_Textures[i];
 					m_Textures[i] = NULL;
-					Ret = false;
+					//  Ret = false;
 				}
 				else {
 					printf("Loaded texture '%s'\n", FullPath.c_str());
@@ -220,7 +221,7 @@ void Mesh::Render()
 		assert(MaterialIndex < m_Textures.size());
 
 		if (m_Textures[MaterialIndex]) {
-			m_Textures[MaterialIndex]->Bind(GL_TEXTURE0);
+			m_Textures[MaterialIndex]->Bind(COLOR_TEXTURE_UNIT);
 		}
 
 		glDrawElementsBaseVertex(GL_TRIANGLES,
