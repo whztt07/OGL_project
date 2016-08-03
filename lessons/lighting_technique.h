@@ -4,7 +4,7 @@
 #define	LIGHTING_TECHNIQUE_H
 
 #include "technique.h"
-#include "math_3d.h"
+#include "ogldev_math_3d.h"
 
 struct BaseLight
 {
@@ -74,26 +74,31 @@ public:
 	virtual bool Init();
 
 	void SetWVP(const Matrix4f& WVP);
+	void SetLightWVP(const Matrix4f& LightWVP);
 	void SetWorldMatrix(const Matrix4f& WVP);
 	void SetColorTextureUnit(unsigned int TextureUnit);
+	void SetShadowMapTextureUnit(unsigned int TextureUnit);
 	void SetDirectionalLight(const DirectionalLight& Light);
 	void SetPointLights(unsigned int NumLights, const PointLight* pLights);
 	void SetSpotLights(unsigned int NumLights, const SpotLight* pLights);
 	void SetEyeWorldPos(const Vector3f& EyeWorldPos);
 	void SetMatSpecularIntensity(float Intensity);
 	void SetMatSpecularPower(float Power);
-	void SetColor(const Vector4f& Color);
+	void SetShadowMapSize(float Width, float Height);
 
 private:
 
 	GLuint m_WVPLocation;
+	GLuint m_LightWVPLocation;
 	GLuint m_WorldMatrixLocation;
-	GLuint m_colorTextureLocation;
+	GLuint m_samplerLocation;
+	GLuint m_shadowMapLocation;
 	GLuint m_eyeWorldPosLocation;
 	GLuint m_matSpecularIntensityLocation;
 	GLuint m_matSpecularPowerLocation;
 	GLuint m_numPointLightsLocation;
 	GLuint m_numSpotLightsLocation;
+	GLuint m_shadowMapSizeLocation;
 
 	struct {
 		GLuint Color;
