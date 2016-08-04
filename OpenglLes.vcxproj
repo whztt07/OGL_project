@@ -19,19 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="lessons\lighting_technique.cpp" />
     <ClCompile Include="lessons\main.cpp" />
-    <ClCompile Include="lessons\shadow_map_technique.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="lessons\shaders\lighting.fs" />
-    <None Include="lessons\shaders\lighting.vs" />
-    <None Include="lessons\shaders\shadow_map.fs" />
-    <None Include="lessons\shaders\shadow_map.vs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="lessons\lighting_technique.h" />
-    <ClInclude Include="lessons\shadow_map_technique.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9CB4C79B-C81C-4154-88AE-0B1B972FD644}</ProjectGuid>

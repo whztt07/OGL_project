@@ -56,7 +56,7 @@ bool BasicLightingTechnique::Init()
     }
 
 
-    if (!AddShader(GL_FRAGMENT_SHADER, "lessons/haders/basic_lighting.fs")) {
+    if (!AddShader(GL_FRAGMENT_SHADER, "lessons/shaders/basic_lighting.fs")) {
         return false;
     }
 
