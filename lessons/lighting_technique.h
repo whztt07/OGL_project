@@ -5,6 +5,7 @@
 
 #include "technique.h"
 #include "ogldev_math_3d.h"
+#include "ogldev_io_buffer.h"
 
 struct BaseLight
 {
@@ -66,33 +67,38 @@ class LightingTechnique : public Technique
 {
 public:
 
-	static const unsigned int MAX_POINT_LIGHTS = 2;
-	static const unsigned int MAX_SPOT_LIGHTS = 2;
+	static const uint MAX_POINT_LIGHTS = 2;
+	static const uint MAX_SPOT_LIGHTS = 2;
 
 	LightingTechnique();
 
 	virtual bool Init();
 
+	void SetShaderType(int ShaderType);
 	void SetWVP(const Matrix4f& WVP);
 	void SetWorldMatrix(const Matrix4f& WVP);
-	void SetColorTextureUnit(unsigned int TextureUnit);
+	void BindAOBuffer(IOBuffer& aoBuffer);
 	void SetDirectionalLight(const DirectionalLight& Light);
-	void SetPointLights(unsigned int NumLights, const PointLight* pLights);
-	void SetSpotLights(unsigned int NumLights, const SpotLight* pLights);
+	void SetPointLights(uint NumLights, const PointLight* pLights);
+	void SetSpotLights(uint NumLights, const SpotLight* pLights);
 	void SetEyeWorldPos(const Vector3f& EyeWorldPos);
 	void SetMatSpecularIntensity(float Intensity);
 	void SetMatSpecularPower(float Power);
+	void SetScreenSize(uint Width, uint Height);
 
 private:
 
+	GLuint m_shaderTypeLocation;
 	GLuint m_WVPLocation;
 	GLuint m_WorldMatrixLocation;
 	GLuint m_colorTextureLocation;
+	GLuint m_aoTextureLocation;
 	GLuint m_eyeWorldPosLocation;
 	GLuint m_matSpecularIntensityLocation;
 	GLuint m_matSpecularPowerLocation;
 	GLuint m_numPointLightsLocation;
 	GLuint m_numSpotLightsLocation;
+	GLuint m_screenSizeLocation;
 
 	struct {
 		GLuint Color;

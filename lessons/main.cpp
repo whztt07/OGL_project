@@ -7,15 +7,18 @@
 #endif
 #include <sys/types.h>
 
-#include "ogldev_engine_common.h"
 #include "ogldev_app.h"
 #include "ogldev_util.h"
 #include "ogldev_pipeline.h"
 #include "ogldev_camera.h"
+#include "ssao_technique.h"
+#include "geom_pass_tech.h"
+#include "blur_tech.h"
 #include "lighting_technique.h"
 #include "ogldev_backend.h"
 #include "ogldev_camera.h"
 #include "mesh.h"
+#include "ogldev_io_buffer.h"
 
 using namespace std;
 
@@ -29,20 +32,21 @@ public:
 	Main()
 	{
 		m_pGameCamera = NULL;
-		m_directionalLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
-		m_directionalLight.AmbientIntensity = 0.66f;
-		m_directionalLight.DiffuseIntensity = 1.0f;
-		m_directionalLight.Direction = Vector3f(1.0f, 0.0, 0.0);
 
 		m_persProjInfo.FOV = 60.0f;
 		m_persProjInfo.Height = WINDOW_HEIGHT;
 		m_persProjInfo.Width = WINDOW_WIDTH;
 		m_persProjInfo.zNear = 1.0f;
-		m_persProjInfo.zFar = 1000.0f;
+		m_persProjInfo.zFar = 5000.0f;
 
 		m_pipeline.SetPerspectiveProj(m_persProjInfo);
-		m_pipeline.WorldPos(Vector3f(0.0f, 0.0f, 0.0f));
-		m_pipeline.Scale(0.1f, 0.1f, 0.1f);
+
+		m_directionalLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
+		m_directionalLight.AmbientIntensity = 0.3f;
+		m_directionalLight.DiffuseIntensity = 1.0f;
+		m_directionalLight.Direction = Vector3f(1.0f, 0.0, 0.0);
+
+		m_shaderType = 0;
 	}
 
 	virtual ~Main()
@@ -52,25 +56,68 @@ public:
 
 	bool Init()
 	{
-		Vector3f Pos(0.0f, 23.0f, -5.0f);
-		Vector3f Target(-1.0f, 0.0f, 0.1f);
+		// Vector3f Pos(0.0f, 23.0f, -5.0f);
+		// Vector3f Target(-1.0f, 0.0f, 0.1f);
+		Vector3f Pos(0.0f, 24.0f, -38.0f);
+		Vector3f Target(0.0f, -0.5f, 1.0f);
+
 		Vector3f Up(0.0, 1.0f, 0.0f);
 
 		m_pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, Pos, Target, Up);
 
-		if (!m_LightingTech.Init()) {
+		if (!m_geomPassTech.Init()) {
+			OGLDEV_ERROR("Error initializing the geometry pass technique\n");
+			return false;
+		}
+
+		if (!m_SSAOTech.Init()) {
+			OGLDEV_ERROR("Error initializing the SSAO technique\n");
+			return false;
+		}
+
+		m_SSAOTech.Enable();
+		m_SSAOTech.SetSampleRadius(1.5f);
+		Matrix4f PersProjTrans;
+		PersProjTrans.InitPersProjTransform(m_persProjInfo);
+		m_SSAOTech.SetProjMatrix(PersProjTrans);
+
+		if (!m_lightingTech.Init()) {
 			OGLDEV_ERROR("Error initializing the lighting technique\n");
 			return false;
 		}
 
-		m_LightingTech.Enable();
+		m_lightingTech.Enable();
+		m_lightingTech.SetDirectionalLight(m_directionalLight);
+		m_lightingTech.SetScreenSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+		m_lightingTech.SetShaderType(0);
 
-		m_LightingTech.SetColorTextureUnit(COLOR_TEXTURE_UNIT_INDEX);
-		m_LightingTech.SetDirectionalLight(m_directionalLight);
-		m_LightingTech.SetMatSpecularIntensity(0.0f);
-		m_LightingTech.SetMatSpecularPower(0);
+		if (!m_blurTech.Init()) {
+			OGLDEV_ERROR("Error initializing the blur technique\n");
+			return false;
+		}
 
-		if (!m_mesh.LoadMesh("thirdparty/content/crytek_sponza/sponza.obj")) {
+		//if (!m_mesh.LoadMesh("thirdparty/content/crytek_sponza/sponza.obj")) {
+		if (!m_mesh.LoadMesh("thirdparty/content/jeep.obj")) {
+			return false;
+		}
+
+		m_mesh.GetOrientation().m_scale = Vector3f(0.05f);
+		m_mesh.GetOrientation().m_pos = Vector3f(0.0f, 0.0f, 0.0f);
+		m_mesh.GetOrientation().m_rotation = Vector3f(0.0f, 180.0f, 0.0f);
+
+		if (!m_quad.LoadMesh("thirdparty/content/quad.obj")) {
+			return false;
+		}
+
+		if (!m_gBuffer.Init(WINDOW_WIDTH, WINDOW_HEIGHT, true, GL_RGB32F)) {
+			return false;
+		}
+
+		if (!m_aoBuffer.Init(WINDOW_WIDTH, WINDOW_HEIGHT, false, GL_R32F)) {
+			return false;
+		}
+
+		if (!m_blurBuffer.Init(WINDOW_WIDTH, WINDOW_HEIGHT, false, GL_R32F)) {
 			return false;
 		}
 
@@ -86,29 +133,88 @@ public:
 	{
 		m_pGameCamera->OnRender();
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		m_LightingTech.SetEyeWorldPos(m_pGameCamera->GetPos());
-
 		m_pipeline.SetCamera(*m_pGameCamera);
 
-		m_LightingTech.SetWVP(m_pipeline.GetWVPTrans());
-		m_LightingTech.SetWorldMatrix(m_pipeline.GetWorldTrans());
+		GeometryPass();
 
-		m_mesh.Render();
+		SSAOPass();
 
-		// RenderFPS();     
+		BlurPass();
+
+		LightingPass();
+
+		RenderFPS();
+
 		CalcFPS();
 
 		OgldevBackendSwapBuffers();
 	}
 
+	void GeometryPass()
+	{
+		m_geomPassTech.Enable();
+
+		m_gBuffer.BindForWriting();
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		m_pipeline.Orient(m_mesh.GetOrientation());
+		m_geomPassTech.SetWVP(m_pipeline.GetWVPTrans());
+		m_geomPassTech.SetWVMatrix(m_pipeline.GetWVTrans());
+		m_mesh.Render();
+	}
+
+	void SSAOPass()
+	{
+		m_SSAOTech.Enable();
+		m_SSAOTech.BindPositionBuffer(m_gBuffer);
+
+		m_aoBuffer.BindForWriting();
+
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		m_quad.Render();
+	}
+
+	void BlurPass()
+	{
+		m_blurTech.Enable();
+
+		m_blurTech.BindInputBuffer(m_aoBuffer);
+
+		m_blurBuffer.BindForWriting();
+
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		m_quad.Render();
+	}
+
+	void LightingPass()
+	{
+		m_lightingTech.Enable();
+		m_lightingTech.SetShaderType(m_shaderType);
+		m_lightingTech.BindAOBuffer(m_blurBuffer);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		m_pipeline.Orient(m_mesh.GetOrientation());
+		m_lightingTech.SetWVP(m_pipeline.GetWVPTrans());
+		m_lightingTech.SetWorldMatrix(m_pipeline.GetWorldTrans());
+		m_mesh.Render();
+	}
+
 	virtual void KeyboardCB(OGLDEV_KEY OgldevKey)
 	{
 		switch (OgldevKey) {
-		//case OGLDEV_KEY_ESCAPE:
+		case OGLDEV_KEY_ESCAPE:
 		case OGLDEV_KEY_q:
 			OgldevBackendLeaveMainLoop();
+			break;
+		case OGLDEV_KEY_A:
+			m_shaderType++;
+			m_shaderType = m_shaderType % 3;
 			break;
 		default:
 			m_pGameCamera->OnKeyboard(OgldevKey);
@@ -122,12 +228,20 @@ public:
 
 private:
 
-	LightingTechnique m_LightingTech;
+	SSAOTechnique m_SSAOTech;
+	GeomPassTech m_geomPassTech;
+	LightingTechnique m_lightingTech;
+	BlurTech m_blurTech;
 	Camera* m_pGameCamera;
-	DirectionalLight m_directionalLight;
 	Mesh m_mesh;
+	Mesh m_quad;
 	PersProjInfo m_persProjInfo;
 	Pipeline m_pipeline;
+	IOBuffer m_gBuffer;
+	IOBuffer m_aoBuffer;
+	IOBuffer m_blurBuffer;
+	DirectionalLight m_directionalLight;
+	int m_shaderType;
 };
 
 int main(int argc, char** argv)
