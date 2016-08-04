@@ -7,23 +7,22 @@
 #endif
 #include <sys/types.h>
 
+#include "ogldev_engine_common.h"
 #include "ogldev_app.h"
 #include "ogldev_util.h"
 #include "ogldev_pipeline.h"
 #include "ogldev_camera.h"
-#include "ssao_technique.h"
-#include "geom_pass_tech.h"
-#include "blur_tech.h"
-#include "lighting_technique.h"
 #include "ogldev_backend.h"
 #include "ogldev_camera.h"
-#include "mesh.h"
-#include "ogldev_io_buffer.h"
+#include "ogldev_basic_mesh.h"
+#include "ogldev_shadow_map_fbo.h"
+#include "lighting_technique.h"
+#include "shadow_map_technique.h"
 
-using namespace std;
-
-#define WINDOW_WIDTH  1280  
+#define WINDOW_WIDTH  1024  
 #define WINDOW_HEIGHT 1024
+
+#define NUM_MESHES 5
 
 class Main : public ICallbacks, public OgldevApp
 {
@@ -32,96 +31,83 @@ public:
 	Main()
 	{
 		m_pGameCamera = NULL;
+		m_pGroundTex = NULL;
 
-		m_persProjInfo.FOV = 60.0f;
+		m_dirLight.AmbientIntensity = 0.5f;
+		m_dirLight.DiffuseIntensity = 0.9f;
+		m_dirLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
+		m_dirLight.Direction = Vector3f(1.0f, -1.0f, 0.0f);
+
+		m_persProjInfo.FOV = 45.0f;
 		m_persProjInfo.Height = WINDOW_HEIGHT;
 		m_persProjInfo.Width = WINDOW_WIDTH;
 		m_persProjInfo.zNear = 1.0f;
-		m_persProjInfo.zFar = 5000.0f;
+		m_persProjInfo.zFar = 1000.0f;
 
-		m_pipeline.SetPerspectiveProj(m_persProjInfo);
+		m_shadowOrthoProjInfo.l = -100.0f;
+		m_shadowOrthoProjInfo.r = 100.0f;
+		m_shadowOrthoProjInfo.t = 100.0f;
+		m_shadowOrthoProjInfo.b = -100.0f;
+		m_shadowOrthoProjInfo.n = -10.0f;
+		m_shadowOrthoProjInfo.f = 100.0f;
 
-		m_directionalLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
-		m_directionalLight.AmbientIntensity = 0.3f;
-		m_directionalLight.DiffuseIntensity = 1.0f;
-		m_directionalLight.Direction = Vector3f(1.0f, 0.0, 0.0);
+		m_quad.GetOrientation().m_scale = Vector3f(50.0f, 100.0f, 100.0f);
+		m_quad.GetOrientation().m_pos = Vector3f(0.0f, 0.0f, 90.0f);
+		m_quad.GetOrientation().m_rotation = Vector3f(90.0f, 0.0f, 0.0f);
 
-		m_shaderType = 0;
+		for (int i = 0; i < NUM_MESHES; i++) {
+			m_meshOrientation[i].m_scale = Vector3f(1.0f, 1.0f, 1.0f);
+			m_meshOrientation[i].m_pos = Vector3f(0.0f, 0.0f, 3.0f + i * 30.0f);
+		}
 	}
 
 	virtual ~Main()
 	{
 		SAFE_DELETE(m_pGameCamera);
+		SAFE_DELETE(m_pGroundTex);
 	}
 
 	bool Init()
 	{
-		// Vector3f Pos(0.0f, 23.0f, -5.0f);
-		// Vector3f Target(-1.0f, 0.0f, 0.1f);
-		Vector3f Pos(0.0f, 24.0f, -38.0f);
-		Vector3f Target(0.0f, -0.5f, 1.0f);
+		if (!m_shadowMapFBO.Init(WINDOW_WIDTH, WINDOW_HEIGHT)) {
+			return false;
+		}
 
+		Vector3f Pos(8.0, 21.0, -23.0);
+		Vector3f Target(-0.07f, -0.44f, 0.9f);
 		Vector3f Up(0.0, 1.0f, 0.0f);
 
 		m_pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, Pos, Target, Up);
 
-		if (!m_geomPassTech.Init()) {
-			OGLDEV_ERROR("Error initializing the geometry pass technique\n");
-			return false;
-		}
-
-		if (!m_SSAOTech.Init()) {
-			OGLDEV_ERROR("Error initializing the SSAO technique\n");
-			return false;
-		}
-
-		m_SSAOTech.Enable();
-		m_SSAOTech.SetSampleRadius(1.5f);
-		Matrix4f PersProjTrans;
-		PersProjTrans.InitPersProjTransform(m_persProjInfo);
-		m_SSAOTech.SetProjMatrix(PersProjTrans);
-		float AspectRatio = m_persProjInfo.Width / m_persProjInfo.Height;
-		m_SSAOTech.SetAspectRatio(AspectRatio);
-		float TanHalfFOV = tanf(ToRadian(m_persProjInfo.FOV / 2.0f));
-		m_SSAOTech.SetTanHalfFOV(TanHalfFOV);
-
-		if (!m_lightingTech.Init()) {
+		if (!m_LightingTech.Init()) {
 			OGLDEV_ERROR("Error initializing the lighting technique\n");
 			return false;
 		}
 
-		m_lightingTech.Enable();
-		m_lightingTech.SetDirectionalLight(m_directionalLight);
-		m_lightingTech.SetScreenSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-		m_lightingTech.SetShaderType(0);
+		m_LightingTech.Enable();
 
-		if (!m_blurTech.Init()) {
-			OGLDEV_ERROR("Error initializing the blur technique\n");
+		m_LightingTech.SetColorTextureUnit(COLOR_TEXTURE_UNIT_INDEX);
+		m_LightingTech.SetShadowMapTextureUnit(SHADOW_TEXTURE_UNIT_INDEX);
+		m_LightingTech.SetDirectionalLight(m_dirLight);
+		m_LightingTech.SetMatSpecularIntensity(0.0f);
+		m_LightingTech.SetMatSpecularPower(0);
+
+		if (!m_mesh.LoadMesh("thirdparty/content/dragon.obj")) {
 			return false;
 		}
 
-		//if (!m_mesh.LoadMesh("thirdparty/content/crytek_sponza/sponza.obj")) {
-		if (!m_mesh.LoadMesh("thirdparty/content/jeep.obj")) {
+		if (!m_ShadowMapEffect.Init()) {
+			printf("Error initializing the shadow map technique\n");
 			return false;
 		}
-
-		m_mesh.GetOrientation().m_scale = Vector3f(0.05f);
-		m_mesh.GetOrientation().m_pos = Vector3f(0.0f, 0.0f, 0.0f);
-		m_mesh.GetOrientation().m_rotation = Vector3f(0.0f, 180.0f, 0.0f);
-
+  	      
 		if (!m_quad.LoadMesh("thirdparty/content/quad.obj")) {
 			return false;
 		}
 
-		if (!m_depthBuffer.Init(WINDOW_WIDTH, WINDOW_HEIGHT, true, GL_NONE)) {
-			return false;
-		}
+		m_pGroundTex = new Texture(GL_TEXTURE_2D, "thirdparty/content/wal67ar_small.jpg");
 
-		if (!m_aoBuffer.Init(WINDOW_WIDTH, WINDOW_HEIGHT, false, GL_R32F)) {
-			return false;
-		}
-
-		if (!m_blurBuffer.Init(WINDOW_WIDTH, WINDOW_HEIGHT, false, GL_R32F)) {
+		if (!m_pGroundTex->Load()) {
 			return false;
 		}
 
@@ -135,89 +121,74 @@ public:
 
 	virtual void RenderSceneCB()
 	{
+		for (int i = 0; i < NUM_MESHES; i++) {
+			m_meshOrientation[i].m_rotation.y += 0.5f;
+		}
+
 		m_pGameCamera->OnRender();
 
-		m_pipeline.SetCamera(*m_pGameCamera);
-
-		GeometryPass();
-
-		SSAOPass();
-
-		BlurPass();
-
-		LightingPass();
-
-		RenderFPS();
-
-		CalcFPS();
+		ShadowMapPass();
+		RenderPass();
 
 		OgldevBackendSwapBuffers();
 	}
 
-	void GeometryPass()
+	void ShadowMapPass()
 	{
-		m_geomPassTech.Enable();
-
-		m_depthBuffer.BindForWriting();
-
+		m_shadowMapFBO.BindForWriting();
 		glClear(GL_DEPTH_BUFFER_BIT);
 
-		m_pipeline.Orient(m_mesh.GetOrientation());
-		m_geomPassTech.SetWVP(m_pipeline.GetWVPTrans());
-		m_mesh.Render();
-	}
+		m_ShadowMapEffect.Enable();
 
-	void SSAOPass()
-	{
-		m_SSAOTech.Enable();
-		m_SSAOTech.BindDepthBuffer(m_depthBuffer);
+		Pipeline p;
+		p.SetCamera(Vector3f(0.0f, 0.0f, 0.0f), m_dirLight.Direction, Vector3f(0.0f, 1.0f, 0.0f));
+		p.SetOrthographicProj(m_shadowOrthoProjInfo);
 
-		m_aoBuffer.BindForWriting();
-
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		m_quad.Render();
-	}
-
-	void BlurPass()
-	{
-		m_blurTech.Enable();
-
-		m_blurTech.BindInputBuffer(m_aoBuffer);
-
-		m_blurBuffer.BindForWriting();
-
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		m_quad.Render();
-	}
-
-	void LightingPass()
-	{
-		m_lightingTech.Enable();
-		m_lightingTech.SetShaderType(m_shaderType);
-		m_lightingTech.BindAOBuffer(m_blurBuffer);
+		for (int i = 0; i < NUM_MESHES; i++) {
+			p.Orient(m_meshOrientation[i]);
+			m_ShadowMapEffect.SetWVP(p.GetWVOrthoPTrans());
+			m_mesh.Render();
+		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		m_pipeline.Orient(m_mesh.GetOrientation());
-		m_lightingTech.SetWVP(m_pipeline.GetWVPTrans());
-		m_lightingTech.SetWorldMatrix(m_pipeline.GetWorldTrans());
-		m_mesh.Render();
 	}
 
-	virtual void KeyboardCB(OGLDEV_KEY OgldevKey)
+	void RenderPass()
+	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		m_LightingTech.Enable();
+
+		m_LightingTech.SetEyeWorldPos(m_pGameCamera->GetPos());
+
+		m_shadowMapFBO.BindForReading(SHADOW_TEXTURE_UNIT);
+
+		Pipeline p;
+		p.SetOrthographicProj(m_shadowOrthoProjInfo);
+		p.Orient(m_quad.GetOrientation());
+		p.SetCamera(Vector3f(0.0f, 0.0f, 0.0f), m_dirLight.Direction, Vector3f(0.0f, 1.0f, 0.0f));
+		m_LightingTech.SetLightWVP(p.GetWVOrthoPTrans());
+		p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
+		p.SetPerspectiveProj(m_persProjInfo);
+		m_LightingTech.SetWVP(p.GetWVPTrans());
+		m_LightingTech.SetWorldMatrix(p.GetWorldTrans());
+		m_pGroundTex->Bind(COLOR_TEXTURE_UNIT);
+		m_quad.Render();
+
+		for (int i = 0; i < NUM_MESHES; i++) {
+			p.Orient(m_meshOrientation[i]);
+			m_LightingTech.SetWVP(p.GetWVPTrans());
+			m_LightingTech.SetWorldMatrix(p.GetWorldTrans());
+			m_mesh.Render();
+		}
+	}
+
+	virtual void KeyboardCB(OGLDEV_KEY OgldevKey, OGLDEV_KEY_STATE OgldevKeyState = OGLDEV_KEY_STATE_PRESS)
 	{
 		switch (OgldevKey) {
 		case OGLDEV_KEY_ESCAPE:
 		case OGLDEV_KEY_q:
 			OgldevBackendLeaveMainLoop();
-			break;
-		case OGLDEV_KEY_A:
-			m_shaderType++;
-			m_shaderType = m_shaderType % 3;
 			break;
 		default:
 			m_pGameCamera->OnKeyboard(OgldevKey);
@@ -231,26 +202,21 @@ public:
 
 private:
 
-	SSAOTechnique m_SSAOTech;
-	GeomPassTech m_geomPassTech;
-	LightingTechnique m_lightingTech;
-	BlurTech m_blurTech;
+	LightingTechnique m_LightingTech;
+	ShadowMapTechnique m_ShadowMapEffect;
 	Camera* m_pGameCamera;
-	Mesh m_mesh;
-	Mesh m_quad;
+	DirectionalLight m_dirLight;
+	BasicMesh m_mesh;
+	Orientation m_meshOrientation[NUM_MESHES];
+	BasicMesh m_quad;
+	Texture* m_pGroundTex;
+	ShadowMapFBO m_shadowMapFBO;
 	PersProjInfo m_persProjInfo;
-	Pipeline m_pipeline;
-	IOBuffer m_depthBuffer;
-	IOBuffer m_aoBuffer;
-	IOBuffer m_blurBuffer;
-	DirectionalLight m_directionalLight;
-	int m_shaderType;
+	OrthoProjInfo m_shadowOrthoProjInfo;
 };
 
 int main(int argc, char** argv)
 {
-	Magick::InitializeMagick(*argv);
-
 	OgldevBackendInit(OGLDEV_BACKEND_TYPE_GLFW, argc, argv, true, false);
 
 	if (!OgldevBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false, "OGLDEV Tutorials")) {

@@ -19,29 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="lessons\blur_tech.cpp" />
-    <ClCompile Include="lessons\geom_pass_tech.cpp" />
     <ClCompile Include="lessons\lighting_technique.cpp" />
     <ClCompile Include="lessons\main.cpp" />
-    <ClCompile Include="lessons\mesh.cpp" />
-    <ClCompile Include="lessons\ssao_technique.cpp" />
+    <ClCompile Include="lessons\shadow_map_technique.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="lessons\shaders\blur.fs" />
-    <None Include="lessons\shaders\blur.vs" />
-    <None Include="lessons\shaders\geometry_pass.fs" />
-    <None Include="lessons\shaders\geometry_pass.vs" />
     <None Include="lessons\shaders\lighting.fs" />
     <None Include="lessons\shaders\lighting.vs" />
-    <None Include="lessons\shaders\ssao.fs" />
-    <None Include="lessons\shaders\ssao.vs" />
+    <None Include="lessons\shaders\shadow_map.fs" />
+    <None Include="lessons\shaders\shadow_map.vs" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="lessons\blur_tech.h" />
-    <ClInclude Include="lessons\geom_pass_tech.h" />
     <ClInclude Include="lessons\lighting_technique.h" />
-    <ClInclude Include="lessons\mesh.h" />
-    <ClInclude Include="lessons\ssao_technique.h" />
+    <ClInclude Include="lessons\shadow_map_technique.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9CB4C79B-C81C-4154-88AE-0B1B972FD644}</ProjectGuid>

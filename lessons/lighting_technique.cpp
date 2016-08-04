@@ -1,13 +1,9 @@
 #include <limits.h>
 #include <string.h>
 
-#include "ogldev_engine_common.h"
 #include "ogldev_math_3d.h"
 #include "ogldev_util.h"
 #include "lighting_technique.h"
-
-#define AO_TEXTURE_UNIT               GL_TEXTURE3
-#define AO_TEXTURE_UNIT_INDEX         3
 
 LightingTechnique::LightingTechnique()
 {
@@ -31,11 +27,11 @@ bool LightingTechnique::Init()
 		return false;
 	}
 
-	m_shaderTypeLocation = GetUniformLocation("gShaderType");
 	m_WVPLocation = GetUniformLocation("gWVP");
+	m_LightWVPLocation = GetUniformLocation("gLightWVP");
 	m_WorldMatrixLocation = GetUniformLocation("gWorld");
-	m_colorTextureLocation = GetUniformLocation("gColorMap");
-	m_aoTextureLocation = GetUniformLocation("gAOMap");
+	m_samplerLocation = GetUniformLocation("gSampler");
+	m_shadowMapLocation = GetUniformLocation("gShadowMap");
 	m_eyeWorldPosLocation = GetUniformLocation("gEyeWorldPos");
 	m_dirLightLocation.Color = GetUniformLocation("gDirectionalLight.Base.Color");
 	m_dirLightLocation.AmbientIntensity = GetUniformLocation("gDirectionalLight.Base.AmbientIntensity");
@@ -45,14 +41,13 @@ bool LightingTechnique::Init()
 	m_matSpecularPowerLocation = GetUniformLocation("gSpecularPower");
 	m_numPointLightsLocation = GetUniformLocation("gNumPointLights");
 	m_numSpotLightsLocation = GetUniformLocation("gNumSpotLights");
-	m_screenSizeLocation = GetUniformLocation("gScreenSize");
 
-	if (m_shaderTypeLocation == INVALID_UNIFORM_LOCATION ||
-		m_dirLightLocation.AmbientIntensity == INVALID_UNIFORM_LOCATION ||
+	if (m_dirLightLocation.AmbientIntensity == INVALID_UNIFORM_LOCATION ||
 		m_WVPLocation == INVALID_UNIFORM_LOCATION ||
+		m_LightWVPLocation == INVALID_UNIFORM_LOCATION ||
 		m_WorldMatrixLocation == INVALID_UNIFORM_LOCATION ||
-		m_colorTextureLocation == INVALID_UNIFORM_LOCATION ||
-		m_aoTextureLocation == INVALID_UNIFORM_LOCATION ||
+		m_samplerLocation == INVALID_UNIFORM_LOCATION ||
+		m_shadowMapLocation == INVALID_UNIFORM_LOCATION ||
 		m_eyeWorldPosLocation == INVALID_UNIFORM_LOCATION ||
 		m_dirLightLocation.Color == INVALID_UNIFORM_LOCATION ||
 		m_dirLightLocation.DiffuseIntensity == INVALID_UNIFORM_LOCATION ||
@@ -60,10 +55,10 @@ bool LightingTechnique::Init()
 		m_matSpecularIntensityLocation == INVALID_UNIFORM_LOCATION ||
 		m_matSpecularPowerLocation == INVALID_UNIFORM_LOCATION ||
 		m_numPointLightsLocation == INVALID_UNIFORM_LOCATION ||
-		m_screenSizeLocation == INVALID_UNIFORM_LOCATION ||
 		m_numSpotLightsLocation == INVALID_UNIFORM_LOCATION) {
-		//     return false;
+		return false;
 	}
+
 
 	for (uint i = 0; i < ARRAY_SIZE_IN_ELEMENTS(m_pointLightsLocation); i++) {
 		char Name[128];
@@ -143,17 +138,7 @@ bool LightingTechnique::Init()
 		}
 	}
 
-	Enable();
-
-	glUniform1i(m_aoTextureLocation, AO_TEXTURE_UNIT_INDEX);
-	glUniform1i(m_colorTextureLocation, COLOR_TEXTURE_UNIT_INDEX);
-
 	return true;
-}
-
-void LightingTechnique::SetShaderType(int ShaderType)
-{
-	glUniform1i(m_shaderTypeLocation, ShaderType);
 }
 
 void LightingTechnique::SetWVP(const Matrix4f& WVP)
@@ -161,14 +146,24 @@ void LightingTechnique::SetWVP(const Matrix4f& WVP)
 	glUniformMatrix4fv(m_WVPLocation, 1, GL_TRUE, (const GLfloat*)WVP.m);
 }
 
+void LightingTechnique::SetLightWVP(const Matrix4f& LightWVP)
+{
+	glUniformMatrix4fv(m_LightWVPLocation, 1, GL_TRUE, (const GLfloat*)LightWVP.m);
+}
+
 void LightingTechnique::SetWorldMatrix(const Matrix4f& WorldInverse)
 {
 	glUniformMatrix4fv(m_WorldMatrixLocation, 1, GL_TRUE, (const GLfloat*)WorldInverse.m);
 }
 
-void LightingTechnique::BindAOBuffer(IOBuffer& aoBuffer)
+void LightingTechnique::SetColorTextureUnit(uint TextureUnit)
 {
-	aoBuffer.BindForReading(AO_TEXTURE_UNIT);
+	glUniform1i(m_samplerLocation, TextureUnit);
+}
+
+void LightingTechnique::SetShadowMapTextureUnit(uint TextureUnit)
+{
+	glUniform1i(m_shadowMapLocation, TextureUnit);
 }
 
 void LightingTechnique::SetDirectionalLight(const DirectionalLight& Light)
@@ -228,9 +223,4 @@ void LightingTechnique::SetSpotLights(uint NumLights, const SpotLight* pLights)
 		glUniform1f(m_spotLightsLocation[i].Atten.Linear, pLights[i].Attenuation.Linear);
 		glUniform1f(m_spotLightsLocation[i].Atten.Exp, pLights[i].Attenuation.Exp);
 	}
-}
-
-void LightingTechnique::SetScreenSize(uint Width, uint Height)
-{
-	glUniform2f(m_screenSizeLocation, (float)Width, (float)Height);
 }
