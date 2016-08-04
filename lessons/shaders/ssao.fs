@@ -1,19 +1,32 @@
 #version 330
 
 in vec2 TexCoord;
+in vec2 ViewRay;
 
 out vec4 FragColor;
 
-uniform sampler2D gPositionMap;
+uniform sampler2D gDepthMap;
 uniform float gSampleRad;
 uniform mat4 gProj;
 
 const int MAX_KERNEL_SIZE = 64;
 uniform vec3 gKernel[MAX_KERNEL_SIZE];
 
+float CalcViewZ(vec2 Coords)
+{
+    float Depth = texture(gDepthMap, Coords).x;
+    float ViewZ = gProj[3][2] / (2 * Depth -1 - gProj[2][2]);
+    return ViewZ;
+}
+
 void main()
 {
-    vec3 Pos = texture(gPositionMap, TexCoord).xyz;
+    float ViewZ = CalcViewZ(TexCoord);
+
+    float ViewX = ViewRay.x * ViewZ;
+    float ViewY = ViewRay.y * ViewZ;
+
+    vec3 Pos = vec3(ViewX, ViewY, ViewZ);
 
     float AO = 0.0;
 
@@ -24,7 +37,7 @@ void main()
         offset.xy /= offset.w;
         offset.xy = offset.xy * 0.5 + vec2(0.5);
             
-        float sampleDepth = texture(gPositionMap, offset.xy).b;
+        float sampleDepth = CalcViewZ(offset.xy);
 
         if (abs(Pos.z - sampleDepth) < gSampleRad) {
             AO += step(sampleDepth,samplePos.z);

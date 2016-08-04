@@ -18,7 +18,6 @@ bool GeomPassTech::Init()
 		return false;
 	}
 
-
 	if (!AddShader(GL_FRAGMENT_SHADER, "lessons/shaders/geometry_pass.fs")) {
 		return false;
 	}
@@ -28,11 +27,8 @@ bool GeomPassTech::Init()
 	}
 
 	m_WVPLocation = GetUniformLocation("gWVP");
-	m_WVLocation = GetUniformLocation("gWV");
 
-
-	if (m_WVPLocation == INVALID_UNIFORM_LOCATION ||
-		m_WVLocation == INVALID_UNIFORM_LOCATION) {
+	if (m_WVPLocation == INVALID_UNIFORM_LOCATION) {
 		return false;
 	}
 
@@ -42,9 +38,4 @@ bool GeomPassTech::Init()
 void GeomPassTech::SetWVP(const Matrix4f& WVP)
 {
 	glUniformMatrix4fv(m_WVPLocation, 1, GL_TRUE, (const GLfloat*)WVP.m);
-}
-
-void GeomPassTech::SetWVMatrix(const Matrix4f& WV)
-{
-	glUniformMatrix4fv(m_WVLocation, 1, GL_TRUE, (const GLfloat*)WV.m);
 }

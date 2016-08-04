@@ -80,6 +80,10 @@ public:
 		Matrix4f PersProjTrans;
 		PersProjTrans.InitPersProjTransform(m_persProjInfo);
 		m_SSAOTech.SetProjMatrix(PersProjTrans);
+		float AspectRatio = m_persProjInfo.Width / m_persProjInfo.Height;
+		m_SSAOTech.SetAspectRatio(AspectRatio);
+		float TanHalfFOV = tanf(ToRadian(m_persProjInfo.FOV / 2.0f));
+		m_SSAOTech.SetTanHalfFOV(TanHalfFOV);
 
 		if (!m_lightingTech.Init()) {
 			OGLDEV_ERROR("Error initializing the lighting technique\n");
@@ -109,7 +113,7 @@ public:
 			return false;
 		}
 
-		if (!m_gBuffer.Init(WINDOW_WIDTH, WINDOW_HEIGHT, true, GL_RGB32F)) {
+		if (!m_depthBuffer.Init(WINDOW_WIDTH, WINDOW_HEIGHT, true, GL_NONE)) {
 			return false;
 		}
 
@@ -154,20 +158,19 @@ public:
 	{
 		m_geomPassTech.Enable();
 
-		m_gBuffer.BindForWriting();
+		m_depthBuffer.BindForWriting();
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_DEPTH_BUFFER_BIT);
 
 		m_pipeline.Orient(m_mesh.GetOrientation());
 		m_geomPassTech.SetWVP(m_pipeline.GetWVPTrans());
-		m_geomPassTech.SetWVMatrix(m_pipeline.GetWVTrans());
 		m_mesh.Render();
 	}
 
 	void SSAOPass()
 	{
 		m_SSAOTech.Enable();
-		m_SSAOTech.BindPositionBuffer(m_gBuffer);
+		m_SSAOTech.BindDepthBuffer(m_depthBuffer);
 
 		m_aoBuffer.BindForWriting();
 
@@ -237,7 +240,7 @@ private:
 	Mesh m_quad;
 	PersProjInfo m_persProjInfo;
 	Pipeline m_pipeline;
-	IOBuffer m_gBuffer;
+	IOBuffer m_depthBuffer;
 	IOBuffer m_aoBuffer;
 	IOBuffer m_blurBuffer;
 	DirectionalLight m_directionalLight;

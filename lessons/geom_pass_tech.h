@@ -6,7 +6,8 @@
 #include "technique.h"
 #include "ogldev_math_3d.h"
 
-class GeomPassTech : public Technique {
+class GeomPassTech : public Technique
+{
 public:
 
 	GeomPassTech();
@@ -14,12 +15,10 @@ public:
 	virtual bool Init();
 
 	void SetWVP(const Matrix4f& WVP);
-	void SetWVMatrix(const Matrix4f& WV);
 
 private:
 
 	GLuint m_WVPLocation;
-	GLuint m_WVLocation;
 };
 
 #endif

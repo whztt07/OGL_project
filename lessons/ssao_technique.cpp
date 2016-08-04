@@ -5,8 +5,8 @@
 #include "ogldev_util.h"
 #include "ssao_technique.h"
 
-#define POSITION_TEXTURE_UNIT           GL_TEXTURE1
-#define POSITION_TEXTURE_UNIT_INDEX     1
+#define DEPTH_TEXTURE_UNIT           GL_TEXTURE1
+#define DEPTH_TEXTURE_UNIT_INDEX     1
 
 SSAOTechnique::SSAOTechnique()
 {
@@ -30,15 +30,19 @@ bool SSAOTechnique::Init()
 		return false;
 	}
 
-	m_posTextureUnitLocation = GetUniformLocation("gPositionMap");
+	m_depthTextureUnitLocation = GetUniformLocation("gDepthMap");
 	m_sampleRadLocation = GetUniformLocation("gSampleRad");
 	m_projMatrixLocation = GetUniformLocation("gProj");
 	m_kernelLocation = GetUniformLocation("gKernel");
+	m_aspectRatioLocation = GetUniformLocation("gAspectRatio");
+	m_tanHalfFOVLocation = GetUniformLocation("gTanHalfFOV");
 
-	if (m_posTextureUnitLocation == INVALID_UNIFORM_LOCATION ||
+	if (m_depthTextureUnitLocation == INVALID_UNIFORM_LOCATION ||
 		m_sampleRadLocation == INVALID_UNIFORM_LOCATION ||
 		m_projMatrixLocation == INVALID_UNIFORM_LOCATION ||
-		m_kernelLocation == INVALID_UNIFORM_LOCATION) {
+		m_kernelLocation == INVALID_UNIFORM_LOCATION ||
+		m_aspectRatioLocation == INVALID_UNIFORM_LOCATION ||
+		m_tanHalfFOVLocation == INVALID_UNIFORM_LOCATION) {
 		return false;
 	}
 
@@ -48,7 +52,7 @@ bool SSAOTechnique::Init()
 
 	GenKernel();
 
-	glUniform1i(m_posTextureUnitLocation, POSITION_TEXTURE_UNIT_INDEX);
+	glUniform1i(m_depthTextureUnitLocation, DEPTH_TEXTURE_UNIT_INDEX);
 
 	GLExitIfError;
 
@@ -75,9 +79,9 @@ void SSAOTechnique::GenKernel()
 	glUniform3fv(m_kernelLocation, KERNEL_SIZE, (const GLfloat*)&kernel[0]);
 }
 
-void SSAOTechnique::BindPositionBuffer(IOBuffer& posBuf)
+void SSAOTechnique::BindDepthBuffer(IOBuffer& depthBuf)
 {
-	posBuf.BindForReading(POSITION_TEXTURE_UNIT);
+	depthBuf.BindForReading(DEPTH_TEXTURE_UNIT);
 }
 
 void SSAOTechnique::SetSampleRadius(float sr)
@@ -88,4 +92,14 @@ void SSAOTechnique::SetSampleRadius(float sr)
 void SSAOTechnique::SetProjMatrix(const Matrix4f& m)
 {
 	glUniformMatrix4fv(m_projMatrixLocation, 1, GL_TRUE, (const GLfloat*)m.m);
+}
+
+void SSAOTechnique::SetAspectRatio(float aspectRatio)
+{
+	glUniform1f(m_aspectRatioLocation, aspectRatio);
+}
+
+void SSAOTechnique::SetTanHalfFOV(float tanHalfFOV)
+{
+	glUniform1f(m_tanHalfFOVLocation, tanHalfFOV);
 }

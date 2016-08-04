@@ -60,16 +60,14 @@ uniform float gMatSpecularIntensity;
 uniform float gSpecularPower; 
 uniform vec2 gScreenSize;
 
-
 vec2 CalcScreenTexCoord()
 {
     return gl_FragCoord.xy / gScreenSize;
 }
-                                                              
-                                                                                            
+                                                                                                                                                     
 vec4 CalcLightInternal(BaseLight Light, vec3 LightDirection, vec3 Normal)                   
 {                                                                                           
-    vec4 AmbientColor = vec4(Light.Color * Light.AmbientIntensity, 1.0f);
+    vec4 AmbientColor = vec4(Light.Color, 1.0f) * Light.AmbientIntensity;
 
     if (gShaderType == SHADER_TYPE_SSAO) {
          AmbientColor *= texture(gAOMap, CalcScreenTexCoord()).r;
@@ -81,14 +79,15 @@ vec4 CalcLightInternal(BaseLight Light, vec3 LightDirection, vec3 Normal)
     vec4 SpecularColor = vec4(0, 0, 0, 0);                                                  
                                                                                             
     if (DiffuseFactor > 0) {                                                                
-        DiffuseColor = vec4(Light.Color * Light.DiffuseIntensity * DiffuseFactor, 1.0f);
+        DiffuseColor = vec4(Light.Color, 1.0f) * Light.DiffuseIntensity * DiffuseFactor;    
                                                                                             
         vec3 VertexToEye = normalize(gEyeWorldPos - WorldPos0);                             
         vec3 LightReflect = normalize(reflect(LightDirection, Normal));                     
-        float SpecularFactor = dot(VertexToEye, LightReflect);                                      
+        float SpecularFactor = dot(VertexToEye, LightReflect);                              
+        SpecularFactor = pow(SpecularFactor, gSpecularPower);                               
         if (SpecularFactor > 0) {                                                           
-            SpecularFactor = pow(SpecularFactor, gSpecularPower);                               
-            SpecularColor = vec4(Light.Color * gMatSpecularIntensity * SpecularFactor, 1.0f);
+            SpecularColor = vec4(Light.Color, 1.0f) *                                       
+                            gMatSpecularIntensity * SpecularFactor;                         
         }                                                                                   
     }                                                                                       
                                                                                             
