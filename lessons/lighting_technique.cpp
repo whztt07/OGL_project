@@ -3,6 +3,7 @@
 
 #include "ogldev_math_3d.h"
 #include "ogldev_util.h"
+#include "ogldev_engine_common.h"
 #include "lighting_technique.h"
 
 LightingTechnique::LightingTechnique()
@@ -28,10 +29,8 @@ bool LightingTechnique::Init()
 	}
 
 	m_WVPLocation = GetUniformLocation("gWVP");
-	m_LightWVPLocation = GetUniformLocation("gLightWVP");
-	m_WorldMatrixLocation = GetUniformLocation("gWorld");
+	m_worldMatrixLocation = GetUniformLocation("gWorld");
 	m_samplerLocation = GetUniformLocation("gSampler");
-	m_shadowMapLocation = GetUniformLocation("gShadowMap");
 	m_eyeWorldPosLocation = GetUniformLocation("gEyeWorldPos");
 	m_dirLightLocation.Color = GetUniformLocation("gDirectionalLight.Base.Color");
 	m_dirLightLocation.AmbientIntensity = GetUniformLocation("gDirectionalLight.Base.AmbientIntensity");
@@ -44,10 +43,8 @@ bool LightingTechnique::Init()
 
 	if (m_dirLightLocation.AmbientIntensity == INVALID_UNIFORM_LOCATION ||
 		m_WVPLocation == INVALID_UNIFORM_LOCATION ||
-		m_LightWVPLocation == INVALID_UNIFORM_LOCATION ||
-		m_WorldMatrixLocation == INVALID_UNIFORM_LOCATION ||
+		m_worldMatrixLocation == INVALID_UNIFORM_LOCATION ||
 		m_samplerLocation == INVALID_UNIFORM_LOCATION ||
-		m_shadowMapLocation == INVALID_UNIFORM_LOCATION ||
 		m_eyeWorldPosLocation == INVALID_UNIFORM_LOCATION ||
 		m_dirLightLocation.Color == INVALID_UNIFORM_LOCATION ||
 		m_dirLightLocation.DiffuseIntensity == INVALID_UNIFORM_LOCATION ||
@@ -59,10 +56,38 @@ bool LightingTechnique::Init()
 		return false;
 	}
 
+	for (uint i = 0; i < ARRAY_SIZE_IN_ELEMENTS(m_shadowMapLocation); i++) {
+		char Name[128] = { 0 };
+		SNPRINTF(Name, sizeof(Name), "gShadowMap[%d]", i);
+		m_shadowMapLocation[i] = GetUniformLocation(Name);
+
+		if (m_shadowMapLocation[i] == INVALID_UNIFORM_LOCATION) {
+			return false;
+		}
+	}
+
+	for (uint i = 0; i < ARRAY_SIZE_IN_ELEMENTS(m_lightWVPLocation); i++) {
+		char Name[128] = { 0 };
+		SNPRINTF(Name, sizeof(Name), "gLightWVP[%d]", i);
+		m_lightWVPLocation[i] = GetUniformLocation(Name);
+
+		if (m_lightWVPLocation[i] == INVALID_UNIFORM_LOCATION) {
+			return false;
+		}
+	}
+
+	for (uint i = 0; i < ARRAY_SIZE_IN_ELEMENTS(m_cascadeEndClipSpace); i++) {
+		char Name[128] = { 0 };
+		SNPRINTF(Name, sizeof(Name), "gCascadeEndClipSpace[%d]", i);
+		m_cascadeEndClipSpace[i] = GetUniformLocation(Name);
+
+		if (m_cascadeEndClipSpace[i] == INVALID_UNIFORM_LOCATION) {
+			return false;
+		}
+	}
 
 	for (uint i = 0; i < ARRAY_SIZE_IN_ELEMENTS(m_pointLightsLocation); i++) {
-		char Name[128];
-		memset(Name, 0, sizeof(Name));
+		char Name[128] = { 0 };
 		SNPRINTF(Name, sizeof(Name), "gPointLights[%d].Base.Color", i);
 		m_pointLightsLocation[i].Color = GetUniformLocation(Name);
 
@@ -146,14 +171,20 @@ void LightingTechnique::SetWVP(const Matrix4f& WVP)
 	glUniformMatrix4fv(m_WVPLocation, 1, GL_TRUE, (const GLfloat*)WVP.m);
 }
 
-void LightingTechnique::SetLightWVP(const Matrix4f& LightWVP)
+
+void LightingTechnique::SetLightWVP(uint CascadeIndex, const Matrix4f& LightWVP)
 {
-	glUniformMatrix4fv(m_LightWVPLocation, 1, GL_TRUE, (const GLfloat*)LightWVP.m);
+	glUniformMatrix4fv(m_lightWVPLocation[CascadeIndex], 1, GL_TRUE, (const GLfloat*)LightWVP.m);
+}
+
+void LightingTechnique::SetCascadeEndClipSpace(uint CascadeIndex, float End)
+{
+	glUniform1f(m_cascadeEndClipSpace[CascadeIndex], End);
 }
 
 void LightingTechnique::SetWorldMatrix(const Matrix4f& WorldInverse)
 {
-	glUniformMatrix4fv(m_WorldMatrixLocation, 1, GL_TRUE, (const GLfloat*)WorldInverse.m);
+	glUniformMatrix4fv(m_worldMatrixLocation, 1, GL_TRUE, (const GLfloat*)WorldInverse.m);
 }
 
 void LightingTechnique::SetColorTextureUnit(uint TextureUnit)
@@ -161,9 +192,14 @@ void LightingTechnique::SetColorTextureUnit(uint TextureUnit)
 	glUniform1i(m_samplerLocation, TextureUnit);
 }
 
-void LightingTechnique::SetShadowMapTextureUnit(uint TextureUnit)
+void LightingTechnique::SetShadowMapTextureUnit()
 {
-	glUniform1i(m_shadowMapLocation, TextureUnit);
+	glUniform1i(m_shadowMapLocation[0], CASCACDE_SHADOW_TEXTURE_UNIT0_INDEX);
+	GLExitIfError
+		glUniform1i(m_shadowMapLocation[1], CASCACDE_SHADOW_TEXTURE_UNIT1_INDEX);
+	GLExitIfError
+		glUniform1i(m_shadowMapLocation[2], CASCACDE_SHADOW_TEXTURE_UNIT2_INDEX);
+	GLExitIfError
 }
 
 void LightingTechnique::SetDirectionalLight(const DirectionalLight& Light)

@@ -6,27 +6,30 @@
 #include "technique.h"
 #include "ogldev_math_3d.h"
 #include "ogldev_lights_common.h"
-#include "shadow_map_technique.h"
+#include "csm_technique.h"
+
+#define NUM_CASCADES 3
 
 class LightingTechnique : public Technique
 {
 public:
 
-	static const unsigned int MAX_POINT_LIGHTS = 2;
-	static const unsigned int MAX_SPOT_LIGHTS = 2;
+	static const uint MAX_POINT_LIGHTS = 2;
+	static const uint MAX_SPOT_LIGHTS = 2;
 
 	LightingTechnique();
 
 	virtual bool Init();
 
 	void SetWVP(const Matrix4f& WVP);
-	void SetLightWVP(const Matrix4f& LightWVP);
+	void SetLightWVP(uint CascadeIndex, const Matrix4f& LightWVP);
+	void SetCascadeEndClipSpace(uint CascadeIndex, float End);
 	void SetWorldMatrix(const Matrix4f& WVP);
-	void SetColorTextureUnit(unsigned int TextureUnit);
-	void SetShadowMapTextureUnit(unsigned int TextureUnit);
+	void SetColorTextureUnit(uint TextureUnit);
+	void SetShadowMapTextureUnit();
 	void SetDirectionalLight(const DirectionalLight& Light);
-	void SetPointLights(unsigned int NumLights, const PointLight* pLights);
-	void SetSpotLights(unsigned int NumLights, const SpotLight* pLights);
+	void SetPointLights(uint NumLights, const PointLight* pLights);
+	void SetSpotLights(uint NumLights, const SpotLight* pLights);
 	void SetEyeWorldPos(const Vector3f& EyeWorldPos);
 	void SetMatSpecularIntensity(float Intensity);
 	void SetMatSpecularPower(float Power);
@@ -34,10 +37,11 @@ public:
 private:
 
 	GLuint m_WVPLocation;
-	GLuint m_LightWVPLocation;
-	GLuint m_WorldMatrixLocation;
+	GLuint m_lightWVPLocation[NUM_CASCADES];
+	GLuint m_cascadeEndClipSpace[NUM_CASCADES];
+	GLuint m_worldMatrixLocation;
 	GLuint m_samplerLocation;
-	GLuint m_shadowMapLocation;
+	GLuint m_shadowMapLocation[NUM_CASCADES];
 	GLuint m_eyeWorldPosLocation;
 	GLuint m_matSpecularIntensityLocation;
 	GLuint m_matSpecularPowerLocation;
