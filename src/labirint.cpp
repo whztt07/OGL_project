@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <conio.h>
-#include <graphics.h>
 #include <time.h>
 
 const short N = 20;
@@ -36,7 +35,7 @@ void menu() {
 		switch (c) {
 		case '1': lab(); break;
 		case '2': faway(); break;
-		case '0': closegraph(); return;
+		case '0': return;
 		default: puts("WRONG CASE");
 		}
 	}
@@ -125,15 +124,6 @@ void lab() {
 	}
 	up[0][rand() % N] = 0;
 	down[N - 1][rand() % N] = 0;
-	closegraph();
-	initwindow(X_max, Y_max);
-	for (i = 0; i<N; i++)
-		for (j = 0; j<N; j++) {
-			if (up[i][j]) line(j*CSize + Cntr, i*CSize + Cntr, (j + 1)*CSize + Cntr, i*CSize + Cntr);
-			if (down[i][j]) line(j*CSize + Cntr, (i + 1)*CSize + Cntr, (j + 1)*CSize + Cntr, (i + 1)*CSize + Cntr);
-			if (left[i][j]) line(j*CSize + Cntr, i*CSize + Cntr, j*CSize + Cntr, (i + 1)*CSize + Cntr);
-			if (right[i][j]) line((j + 1)*CSize + Cntr, i*CSize + Cntr, (j + 1)*CSize + Cntr, (i + 1)*CSize + Cntr);
-		}
 }
 
 void faway() {
@@ -186,12 +176,6 @@ void faway() {
 		}
 	}
 	way[0][start] = 1;
-	setfillstyle(1, 14);
-	for (i = 0; i<N; i++)
-		for (j = 0; j<N; j++) {
-			if (way[i][j])
-				bar(j*CSize + Cntr + CSize / 4, i*CSize + Cntr + CSize / 4, (j + 1)*CSize + Cntr - CSize / 4, (i + 1)*CSize + Cntr - CSize / 4);
-		}
 }
 
 void setwave(short wave[][N], short i, short j, short value, short finish) {
