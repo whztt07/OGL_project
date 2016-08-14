@@ -114,39 +114,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="src\Sources\Bunches.cpp" />
-    <ClCompile Include="src\Sources\Button.cpp" />
-    <ClCompile Include="src\Sources\Continue_game.cpp" />
-    <ClCompile Include="src\Sources\create_game.cpp" />
-    <ClCompile Include="src\Sources\create_snapshot.cpp" />
-    <ClCompile Include="src\Sources\loaddata.cpp" />
-    <ClCompile Include="src\Sources\loadgame.cpp" />
-    <ClCompile Include="src\Sources\Logic_Nim.cpp" />
-    <ClCompile Include="src\Sources\Main.cpp" />
-    <ClCompile Include="src\Sources\Menu.cpp" />
-    <ClCompile Include="src\Sources\New_game.cpp" />
-    <ClCompile Include="src\Sources\Pause.cpp" />
-    <ClCompile Include="src\Sources\Rules.cpp" />
-    <ClCompile Include="src\Sources\savedata.cpp" />
-    <ClCompile Include="src\Sources\savegame.cpp" />
-    <ClCompile Include="src\Sources\save_checkdata.cpp" />
-    <ClCompile Include="src\Sources\secondary_functions.cpp" />
-    <ClCompile Include="src\Sources\settings.cpp" />
-    <ClCompile Include="src\Sources\settings_config.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\Headers\Bunches.h" />
-    <ClInclude Include="src\Headers\Button.h" />
-    <ClInclude Include="src\Headers\create_game.h" />
-    <ClInclude Include="src\Headers\func_for_menu.h" />
-    <ClInclude Include="src\Headers\Logic_Nim.h" />
-    <ClInclude Include="src\Headers\Menu.h" />
-    <ClInclude Include="src\Headers\Save.h" />
-    <ClInclude Include="src\Headers\secondary_functions.h" />
-    <ClInclude Include="src\Headers\settings.h" />
-    <ClInclude Include="src\Headers\settings_config.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
