@@ -26,7 +26,6 @@ bld/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
-save/
 
 # Visual Studio 2015 cache/options directory
 .vs/
@@ -250,5 +249,8 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+
+# TRPO Coursework-specific files
+save/
 *.save
 *.cfg
