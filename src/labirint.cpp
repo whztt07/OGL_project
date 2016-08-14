@@ -20,7 +20,7 @@ void lab(void);
 void faway(void);
 void setwave(short[N][N], short, short, short, short);
 
-main() {
+int main(int argc, char** argv) {
 	menu();
 }
 
