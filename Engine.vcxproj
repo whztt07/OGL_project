@@ -19,19 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="lessons\csm_technique.cpp" />
-    <ClCompile Include="lessons\lighting_technique.cpp" />
-    <ClCompile Include="lessons\main.cpp" />
+    <ClCompile Include="engine\csm_technique.cpp" />
+    <ClCompile Include="engine\lighting_technique.cpp" />
+    <ClCompile Include="engine\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="lessons\csm_technique.h" />
-    <ClInclude Include="lessons\lighting_technique.h" />
+    <ClInclude Include="engine\csm_technique.h" />
+    <ClInclude Include="engine\lighting_technique.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="lessons\shaders\csm.fs" />
-    <None Include="lessons\shaders\csm.vs" />
-    <None Include="lessons\shaders\lighting.fs" />
-    <None Include="lessons\shaders\lighting.vs" />
+    <None Include="engine\shaders\csm.fs" />
+    <None Include="engine\shaders\csm.vs" />
+    <None Include="engine\shaders\lighting.fs" />
+    <None Include="engine\shaders\lighting.vs" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9CB4C79B-C81C-4154-88AE-0B1B972FD644}</ProjectGuid>

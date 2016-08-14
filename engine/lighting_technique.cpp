@@ -16,11 +16,11 @@ bool LightingTechnique::Init()
 		return false;
 	}
 
-	if (!AddShader(GL_VERTEX_SHADER, "lessons/shaders/lighting.vs")) {
+	if (!AddShader(GL_VERTEX_SHADER, "engine/shaders/lighting.vs")) {
 		return false;
 	}
 
-	if (!AddShader(GL_FRAGMENT_SHADER, "lessons/shaders/lighting.fs")) {
+	if (!AddShader(GL_FRAGMENT_SHADER, "engine/shaders/lighting.fs")) {
 		return false;
 	}
 

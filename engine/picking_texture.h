@@ -8,35 +8,35 @@
 class PickingTexture
 {
 public:
-	PickingTexture();
+    PickingTexture();
 
-	~PickingTexture();
+    ~PickingTexture();
 
-	bool Init(unsigned int WindowWidth, unsigned int WindowHeight);
+    bool Init(unsigned int WindowWidth, unsigned int WindowHeight);
 
-	void EnableWriting();
+    void EnableWriting();
+    
+    void DisableWriting();
+    
+    struct PixelInfo {
+        float ObjectID;
+        float DrawID;
+        float PrimID;
+        
+        PixelInfo()
+        {
+            ObjectID = 0.0f;
+            DrawID = 0.0f;
+            PrimID = 0.0f;
+        }
+    };
 
-	void DisableWriting();
-
-	struct PixelInfo {
-		unsigned int ObjectID;
-		unsigned int DrawID;
-		unsigned int PrimID;
-
-		PixelInfo()
-		{
-			ObjectID = 0;
-			DrawID = 0;
-			PrimID = 0;
-		}
-	};
-
-	PixelInfo ReadPixel(unsigned int x, unsigned int y);
-
+    PixelInfo ReadPixel(unsigned int x, unsigned int y);
+    
 private:
-	GLuint m_fbo;
-	GLuint m_pickingTexture;
-	GLuint m_depthTexture;
+    GLuint m_fbo;
+    GLuint m_pickingTexture;
+    GLuint m_depthTexture;
 };
 
 #endif	/* SHADOWMAPFBO_H */

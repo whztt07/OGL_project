@@ -17,11 +17,11 @@ bool SkinningTechnique::Init()
 		return false;
 	}
 
-	if (!AddShader(GL_VERTEX_SHADER, "lessons/shaders/skinning.vs")) {
+	if (!AddShader(GL_VERTEX_SHADER, "engine/shaders/skinning.vs")) {
 		return false;
 	}
 
-	if (!AddShader(GL_FRAGMENT_SHADER, "lessons/shaders/skinning.fs")) {
+	if (!AddShader(GL_FRAGMENT_SHADER, "engine/shaders/skinning.fs")) {
 		return false;
 	}
 

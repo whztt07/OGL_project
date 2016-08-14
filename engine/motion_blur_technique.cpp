@@ -11,11 +11,11 @@ bool MotionBlurTechnique::Init()
 		return false;
 	}
 
-	if (!AddShader(GL_VERTEX_SHADER, "lessons/shaders/motion_blur.vs")) {
+	if (!AddShader(GL_VERTEX_SHADER, "engine/shaders/motion_blur.vs")) {
 		return false;
 	}
 
-	if (!AddShader(GL_FRAGMENT_SHADER, "lessons/shaders/motion_blur.fs")) {
+	if (!AddShader(GL_FRAGMENT_SHADER, "engine/shaders/motion_blur.fs")) {
 		return false;
 	}
 

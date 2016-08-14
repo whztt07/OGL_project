@@ -4,28 +4,29 @@
 #define	PICKING_TECHNIQUE_H
 
 #include "technique.h"
-#include "math_3d.h"
+#include "ogldev_math_3d.h"
 #include "render_callbacks.h"
+#include "ogldev_types.h"
 
 class PickingTechnique : public Technique, public IRenderCallbacks
 {
 public:
 
-	PickingTechnique();
+    PickingTechnique();
 
-	virtual bool Init();
+    virtual bool Init();
 
-	void SetWVP(const Matrix4f& WVP);
+    void SetWVP(const Matrix4f& WVP);
 
-	void SetObjectIndex(unsigned int ObjectIndex);
-
-	void DrawStartCB(unsigned int DrawIndex);
-
+    void SetObjectIndex(uint ObjectIndex);
+    
+    void DrawStartCB(uint DrawIndex);
+    
 private:
-
-	GLuint m_WVPLocation;
-	GLuint m_drawIndexLocation;
-	GLuint m_objectIndexLocation;
+    
+    GLuint m_WVPLocation;
+    GLuint m_drawIndexLocation;
+    GLuint m_objectIndexLocation;
 };
 
 #endif	/* PICKING_TECHNIQUE_H */

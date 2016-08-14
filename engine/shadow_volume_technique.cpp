@@ -1,48 +1,53 @@
 #include <limits.h>
 #include <string>
-#include <GL/glfx.h>
-#include <assert.h>
 
 #include "shadow_volume_technique.h"
 
 using namespace std;
 
-static const char* pEffectFile = "lessons/shaders/shadow_volume.glsl";
-
-ShadowVolumeTechnique::ShadowVolumeTechnique() : Technique(pEffectFile)
-{
+ShadowVolumeTechnique::ShadowVolumeTechnique()
+{   
 }
 
 bool ShadowVolumeTechnique::Init()
 {
-	if (!CompileProgram("ShadowVolume")) {
-		return false;
-	}
+    if (!Technique::Init()) {
+        return false;
+    }
 
-	m_VPLocation = GetUniformLocation("gVP");
-	m_WorldMatrixLocation = GetUniformLocation("gWorld");
-	m_lightPosLocation = GetUniformLocation("gLightPos");
+    if (!AddShader(GL_VERTEX_SHADER, "engine/shaders/shadow_volume.vs")) {
+        return false;
+    }
 
-	if (m_VPLocation == INVALID_UNIFORM_LOCATION ||
-		m_WorldMatrixLocation == INVALID_UNIFORM_LOCATION ||
-		m_lightPosLocation == INVALID_UNIFORM_LOCATION) {
-		return false;
-	}
+    if (!AddShader(GL_GEOMETRY_SHADER, "engine/shaders/shadow_volume.gs")) {
+        return false;
+    }
 
-	return true;
+    if (!AddShader(GL_FRAGMENT_SHADER, "engine/shaders/shadow_volume.fs")) {
+        return false;
+    }
+
+    if (!Finalize()) {
+        return false;
+    }
+    
+    m_WVPLocation = GetUniformLocation("gWVP");
+    m_lightPosLocation = GetUniformLocation("gLightPos");
+
+    if (m_WVPLocation == INVALID_UNIFORM_LOCATION ||
+        m_lightPosLocation == INVALID_UNIFORM_LOCATION) {
+        return false;
+    }
+            
+    return true;
 }
 
-void ShadowVolumeTechnique::SetVP(const Matrix4f& VP)
+void ShadowVolumeTechnique::SetWVP(const Matrix4f& WVP)
 {
-	glUniformMatrix4fv(m_VPLocation, 1, GL_TRUE, (const GLfloat*)VP.m);
-}
-
-void ShadowVolumeTechnique::SetWorldMatrix(const Matrix4f& WorldInverse)
-{
-	glUniformMatrix4fv(m_WorldMatrixLocation, 1, GL_TRUE, (const GLfloat*)WorldInverse.m);
+    glUniformMatrix4fv(m_WVPLocation, 1, GL_TRUE, (const GLfloat*)WVP.m);    
 }
 
 void ShadowVolumeTechnique::SetLightPos(const Vector3f& Pos)
 {
-	glUniform3f(m_lightPosLocation, Pos.x, Pos.y, Pos.z);
+    glUniform3f(m_lightPosLocation, Pos.x, Pos.y, Pos.z);
 }

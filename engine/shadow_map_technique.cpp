@@ -11,11 +11,11 @@ bool ShadowMapTechnique::Init()
 		return false;
 	}
 
-	if (!AddShader(GL_VERTEX_SHADER, "lessons/shaders/shadow_map.vs")) {
+	if (!AddShader(GL_VERTEX_SHADER, "engine/shaders/shadow_map.vs")) {
 		return false;
 	}
 
-	if (!AddShader(GL_FRAGMENT_SHADER, "lessons/shaders/shadow_map.fs")) {
+	if (!AddShader(GL_FRAGMENT_SHADER, "engine/shaders/shadow_map.fs")) {
 		return false;
 	}
 

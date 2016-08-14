@@ -51,12 +51,12 @@ bool BasicLightingTechnique::Init()
         return false;
     }
 
-    if (!AddShader(GL_VERTEX_SHADER, "lessons/shaders/basic_lighting.vs")) {
+    if (!AddShader(GL_VERTEX_SHADER, "engine/shaders/basic_lighting.vs")) {
         return false;
     }
 
 
-    if (!AddShader(GL_FRAGMENT_SHADER, "lessons/shaders/basic_lighting.fs")) {
+    if (!AddShader(GL_FRAGMENT_SHADER, "engine/shaders/basic_lighting.fs")) {
         return false;
     }
 

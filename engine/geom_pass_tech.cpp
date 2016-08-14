@@ -14,11 +14,11 @@ bool GeomPassTech::Init()
 		return false;
 	}
 
-	if (!AddShader(GL_VERTEX_SHADER, "lessons/shaders/geometry_pass.vs")) {
+	if (!AddShader(GL_VERTEX_SHADER, "engine/shaders/geometry_pass.vs")) {
 		return false;
 	}
 
-	if (!AddShader(GL_FRAGMENT_SHADER, "lessons/shaders/geometry_pass.fs")) {
+	if (!AddShader(GL_FRAGMENT_SHADER, "engine/shaders/geometry_pass.fs")) {
 		return false;
 	}
 

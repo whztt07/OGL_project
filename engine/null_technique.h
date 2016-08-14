@@ -4,21 +4,20 @@
 #define	NULL_TECHNIQUE_H
 
 #include "technique.h"
-#include "math_3d.h"
+#include "ogldev_math_3d.h"
 
-class NullTechnique : public Technique
-{
+class NullTechnique : public Technique {
 public:
 
-	NullTechnique();
+    NullTechnique();
 
-	virtual bool Init();
+    virtual bool Init();
 
-	void SetWVP(const Matrix4f& WVP);
+    void SetWVP(const Matrix4f& WVP);
 
 private:
 
-	GLuint m_WVPLocation;
+    GLuint m_WVPLocation;
 };
 
 #endif
