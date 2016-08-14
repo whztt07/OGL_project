@@ -1,9 +1,4 @@
-uniform mat4 gWVP;
-
-shader VSmain(in vec3 Position)
-{          
-    gl_Position = gWVP * vec4(Position, 1.0);
-}
+#version 330
 
 struct BaseLight
 {
@@ -56,21 +51,21 @@ vec4 CalcLightInternal(BaseLight Light,
 					   vec3 WorldPos,
 					   vec3 Normal)
 {
-    vec4 AmbientColor = vec4(Light.Color, 1.0f) * Light.AmbientIntensity;
+    vec4 AmbientColor = vec4(Light.Color * Light.AmbientIntensity, 1.0);
     float DiffuseFactor = dot(Normal, -LightDirection);
 
     vec4 DiffuseColor  = vec4(0, 0, 0, 0);
     vec4 SpecularColor = vec4(0, 0, 0, 0);
 
-    if (DiffuseFactor > 0) {
-        DiffuseColor = vec4(Light.Color, 1.0f) * Light.DiffuseIntensity * DiffuseFactor;
+    if (DiffuseFactor > 0.0) {
+        DiffuseColor = vec4(Light.Color * Light.DiffuseIntensity * DiffuseFactor, 1.0);
 
         vec3 VertexToEye = normalize(gEyeWorldPos - WorldPos);
         vec3 LightReflect = normalize(reflect(LightDirection, Normal));
-        float SpecularFactor = dot(VertexToEye, LightReflect);
-        SpecularFactor = pow(SpecularFactor, gSpecularPower);
-        if (SpecularFactor > 0) {
-            SpecularColor = vec4(Light.Color, 1.0f) * gMatSpecularIntensity * SpecularFactor;
+        float SpecularFactor = dot(VertexToEye, LightReflect);        
+        if (SpecularFactor > 0.0) {
+            SpecularFactor = pow(SpecularFactor, gSpecularPower);
+            SpecularColor = vec4(Light.Color * gMatSpecularIntensity * SpecularFactor, 1.0);
         }
     }
 
@@ -102,26 +97,14 @@ vec4 CalcPointLight(vec3 WorldPos, vec3 Normal)
     return Color / Attenuation;
 }
 
-vec4 CalcSpotLight(vec3 WorldPos, vec3 Normal)
-{
-    vec3 LightToPixel = normalize(WorldPos - gSpotLight.Base.Position);
-    float SpotFactor = dot(LightToPixel, gSpotLight.Direction);
-
-    if (SpotFactor > gSpotLight.Cutoff) {
-        vec4 Color = CalcPointLight(WorldPos, Normal);
-        return Color * (1.0 - (1.0 - SpotFactor) * 1.0/(1.0 - gSpotLight.Cutoff));
-    }
-    else {
-        return vec4(0,0,0,0);
-    }                                                                                       
-}
-
 vec2 CalcTexCoord()
 {
     return gl_FragCoord.xy / gScreenSize;
 }
 
-shader FSmainDirLight(out vec4 FragColor)
+out vec4 FragColor;
+
+void main()
 {
     vec2 TexCoord = CalcTexCoord();
 	vec3 WorldPos = texture(gPositionMap, TexCoord).xyz;
@@ -131,43 +114,3 @@ shader FSmainDirLight(out vec4 FragColor)
 
 	FragColor = vec4(Color, 1.0) * CalcDirectionalLight(WorldPos, Normal);
 }
-
-shader FSmainPointLight(out vec4 FragColor)
-{
-    vec2 TexCoord = CalcTexCoord();
-	vec3 WorldPos = texture(gPositionMap, TexCoord).xyz;
-	vec3 Color = texture(gColorMap, TexCoord).xyz;
-	vec3 Normal = texture(gNormalMap, TexCoord).xyz;
-	Normal = normalize(Normal);
-
-    FragColor = vec4(Color, 1.0) * CalcPointLight(WorldPos, Normal);
-}
-
-shader FSmainSpotLight(out vec4 FragColor)
-{
-    vec2 TexCoord = CalcTexCoord();
-	vec3 WorldPos = texture(gPositionMap, TexCoord).xyz;
-	vec3 Color = texture(gColorMap, TexCoord).xyz;
-	vec3 Normal = texture(gNormalMap, TexCoord).xyz;
-	Normal = normalize(Normal);
-
-    FragColor = vec4(Color, 1.0) * CalcSpotLight(WorldPos, Normal);
-}
-
-program DirLightPass
-{
-    vs(410)=VSmain();
-    fs(410)=FSmainDirLight();
-};
-
-program PointLightPass
-{
-    vs(410)=VSmain();
-    fs(410)=FSmainPointLight();
-};
-
-program SpotLightPass
-{
-    vs(410)=VSmain();
-    fs(410)=FSmainSpotLight();
-};
