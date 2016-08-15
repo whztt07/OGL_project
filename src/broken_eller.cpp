@@ -3,54 +3,24 @@
 #include <conio.h>
 #include <time.h>
 
-const short N = 20;
-const short CSize = 25;
-const short Cntr = 5;
-const short X_max = N*CSize + 2 * Cntr;
-const short Y_max = N*CSize + 2 * Cntr;
+#include "broken_eller.h"
 
-bool right[N][N];
-bool left[N][N];
-bool up[N][N];
-bool down[N][N];
+Cell cell[N][N];
 
-void menu(void);
-void lab(void);
-void faway(void);
-void setwave(short[N][N], short, short, short, short);
-
-int main(int argc, char** argv) {
-	menu();
+BrokenEller::BrokenEller()
+{
 }
 
-void menu() {
-	char c;
-	while (1) {
-		system("CLS");
-		puts("      MENU:      ");
-		puts("  1 - MAKE LABIRINT  ");
-		puts("  2 - FIND A WAY  ");
-		puts("  0 - EXIT  ");
-		c = _getch();
-		switch (c) {
-		case '1': lab(); break;
-		case '2': faway(); break;
-		case '0': return;
-		default: puts("WRONG CASE");
-		}
-	}
-}
-
-void lab() {
+void BrokenEller::lab() {
 	short i, j, mn[N][N], uniq = 1, k = 0;
 	srand(time(0));
 	for (i = 0; i<N; i++) {
-		right[i][N - 1] = 1;
-		left[i][0] = 1;
+		cell[i][N - 1].right = Open;
+		cell[i][0].left = Open;
 	}
 	for (i = 0; i<N; i++) {
 		mn[0][i] = 0;
-		up[0][i] = 1;
+		cell[0][i].up = Open;
 	}
 	while (k<N) {
 		for (i = 0; i<N; i++)
@@ -58,79 +28,79 @@ void lab() {
 				mn[k][i] = uniq++;
 		for (i = 0; i<N - 1; i++) {
 			if (mn[k][i] == mn[k][i + 1])
-				right[k][i] = 1;
+				cell[k][i].right = Open;
 			else {
 				if (rand() % 2)
-					right[k][i] = 1;
+					cell[k][i].right = Open;
 				else {
-					right[k][i] = 0;
+					cell[k][i].right = Close;
 					mn[k][i + 1] = mn[k][i];
 				}
 			}
 		}
 		for (i = 0; i<N; i++) {
 			if (rand() % 2)
-				down[k][i] = 1;
+				cell[k][i].down = Open;
 			else
-				down[k][i] = 0;
+				cell[k][i].down = Close;
 			if (mn[k][i - 1] != mn[k][i] && mn[k][i] != mn[k][i + 1])
-				down[k][i] = 0;
+				cell[k][i].down = Close;
 			else {
 				if (mn[k][i] != mn[k][i + 1]) {
 					j = i - 1;
 					short flag = 1;
 					while (mn[k][j] == mn[k][i]) {
-						if (!down[k][j]) {
+						if (!cell[k][j].down) {
 							flag = 0;
 							break;
 						}
 						j--;
 					}
 					if (flag)
-						down[k][i] = 0;
+						cell[k][i].down = Close;
 				}
 			}
 		}
 		if (k<N - 1) {
 			k++;
 			for (i = 0; i<N; i++) {
-				if (down[k - 1][i]) {
+				if (cell[k - 1][i].down) {
 					mn[k][i] = 0;
-					up[k][i] = 1;
+					cell[k][i].up = Open;
 				}
 				else {
 					mn[k][i] = mn[k - 1][i];
-					up[k][i] = 0;
+					cell[k][i].up = Close;
 				}
-				if (right[k - 1][i])
-					left[k - 1][i + 1] = 1;
+				if (cell[k - 1][i].right)
+					cell[k - 1][i + 1].left = Open;
 				else
-					left[k - 1][i + 1] = 0;
-				down[k][i] = 0;
+					cell[k - 1][i + 1].left = Close;
+				cell[k][i].down = Close;
 			}
 			for (i = 0; i<N - 1; i++)
-				right[k][i] = 0;
+				cell[k][i].right = Close;
 		}
 		else {
 			for (i = 0; i<N; i++) {
-				down[k][i] = 1;
+				cell[k][i].down = Open;
 				if (mn[k][i] != mn[k][i + 1])
-					right[k][i] = 0;
-				left[k][i] = right[k][i - 1];
+					cell[k][i].right = Close;
+				cell[k][i].left = cell[k][i - 1].right;
 			}
-			right[k][N - 1] = 1;
+			cell[k][N - 1].right = Open;
 			k++;
 		}
 	}
-	up[0][rand() % N] = 0;
-	down[N - 1][rand() % N] = 0;
+	cell[0][rand() % N].up = Close;
+	cell[N - 1][rand() % N].down = Close;
 }
 
-void faway() {
+void BrokenEller::faway() {
 	short wave[N][N], i, j, start, fin, len;
 	bool way[N][N];
 	for (i = 0; i<N; i++)
-		if (!up[0][i]) {
+		if (!cell[0][i].up) {
 			wave[0][i] = N*N;
 			start = i;
 		}
@@ -140,7 +110,7 @@ void faway() {
 		for (j = 0; j<N; j++)
 			wave[i][j] = N*N;
 	for (i = 0; i<N; i++)
-		if (!down[N - 1][i]) {
+		if (!cell[N - 1][i].down) {
 			fin = i;
 			break;
 		}
@@ -154,22 +124,22 @@ void faway() {
 	j = fin;
 	len = wave[i][j];
 	while (len) {
-		if (wave[i - 1][j] == len - 1 && i>0 && !up[i][j]) {
+		if (wave[i - 1][j] == len - 1 && i>0 && !cell[i][j].up) {
 			len--;
 			i--;
 			way[i][j] = 1;
 		}
-		if (wave[i][j - 1] == len - 1 && j>0 && !left[i][j]) {
+		if (wave[i][j - 1] == len - 1 && j>0 && !cell[i][j].left) {
 			len--;
 			j--;
 			way[i][j] = 1;
 		}
-		if (wave[i][j + 1] == len - 1 && j<N - 1 && !right[i][j]) {
+		if (wave[i][j + 1] == len - 1 && j<N - 1 && !cell[i][j].right) {
 			len--;
 			j++;
 			way[i][j] = 1;
 		}
-		if (wave[i + 1][j] == len - 1 && i<N - 1 && !down[i][j]) {
+		if (wave[i + 1][j] == len - 1 && i<N - 1 && !cell[i][j].down) {
 			len--;
 			i++;
 			way[i][j] = 1;
@@ -178,20 +148,20 @@ void faway() {
 	way[0][start] = 1;
 }
 
-void setwave(short wave[][N], short i, short j, short value, short finish) {
+void BrokenEller::setwave(short wave[][N], short i, short j, short value, short finish) {
 	if (wave[i][j]>value && value<wave[N - 1][finish])
 		wave[i][j] = value;
 	else
 		return;
-	if (!down[i][j])
+	if (!cell[i][j].down)
 		if (i<N - 1)
 			setwave(wave, i + 1, j, value + 1, finish);
 		else
 			return;
-	if (!up[i][j] && i>0)
+	if (!cell[i][j].up && i>0)
 		setwave(wave, i - 1, j, value + 1, finish);
-	if (!left[i][j] && j>0)
+	if (!cell[i][j].left && j>0)
 		setwave(wave, i, j - 1, value + 1, finish);
-	if (!right[i][j] && j<N - 1)
+	if (!cell[i][j].right && j<N - 1)
 		setwave(wave, i, j + 1, value + 1, finish);
 }
