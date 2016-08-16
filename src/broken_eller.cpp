@@ -3,143 +3,144 @@
 #include <conio.h>
 #include <time.h>
 
+#include "cell.h"
 #include "broken_eller.h"
 
-Cell cell[N][N];
+Cell cell[CELL_COUNT][CELL_COUNT];
 
 BrokenEller::BrokenEller()
 {
 }
 
-void BrokenEller::lab() {
-	short i, j, mn[N][N], uniq = 1, k = 0;
+void BrokenEller::MakeLabirint() {
+	short i, j, set[CELL_COUNT][CELL_COUNT], uniq = 1, k = 0;
 	srand(time(0));
-	for (i = 0; i<N; i++) {
-		cell[i][N - 1].right = Open;
-		cell[i][0].left = Open;
+	for (i = 0; i<CELL_COUNT; i++) {
+		cell[i][CELL_COUNT - 1].Right = Open;
+		cell[i][0].Left = Open;
 	}
-	for (i = 0; i<N; i++) {
-		mn[0][i] = 0;
-		cell[0][i].up = Open;
+	for (i = 0; i<CELL_COUNT; i++) {
+		set[0][i] = 0;
+		cell[0][i].Top = Open;
 	}
-	while (k<N) {
-		for (i = 0; i<N; i++)
-			if (!mn[k][i])
-				mn[k][i] = uniq++;
-		for (i = 0; i<N - 1; i++) {
-			if (mn[k][i] == mn[k][i + 1])
-				cell[k][i].right = Open;
+	while (k<CELL_COUNT) {
+		for (i = 0; i<CELL_COUNT; i++)
+			if (!set[k][i])
+				set[k][i] = uniq++;
+		for (i = 0; i<CELL_COUNT - 1; i++) {
+			if (set[k][i] == set[k][i + 1])
+				cell[k][i].Right = Open;
 			else {
 				if (rand() % 2)
-					cell[k][i].right = Open;
+					cell[k][i].Right = Open;
 				else {
-					cell[k][i].right = Close;
-					mn[k][i + 1] = mn[k][i];
+					cell[k][i].Right = Close;
+					set[k][i + 1] = set[k][i];
 				}
 			}
 		}
-		for (i = 0; i<N; i++) {
+		for (i = 0; i<CELL_COUNT; i++) {
 			if (rand() % 2)
-				cell[k][i].down = Open;
+				cell[k][i].Bottom = Open;
 			else
-				cell[k][i].down = Close;
-			if (mn[k][i - 1] != mn[k][i] && mn[k][i] != mn[k][i + 1])
-				cell[k][i].down = Close;
+				cell[k][i].Bottom = Close;
+			if (set[k][i - 1] != set[k][i] && set[k][i] != set[k][i + 1])
+				cell[k][i].Bottom = Close;
 			else {
-				if (mn[k][i] != mn[k][i + 1]) {
+				if (set[k][i] != set[k][i + 1]) {
 					j = i - 1;
 					short flag = 1;
-					while (mn[k][j] == mn[k][i]) {
-						if (!cell[k][j].down) {
+					while (set[k][j] == set[k][i]) {
+						if (!cell[k][j].Bottom) {
 							flag = 0;
 							break;
 						}
 						j--;
 					}
 					if (flag)
-						cell[k][i].down = Close;
+						cell[k][i].Bottom = Close;
 				}
 			}
 		}
-		if (k<N - 1) {
+		if (k<CELL_COUNT - 1) {
 			k++;
-			for (i = 0; i<N; i++) {
-				if (cell[k - 1][i].down) {
-					mn[k][i] = 0;
-					cell[k][i].up = Open;
+			for (i = 0; i<CELL_COUNT; i++) {
+				if (cell[k - 1][i].Bottom) {
+					set[k][i] = 0;
+					cell[k][i].Top = Open;
 				}
 				else {
-					mn[k][i] = mn[k - 1][i];
-					cell[k][i].up = Close;
+					set[k][i] = set[k - 1][i];
+					cell[k][i].Top = Close;
 				}
-				if (cell[k - 1][i].right)
-					cell[k - 1][i + 1].left = Open;
+				if (cell[k - 1][i].Right)
+					cell[k - 1][i + 1].Left = Open;
 				else
-					cell[k - 1][i + 1].left = Close;
-				cell[k][i].down = Close;
+					cell[k - 1][i + 1].Left = Close;
+				cell[k][i].Bottom = Close;
 			}
-			for (i = 0; i<N - 1; i++)
-				cell[k][i].right = Close;
+			for (i = 0; i<CELL_COUNT - 1; i++)
+				cell[k][i].Right = Close;
 		}
 		else {
-			for (i = 0; i<N; i++) {
-				cell[k][i].down = Open;
-				if (mn[k][i] != mn[k][i + 1])
-					cell[k][i].right = Close;
-				cell[k][i].left = cell[k][i - 1].right;
+			for (i = 0; i<CELL_COUNT; i++) {
+				cell[k][i].Bottom = Open;
+				if (set[k][i] != set[k][i + 1])
+					cell[k][i].Right = Close;
+				cell[k][i].Left = cell[k][i - 1].Right;
 			}
-			cell[k][N - 1].right = Open;
+			cell[k][CELL_COUNT - 1].Right = Open;
 			k++;
 		}
 	}
-	cell[0][rand() % N].up = Close;
-	cell[N - 1][rand() % N].down = Close;
+	cell[0][rand() % CELL_COUNT].Top = Close;
+	cell[CELL_COUNT - 1][rand() % CELL_COUNT].Bottom = Close;
 }
 
-void BrokenEller::faway() {
-	short wave[N][N], i, j, start, fin, len;
-	bool way[N][N];
-	for (i = 0; i<N; i++)
-		if (!cell[0][i].up) {
-			wave[0][i] = N*N;
+void BrokenEller::FindTheWay() {
+	short wave[CELL_COUNT][CELL_COUNT], i, j, start, fin, len;
+	bool way[CELL_COUNT][CELL_COUNT];
+	for (i = 0; i<CELL_COUNT; i++)
+		if (!cell[0][i].Top) {
+			wave[0][i] = CELL_COUNT*CELL_COUNT;
 			start = i;
 		}
 		else
-			wave[0][i] = N*N;
-	for (i = 1; i<N; i++)
-		for (j = 0; j<N; j++)
-			wave[i][j] = N*N;
-	for (i = 0; i<N; i++)
-		if (!cell[N - 1][i].down) {
+			wave[0][i] = CELL_COUNT*CELL_COUNT;
+	for (i = 1; i<CELL_COUNT; i++)
+		for (j = 0; j<CELL_COUNT; j++)
+			wave[i][j] = CELL_COUNT*CELL_COUNT;
+	for (i = 0; i<CELL_COUNT; i++)
+		if (!cell[CELL_COUNT - 1][i].Bottom) {
 			fin = i;
 			break;
 		}
-	setwave(wave, 0, start, 0, fin);
-	printf("Shortest way = %d\n", wave[N - 1][fin]);
-	for (i = 0; i<N; i++)
-		for (j = 0; j<N; j++)
+	SetWaveValue(wave, 0, start, 0, fin);
+	printf("Shortest way = %d\n", wave[CELL_COUNT - 1][fin]);
+	for (i = 0; i<CELL_COUNT; i++)
+		for (j = 0; j<CELL_COUNT; j++)
 			way[i][j] = 0;
-	way[N - 1][fin] = 1;
-	i = N - 1;
+	way[CELL_COUNT - 1][fin] = 1;
+	i = CELL_COUNT - 1;
 	j = fin;
 	len = wave[i][j];
 	while (len) {
-		if (wave[i - 1][j] == len - 1 && i>0 && !cell[i][j].up) {
+		if (wave[i - 1][j] == len - 1 && i>0 && !cell[i][j].Top) {
 			len--;
 			i--;
 			way[i][j] = 1;
 		}
-		if (wave[i][j - 1] == len - 1 && j>0 && !cell[i][j].left) {
+		if (wave[i][j - 1] == len - 1 && j>0 && !cell[i][j].Left) {
 			len--;
 			j--;
 			way[i][j] = 1;
 		}
-		if (wave[i][j + 1] == len - 1 && j<N - 1 && !cell[i][j].right) {
+		if (wave[i][j + 1] == len - 1 && j<CELL_COUNT - 1 && !cell[i][j].Right) {
 			len--;
 			j++;
 			way[i][j] = 1;
 		}
-		if (wave[i + 1][j] == len - 1 && i<N - 1 && !cell[i][j].down) {
+		if (wave[i + 1][j] == len - 1 && i<CELL_COUNT - 1 && !cell[i][j].Bottom) {
 			len--;
 			i++;
 			way[i][j] = 1;
@@ -148,20 +149,20 @@ void BrokenEller::faway() {
 	way[0][start] = 1;
 }
 
-void BrokenEller::setwave(short wave[][N], short i, short j, short value, short finish) {
-	if (wave[i][j]>value && value<wave[N - 1][finish])
+void BrokenEller::SetWaveValue(short wave[][CELL_COUNT], short i, short j, short value, short finish) {
+	if (wave[i][j]>value && value<wave[CELL_COUNT - 1][finish])
 		wave[i][j] = value;
 	else
 		return;
-	if (!cell[i][j].down)
-		if (i<N - 1)
-			setwave(wave, i + 1, j, value + 1, finish);
+	if (!cell[i][j].Bottom)
+		if (i<CELL_COUNT - 1)
+			SetWaveValue(wave, i + 1, j, value + 1, finish);
 		else
 			return;
-	if (!cell[i][j].up && i>0)
-		setwave(wave, i - 1, j, value + 1, finish);
-	if (!cell[i][j].left && j>0)
-		setwave(wave, i, j - 1, value + 1, finish);
-	if (!cell[i][j].right && j<N - 1)
-		setwave(wave, i, j + 1, value + 1, finish);
+	if (!cell[i][j].Top && i>0)
+		SetWaveValue(wave, i - 1, j, value + 1, finish);
+	if (!cell[i][j].Left && j>0)
+		SetWaveValue(wave, i, j - 1, value + 1, finish);
+	if (!cell[i][j].Right && j<CELL_COUNT - 1)
+		SetWaveValue(wave, i, j + 1, value + 1, finish);
 }

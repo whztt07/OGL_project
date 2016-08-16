@@ -3,21 +3,9 @@
 #ifndef BROKEN_ELLER_H
 #define	BROKEN_ELLER_H
 
-#define N 20
+#define CELL_COUNT 20
 
 using namespace std;
-
-enum CellState { Close, Open };
-
-class Cell
-{
-public:
-
-	CellState left;
-	CellState right;
-	CellState up;
-	CellState down;
-};
 
 class BrokenEller
 {
@@ -25,10 +13,12 @@ public:
 
 	BrokenEller();
 
-	void lab();
-	void faway();
-	void setwave(short wave[][N], short i, short j, short value, short finish);
-	
+	void MakeLabirint();
+	void FindTheWay();
+
+private:
+
+	void SetWaveValue(short wave[][CELL_COUNT], short i, short j, short value, short finish);
 };
 
 #endif	/* BROKEN_ELLER_H */
