@@ -12,7 +12,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenglLes", "OpenglLes.vcxp
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common.vcxproj", "{1BFDFA1D-6366-4EE0-A148-0084C000C117}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MainProj", "MainProj.vcxproj", "{6C2ECC6F-758B-41F1-96A8-269BCA703BC6}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Maze", "Maze.vcxproj", "{6C2ECC6F-758B-41F1-96A8-269BCA703BC6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
