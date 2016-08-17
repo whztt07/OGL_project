@@ -19,12 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\broken_eller.cpp" />
+    <ClCompile Include="src\growing_tree.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\broken_eller.h" />
     <ClInclude Include="src\cell.h" />
+    <ClInclude Include="src\growing_tree.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6C2ECC6F-758B-41F1-96A8-269BCA703BC6}</ProjectGuid>

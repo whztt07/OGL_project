@@ -3,9 +3,9 @@
 #ifndef BROKEN_ELLER_H
 #define	BROKEN_ELLER_H
 
-#define CELL_COUNT 20
+#include "cell.h"
 
-using namespace std;
+#define CELL_COUNT 20
 
 class BrokenEller
 {
@@ -13,10 +13,12 @@ public:
 
 	BrokenEller();
 
-	void MakeLabirint();
+	void MakeLabyrinth();
 	void FindTheWay();
 
 private:
+
+	Cell cell[CELL_COUNT][CELL_COUNT];
 
 	void SetWaveValue(short wave[][CELL_COUNT], short i, short j, short value, short finish);
 };

@@ -3,16 +3,13 @@
 #include <conio.h>
 #include <time.h>
 
-#include "cell.h"
 #include "broken_eller.h"
-
-Cell cell[CELL_COUNT][CELL_COUNT];
 
 BrokenEller::BrokenEller()
 {
 }
 
-void BrokenEller::MakeLabirint() {
+void BrokenEller::MakeLabyrinth() {
 	short i, j, set[CELL_COUNT][CELL_COUNT], uniq = 1, k = 0;
 	srand(time(0));
 	for (i = 0; i<CELL_COUNT; i++) {
