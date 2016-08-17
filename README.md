@@ -8,6 +8,6 @@
 
 ﻿![Я не нашел смешную картинку](http://istarik.ru/uploads/images/00/00/01/2015/03/31/b2c1b3.png)
 
-Историю сборок можно посмотреть тут: https://ci.appveyor.com/project/FNickRU/ogl-project
+Историю сборок можно посмотреть тут: https://ci.appveyor.com/project/FNickRU/ogl-project/history
 
 Статус последней сборки: [![Build status](https://ci.appveyor.com/api/projects/status/mf1qmft01c7mwwb9?svg=true)](https://ci.appveyor.com/project/FNickRU/ogl-project)
