@@ -6,7 +6,7 @@
 #include "ogldev_camera.h"
 #include "skybox_technique.h"
 #include "ogldev_cubemap_texture.h"
-#include "mesh.h"
+#include "ogldev_basic_mesh.h"
 
 class SkyBox
 {
@@ -29,7 +29,7 @@ private:
     SkyboxTechnique* m_pSkyboxTechnique;
     const Camera* m_pCamera;
     CubemapTexture* m_pCubemapTex;
-    Mesh* m_pMesh;
+    BasicMesh* m_pMesh;
     PersProjInfo m_persProjInfo;
 };
 

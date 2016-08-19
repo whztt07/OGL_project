@@ -18,9 +18,10 @@
 #include "ogldev_basic_mesh.h"
 #include "ogldev_lights_common.h"
 #include "ogldev_shadow_map_fbo.h"
+#include "ogldev_atb.h"
 #include "lighting_technique.h"
 #include "csm_technique.h"
-#include "ogldev_atb.h"
+#include "skybox.h"
 
 #define WINDOW_WIDTH  1024
 #define WINDOW_HEIGHT 1024
@@ -40,11 +41,12 @@ public:
 	{
 		m_pGameCamera = NULL;
 		m_pGroundTex = NULL;
+		m_pSkyBox = NULL;
 
 		m_dirLight.Name = "DirLight1";
 		m_dirLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
-		m_dirLight.AmbientIntensity = 0.5f;
-		m_dirLight.DiffuseIntensity = 0.9f;
+		m_dirLight.AmbientIntensity = 0.2f;
+		m_dirLight.DiffuseIntensity = 0.8f;
 		m_dirLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
 		m_dirLight.Direction = Vector3f(1.0f, -1.0f, 0.0f);
 
@@ -52,11 +54,11 @@ public:
 		m_persProjInfo.Height = WINDOW_HEIGHT;
 		m_persProjInfo.Width = WINDOW_WIDTH;
 		m_persProjInfo.zNear = 1.0f;
-		m_persProjInfo.zFar = 200.0f;
+		m_persProjInfo.zFar = 210.0f;
 
 		m_cascadeEnd[0] = m_persProjInfo.zNear;
-		m_cascadeEnd[1] = 25.0f,
-		m_cascadeEnd[2] = 90.0f,
+		m_cascadeEnd[1] = 70.0f,
+		m_cascadeEnd[2] = 140.0f,
 		m_cascadeEnd[3] = m_persProjInfo.zFar;
 
 		m_quad.GetOrientation().m_scale = Vector3f(50.0f, 100.0f, 100.0f);
@@ -75,6 +77,7 @@ public:
 	{
 		SAFE_DELETE(m_pGameCamera);
 		SAFE_DELETE(m_pGroundTex);
+		SAFE_DELETE(m_pSkyBox);
 	}
 
 	bool Init()
@@ -133,6 +136,18 @@ public:
 		m_pGroundTex = new Texture(GL_TEXTURE_2D, "thirdparty/content/wal67ar_small.jpg");
 
 		if (!m_pGroundTex->Load()) {
+			return false;
+		}
+
+		m_pSkyBox = new SkyBox(m_pGameCamera, m_persProjInfo);
+
+		if (!m_pSkyBox->Init(".",
+			"thirdparty/content/sp3right.jpg",
+			"thirdparty/content/sp3left.jpg",
+			"thirdparty/content/sp3top.jpg",
+			"thirdparty/content/sp3bot.jpg",
+			"thirdparty/content/sp3front.jpg",
+			"thirdparty/content/sp3back.jpg")) {
 			return false;
 		}
 
@@ -235,6 +250,8 @@ public:
 			m_LightingTech.SetWorldMatrix(p.GetWorldTrans());
 			m_mesh.Render();
 		}
+
+		m_pSkyBox->Render();
 	}
 
 	virtual void KeyboardCB(OGLDEV_KEY OgldevKey, OGLDEV_KEY_STATE OgldevKeyState)
@@ -369,13 +386,14 @@ private:
 	float m_cascadeEnd[NUM_CASCADES + 1];
 	ATB m_atb;
 	TwBar *bar;
+	SkyBox* m_pSkyBox;
 };
 
 int main(int argc, char** argv)
 {
 	OgldevBackendInit(OGLDEV_BACKEND_TYPE_GLFW, argc, argv, true, false);
 
-	if (!OgldevBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false, "OGLDEV Tutorials")) {
+	if (!OgldevBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false, "OGLDEV Engine")) {
 		OgldevBackendTerminate();
 		return 1;
 	}

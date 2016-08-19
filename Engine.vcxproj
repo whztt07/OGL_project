@@ -22,16 +22,22 @@
     <ClCompile Include="engine\csm_technique.cpp" />
     <ClCompile Include="engine\lighting_technique.cpp" />
     <ClCompile Include="engine\main.cpp" />
+    <ClCompile Include="engine\skybox.cpp" />
+    <ClCompile Include="engine\skybox_technique.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\csm_technique.h" />
     <ClInclude Include="engine\lighting_technique.h" />
+    <ClInclude Include="engine\skybox.h" />
+    <ClInclude Include="engine\skybox_technique.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="engine\shaders\csm.fs" />
     <None Include="engine\shaders\csm.vs" />
     <None Include="engine\shaders\lighting.fs" />
     <None Include="engine\shaders\lighting.vs" />
+    <None Include="engine\shaders\skybox.fs" />
+    <None Include="engine\shaders\skybox.vs" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9CB4C79B-C81C-4154-88AE-0B1B972FD644}</ProjectGuid>
