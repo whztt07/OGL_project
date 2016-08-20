@@ -42,8 +42,6 @@ public:
 		m_pGameCamera = NULL;
 		m_pGroundTex = NULL;
 		m_pSkyBox = NULL;
-		m_pTexture = NULL;
-		m_pNormalMap = NULL;
 
 		m_dirLight.Name = "DirLight1";
 		m_dirLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
@@ -80,8 +78,6 @@ public:
 		SAFE_DELETE(m_pGameCamera);
 		SAFE_DELETE(m_pGroundTex);
 		SAFE_DELETE(m_pSkyBox);
-		SAFE_DELETE(m_pTexture);
-		SAFE_DELETE(m_pNormalMap);
 	}
 
 	bool Init()
@@ -110,7 +106,6 @@ public:
 		m_LightingTech.Enable();
 
 		m_LightingTech.SetColorTextureUnit(COLOR_TEXTURE_UNIT_INDEX);
-		m_LightingTech.SetNormalMapTextureUnit(NORMAL_TEXTURE_UNIT_INDEX);
 		m_LightingTech.SetShadowMapTextureUnit();
 		m_LightingTech.SetDirectionalLight(m_dirLight);
 		m_LightingTech.SetMatSpecularIntensity(0.0f);
@@ -125,21 +120,7 @@ public:
 			m_LightingTech.SetCascadeEndClipSpace(i, vClip.z);
 		}
 
-		if (!m_mesh.LoadMesh("thirdparty/content/box.obj")) {
-			return false;
-		}
-
-		m_pTexture = new Texture(GL_TEXTURE_2D, "thirdparty/content/bricks.jpg");
-
-		if (!m_pTexture->Load()) {
-			return false;
-		}
-
-		m_pTexture->Bind(COLOR_TEXTURE_UNIT);
-
-		m_pNormalMap = new Texture(GL_TEXTURE_2D, "thirdparty/content/normal_map.jpg");
-
-		if (!m_pNormalMap->Load()) {
+		if (!m_mesh.LoadMesh("thirdparty/content/dragon.obj")) {
 			return false;
 		}
 
@@ -257,10 +238,6 @@ public:
 
 		p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
 		p.SetPerspectiveProj(m_persProjInfo);
-
-		m_pTexture->Bind(COLOR_TEXTURE_UNIT);
-		m_pNormalMap->Bind(NORMAL_TEXTURE_UNIT);
-
 		m_LightingTech.SetWVP(p.GetWVPTrans());
 		m_LightingTech.SetWorldMatrix(p.GetWorldTrans());
 		m_pGroundTex->Bind(COLOR_TEXTURE_UNIT);
@@ -400,8 +377,6 @@ private:
 	Camera* m_pGameCamera;
 	DirectionalLight m_dirLight;
 	Mesh m_mesh;
-	Texture* m_pTexture;
-	Texture* m_pNormalMap;
 	Orientation m_meshOrientation[NUM_MESHES];
 	Mesh m_quad;
 	Texture* m_pGroundTex;

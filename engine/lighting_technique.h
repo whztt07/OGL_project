@@ -27,7 +27,6 @@ public:
 	void SetWorldMatrix(const Matrix4f& WVP);
 	void SetColorTextureUnit(uint TextureUnit);
 	void SetShadowMapTextureUnit();
-	void SetNormalMapTextureUnit(uint TextureUnit);
 	void SetDirectionalLight(const DirectionalLight& Light);
 	void SetPointLights(uint NumLights, const PointLight* pLights);
 	void SetSpotLights(uint NumLights, const SpotLight* pLights);
@@ -43,7 +42,6 @@ private:
 	GLuint m_worldMatrixLocation;
 	GLuint m_samplerLocation;
 	GLuint m_shadowMapLocation[NUM_CASCADES];
-	GLuint m_normalMapLocation;
 	GLuint m_eyeWorldPosLocation;
 	GLuint m_matSpecularIntensityLocation;
 	GLuint m_matSpecularPowerLocation;

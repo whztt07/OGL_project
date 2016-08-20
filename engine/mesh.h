@@ -20,17 +20,14 @@ struct Vertex
 	Vector3f m_pos;
 	Vector2f m_tex;
 	Vector3f m_normal;
-	Vector3f m_tangent;
 
 	Vertex() {}
 
-	Vertex(const Vector3f& pos, const Vector2f& tex, const Vector3f& normal, const Vector3f& Tangent)
+	Vertex(const Vector3f& pos, const Vector2f& tex, const Vector3f& normal)
 	{
 		m_pos = pos;
 		m_tex = tex;
 		m_normal = normal;
-		m_tangent = Tangent;
-
 	}
 };
 
@@ -55,7 +52,6 @@ private:
 		std::vector<Vector3f>& Positions,
 		std::vector<Vector3f>& Normals,
 		std::vector<Vector2f>& TexCoords,
-		std::vector<Vector3f>& Tangents,
 		std::vector<unsigned int>& Indices);
 
 	bool InitMaterials(const aiScene* pScene, const std::string& Filename);
@@ -69,7 +65,6 @@ private:
 #define TEXCOORD_VB  3    
 #define WVP_MAT_VB   4
 #define WORLD_MAT_VB 5
-#define TANGENT_VB	 6
 
 	GLuint m_VAO;
 	GLuint m_Buffers[6];

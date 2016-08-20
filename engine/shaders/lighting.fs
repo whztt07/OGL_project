@@ -6,10 +6,9 @@ const int NUM_CASCADES = 3;
 
 in vec4 LightSpacePos[NUM_CASCADES];
 in float ClipSpacePosZ;
-in vec2 TexCoord0;                                                                  
-in vec3 Normal0;                                                                    
-in vec3 WorldPos0;                                                                  
-in vec3 Tangent0; 
+in vec2 TexCoord0;
+in vec3 Normal0;
+in vec3 WorldPos0;
 
 out vec4 FragColor;                                                                 
                                                                                     
@@ -53,8 +52,7 @@ uniform DirectionalLight gDirectionalLight;
 uniform PointLight gPointLights[MAX_POINT_LIGHTS];                                          
 uniform SpotLight gSpotLights[MAX_SPOT_LIGHTS];                                             
 uniform sampler2D gSampler;                                                                 
-uniform sampler2D gShadowMap[NUM_CASCADES];                                                               
-uniform sampler2D gNormalMap;
+uniform sampler2D gShadowMap[NUM_CASCADES];
 uniform vec3 gEyeWorldPos;                                                                  
 uniform float gMatSpecularIntensity;                                                        
 uniform float gSpecularPower;
@@ -131,24 +129,9 @@ vec4 CalcSpotLight(SpotLight l, vec3 Normal)
     }                                                                                       
 }                                                                                           
                                                                                             
-vec3 CalcBumpedNormal()                                                                     
-{                                                                                           
-    vec3 Normal = normalize(Normal0);                                                       
-    vec3 Tangent = normalize(Tangent0);                                                     
-    Tangent = normalize(Tangent - dot(Tangent, Normal) * Normal);                           
-    vec3 Bitangent = cross(Tangent, Normal);                                                
-    vec3 BumpMapNormal = texture(gNormalMap, TexCoord0).xyz;                                
-    BumpMapNormal = 2.0 * BumpMapNormal - vec3(1.0, 1.0, 1.0);                              
-    vec3 NewNormal;                                                                         
-    mat3 TBN = mat3(Tangent, Bitangent, Normal);                                            
-    NewNormal = TBN * BumpMapNormal;                                                        
-    NewNormal = normalize(NewNormal);                                                       
-    return NewNormal;                                                                       
-}                                                                                             
-                                                                                            
 void main()                                                                                 
 {                                                                                           
-    vec3 Normal = CalcBumpedNormal();
+    vec3 Normal = normalize(Normal0);
 
     float ShadowFactor = 0.0;
     vec4 CascadeIndicator = vec4(0.0, 0.0, 0.0, 0.0);

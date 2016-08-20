@@ -31,7 +31,6 @@ bool LightingTechnique::Init()
 	m_WVPLocation = GetUniformLocation("gWVP");
 	m_worldMatrixLocation = GetUniformLocation("gWorld");
 	m_samplerLocation = GetUniformLocation("gSampler");
-	m_normalMapLocation = GetUniformLocation("gNormalMap");
 	m_eyeWorldPosLocation = GetUniformLocation("gEyeWorldPos");
 	m_dirLightLocation.Color = GetUniformLocation("gDirectionalLight.Base.Color");
 	m_dirLightLocation.AmbientIntensity = GetUniformLocation("gDirectionalLight.Base.AmbientIntensity");
@@ -46,7 +45,6 @@ bool LightingTechnique::Init()
 		m_WVPLocation == INVALID_UNIFORM_LOCATION ||
 		m_worldMatrixLocation == INVALID_UNIFORM_LOCATION ||
 		m_samplerLocation == INVALID_UNIFORM_LOCATION ||
-		m_normalMapLocation == INVALID_UNIFORM_LOCATION ||
 		m_eyeWorldPosLocation == INVALID_UNIFORM_LOCATION ||
 		m_dirLightLocation.Color == INVALID_UNIFORM_LOCATION ||
 		m_dirLightLocation.DiffuseIntensity == INVALID_UNIFORM_LOCATION ||
@@ -173,7 +171,6 @@ void LightingTechnique::SetWVP(const Matrix4f& WVP)
 	glUniformMatrix4fv(m_WVPLocation, 1, GL_TRUE, (const GLfloat*)WVP.m);
 }
 
-
 void LightingTechnique::SetLightWVP(uint CascadeIndex, const Matrix4f& LightWVP)
 {
 	glUniformMatrix4fv(m_lightWVPLocation[CascadeIndex], 1, GL_TRUE, (const GLfloat*)LightWVP.m);
@@ -198,15 +195,10 @@ void LightingTechnique::SetShadowMapTextureUnit()
 {
 	glUniform1i(m_shadowMapLocation[0], CASCACDE_SHADOW_TEXTURE_UNIT0_INDEX);
 	GLExitIfError
-		glUniform1i(m_shadowMapLocation[1], CASCACDE_SHADOW_TEXTURE_UNIT1_INDEX);
+	glUniform1i(m_shadowMapLocation[1], CASCACDE_SHADOW_TEXTURE_UNIT1_INDEX);
 	GLExitIfError
-		glUniform1i(m_shadowMapLocation[2], CASCACDE_SHADOW_TEXTURE_UNIT2_INDEX);
+	glUniform1i(m_shadowMapLocation[2], CASCACDE_SHADOW_TEXTURE_UNIT2_INDEX);
 	GLExitIfError
-}
-
-void LightingTechnique::SetNormalMapTextureUnit(unsigned int TextureUnit)
-{
-	glUniform1i(m_normalMapLocation, TextureUnit);
 }
 
 void LightingTechnique::SetDirectionalLight(const DirectionalLight& Light)
