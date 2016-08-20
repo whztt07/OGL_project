@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="engine\billboard_list.cpp" />
+    <ClCompile Include="engine\billboard_technique.cpp" />
     <ClCompile Include="engine\csm_technique.cpp" />
     <ClCompile Include="engine\lighting_technique.cpp" />
     <ClCompile Include="engine\main.cpp" />
@@ -27,6 +29,8 @@
     <ClCompile Include="engine\skybox_technique.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engine\billboard_list.h" />
+    <ClInclude Include="engine\billboard_technique.h" />
     <ClInclude Include="engine\csm_technique.h" />
     <ClInclude Include="engine\lighting_technique.h" />
     <ClInclude Include="engine\mesh.h" />
@@ -34,6 +38,9 @@
     <ClInclude Include="engine\skybox_technique.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="engine\shaders\billboard.fs" />
+    <None Include="engine\shaders\billboard.gs" />
+    <None Include="engine\shaders\billboard.vs" />
     <None Include="engine\shaders\csm.fs" />
     <None Include="engine\shaders\csm.vs" />
     <None Include="engine\shaders\lighting.fs" />
