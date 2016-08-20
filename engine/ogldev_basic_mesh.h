@@ -79,7 +79,7 @@ private:
         }
         
         unsigned int NumIndices;
-	unsigned int BaseVertex;
+		unsigned int BaseVertex;
         unsigned int BaseIndex;
         unsigned int MaterialIndex;
     };

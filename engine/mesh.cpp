@@ -8,6 +8,7 @@ using namespace std;
 #define POSITION_LOCATION 0
 #define TEX_COORD_LOCATION 1
 #define NORMAL_LOCATION 2
+#define TANGENT_LOCATION 3
 
 Mesh::Mesh()
 {
@@ -51,8 +52,10 @@ bool Mesh::LoadMesh(const string& Filename)
 	bool Ret = false;
 	Assimp::Importer Importer;
 
-	const aiScene* pScene = Importer.ReadFile(Filename.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
-
+	const aiScene* pScene = Importer.ReadFile(Filename.c_str(), aiProcess_Triangulate | 
+																aiProcess_GenSmoothNormals | 
+																aiProcess_FlipUVs |
+																aiProcess_CalcTangentSpace)
 	if (pScene) {
 		Ret = InitFromScene(pScene, Filename);
 
@@ -78,6 +81,7 @@ bool Mesh::InitFromScene(const aiScene* pScene, const string& Filename)
 	vector<Vector3f> Positions;
 	vector<Vector3f> Normals;
 	vector<Vector2f> TexCoords;
+	vector<Vector3f> Tangents;
 	vector<unsigned int> Indices;
 
 	unsigned int NumVertices = 0;
@@ -98,12 +102,13 @@ bool Mesh::InitFromScene(const aiScene* pScene, const string& Filename)
 	Positions.reserve(NumVertices);
 	Normals.reserve(NumVertices);
 	TexCoords.reserve(NumVertices);
+	Tangents.reserve(NumVertices);
 	Indices.reserve(NumIndices);
 
 	// Initialize the meshes in the scene one by one
 	for (unsigned int i = 0; i < m_Entries.size(); i++) {
 		const aiMesh* paiMesh = pScene->mMeshes[i];
-		InitMesh(paiMesh, Positions, Normals, TexCoords, Indices);
+		InitMesh(paiMesh, Positions, Normals, TexCoords, Tangents, Indices);
 	}
 
 	if (!InitMaterials(pScene, Filename)) {
@@ -126,6 +131,11 @@ bool Mesh::InitFromScene(const aiScene* pScene, const string& Filename)
 	glEnableVertexAttribArray(NORMAL_LOCATION);
 	glVertexAttribPointer(NORMAL_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
+	glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[TANGENT_VB]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Tangents[0]) * Tangents.size(), &Tangents[0], GL_STATIC_DRAW);
+	glEnableVertexAttribArray(TANGENT_LOCATION);
+	glVertexAttribPointer(TANGENT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffers[INDEX_BUFFER]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices[0]) * Indices.size(), &Indices[0], GL_STATIC_DRAW);
 
@@ -136,6 +146,7 @@ void Mesh::InitMesh(const aiMesh* paiMesh,
 	vector<Vector3f>& Positions,
 	vector<Vector3f>& Normals,
 	vector<Vector2f>& TexCoords,
+	vector<Vector3f>& Tangents,
 	vector<unsigned int>& Indices)
 {
 	const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
@@ -145,10 +156,12 @@ void Mesh::InitMesh(const aiMesh* paiMesh,
 		const aiVector3D* pPos = &(paiMesh->mVertices[i]);
 		const aiVector3D* pNormal = &(paiMesh->mNormals[i]);
 		const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][i]) : &Zero3D;
+		const aiVector3D* pTangent = &(paiMesh->mTangents[i]);
 
 		Positions.push_back(Vector3f(pPos->x, pPos->y, pPos->z));
 		Normals.push_back(Vector3f(pNormal->x, pNormal->y, pNormal->z));
 		TexCoords.push_back(Vector2f(pTexCoord->x, pTexCoord->y));
+		Tangents.push_back(Vector3f(pTangent->x, pTangent->y, pTangent->z));
 	}
 
 	// Populate the index buffer

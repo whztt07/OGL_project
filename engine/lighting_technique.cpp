@@ -31,6 +31,7 @@ bool LightingTechnique::Init()
 	m_WVPLocation = GetUniformLocation("gWVP");
 	m_worldMatrixLocation = GetUniformLocation("gWorld");
 	m_samplerLocation = GetUniformLocation("gSampler");
+	m_normalMapLocation = GetUniformLocation("gNormalMap");
 	m_eyeWorldPosLocation = GetUniformLocation("gEyeWorldPos");
 	m_dirLightLocation.Color = GetUniformLocation("gDirectionalLight.Base.Color");
 	m_dirLightLocation.AmbientIntensity = GetUniformLocation("gDirectionalLight.Base.AmbientIntensity");
@@ -45,6 +46,7 @@ bool LightingTechnique::Init()
 		m_WVPLocation == INVALID_UNIFORM_LOCATION ||
 		m_worldMatrixLocation == INVALID_UNIFORM_LOCATION ||
 		m_samplerLocation == INVALID_UNIFORM_LOCATION ||
+		m_normalMapLocation == INVALID_UNIFORM_LOCATION ||
 		m_eyeWorldPosLocation == INVALID_UNIFORM_LOCATION ||
 		m_dirLightLocation.Color == INVALID_UNIFORM_LOCATION ||
 		m_dirLightLocation.DiffuseIntensity == INVALID_UNIFORM_LOCATION ||
@@ -200,6 +202,11 @@ void LightingTechnique::SetShadowMapTextureUnit()
 	GLExitIfError
 		glUniform1i(m_shadowMapLocation[2], CASCACDE_SHADOW_TEXTURE_UNIT2_INDEX);
 	GLExitIfError
+}
+
+void LightingTechnique::SetNormalMapTextureUnit(unsigned int TextureUnit)
+{
+	glUniform1i(m_normalMapLocation, TextureUnit);
 }
 
 void LightingTechnique::SetDirectionalLight(const DirectionalLight& Light)

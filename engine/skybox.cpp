@@ -50,7 +50,7 @@ bool SkyBox::Init(const string& Directory,
         return false;
     }
         
-    m_pMesh = new BasicMesh();
+    m_pMesh = new Mesh();
 
     return m_pMesh->LoadMesh("thirdparty/content/sphere.obj"); 
 }

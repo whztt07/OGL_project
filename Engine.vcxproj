@@ -22,12 +22,14 @@
     <ClCompile Include="engine\csm_technique.cpp" />
     <ClCompile Include="engine\lighting_technique.cpp" />
     <ClCompile Include="engine\main.cpp" />
+    <ClCompile Include="engine\mesh.cpp" />
     <ClCompile Include="engine\skybox.cpp" />
     <ClCompile Include="engine\skybox_technique.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\csm_technique.h" />
     <ClInclude Include="engine\lighting_technique.h" />
+    <ClInclude Include="engine\mesh.h" />
     <ClInclude Include="engine\skybox.h" />
     <ClInclude Include="engine\skybox_technique.h" />
   </ItemGroup>
