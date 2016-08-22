@@ -14,7 +14,7 @@ public:
 
 	void SetParticleLifetime(float Lifetime);
 
-	void SetDeltaTimeMillis(float DeltaTimeMillis);
+	void SetDeltaTimeMillis(unsigned int DeltaTimeMillis);
 
 	void SetTime(int Time);
 

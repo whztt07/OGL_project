@@ -1,46 +1,42 @@
-#include "ogldev_random_texture.h"
+#include "random_texture.h"
+#include "ogldev_math_3d.h"
 #include "ogldev_util.h"
 
 RandomTexture::RandomTexture()
 {
-    m_texture = 0;
+	m_textureObj = 0;
 }
 
 RandomTexture::~RandomTexture()
 {
-    if (m_texture != 0) {
-        glDeleteTextures(1, &m_texture);
-    }
+	if (m_textureObj != 0) {
+		glDeleteTextures(1, &m_textureObj);
+	}
 }
 
-bool RandomTexture::Init(uint size)
+bool RandomTexture::InitRandomTexture(unsigned int Size)
 {
-    glGenTextures(1, &m_texture);    
-    glBindTexture(GL_TEXTURE_2D, m_texture);
-    
-    uint TextureSize = size * size * 3;
-    float* pRandom = new float[TextureSize];
-    for (uint i = 0 ; i < TextureSize ; i++) {
-        float r = 2.0f * (float)rand()/RAND_MAX - 1.0f;
-        pRandom[i] = r;
-    }
-    
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, size, size, 0, GL_RGB, GL_FLOAT, pRandom);
-    
-    delete [] pRandom;
-    
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);    
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);        
-    
-    glBindTexture(GL_TEXTURE_2D, 0);
-    
-    return GLCheckError();
+	Vector3f* pRandomData = new Vector3f[Size];
+	for (unsigned int i = 0; i < Size; i++) {
+		pRandomData[i].x = RandomFloat();
+		pRandomData[i].y = RandomFloat();
+		pRandomData[i].z = RandomFloat();
+	}
+
+	glGenTextures(1, &m_textureObj);
+	glBindTexture(GL_TEXTURE_1D, m_textureObj);
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, Size, 0, GL_RGB, GL_FLOAT, pRandomData);
+	glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+
+	delete[] pRandomData;
+
+	return GLCheckError();
 }
 
 void RandomTexture::Bind(GLenum TextureUnit)
 {
-    glActiveTexture(TextureUnit);
-    glBindTexture(GL_TEXTURE_2D, m_texture);        
+	glActiveTexture(TextureUnit);
+	glBindTexture(GL_TEXTURE_1D, m_textureObj);
 }

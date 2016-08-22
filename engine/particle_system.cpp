@@ -70,9 +70,9 @@ bool ParticleSystem::InitParticleSystem(const Vector3f& Pos)
     m_updateTechnique.Enable();
     
     m_updateTechnique.SetRandomTextureUnit(RANDOM_TEXTURE_UNIT_INDEX);
-    m_updateTechnique.SetLauncherLifetime(100.0f);
-    m_updateTechnique.SetShellLifetime(10000.0f);
-    m_updateTechnique.SetSecondaryShellLifetime(2500.0f);
+    m_updateTechnique.SetLauncherLifetime(200.0f);
+    m_updateTechnique.SetShellLifetime(20000.0f);
+    m_updateTechnique.SetSecondaryShellLifetime(5000.0f);
     
     if (!m_randomTexture.InitRandomTexture(1000)) {
         return false;
@@ -90,7 +90,7 @@ bool ParticleSystem::InitParticleSystem(const Vector3f& Pos)
 
     m_billboardTechnique.SetBillboardSize(0.01f);
     
-    m_pTexture = new Texture(GL_TEXTURE_2D, "../Content/fireworks_red.jpg");
+    m_pTexture = new Texture(GL_TEXTURE_2D, "thirdparty/content/fireworks_red.jpg");
     
     if (!m_pTexture->Load()) {
         return false;

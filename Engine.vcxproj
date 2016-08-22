@@ -25,6 +25,9 @@
     <ClCompile Include="engine\lighting_technique.cpp" />
     <ClCompile Include="engine\main.cpp" />
     <ClCompile Include="engine\mesh.cpp" />
+    <ClCompile Include="engine\particle_system.cpp" />
+    <ClCompile Include="engine\ps_update_technique.cpp" />
+    <ClCompile Include="engine\random_texture.cpp" />
     <ClCompile Include="engine\skybox.cpp" />
     <ClCompile Include="engine\skybox_technique.cpp" />
   </ItemGroup>
@@ -34,6 +37,9 @@
     <ClInclude Include="engine\csm_technique.h" />
     <ClInclude Include="engine\lighting_technique.h" />
     <ClInclude Include="engine\mesh.h" />
+    <ClInclude Include="engine\particle_system.h" />
+    <ClInclude Include="engine\ps_update_technique.h" />
+    <ClInclude Include="engine\random_texture.h" />
     <ClInclude Include="engine\skybox.h" />
     <ClInclude Include="engine\skybox_technique.h" />
   </ItemGroup>
@@ -45,6 +51,9 @@
     <None Include="engine\shaders\csm.vs" />
     <None Include="engine\shaders\lighting.fs" />
     <None Include="engine\shaders\lighting.vs" />
+    <None Include="engine\shaders\ps_update.fs" />
+    <None Include="engine\shaders\ps_update.gs" />
+    <None Include="engine\shaders\ps_update.vs" />
     <None Include="engine\shaders\skybox.fs" />
     <None Include="engine\shaders\skybox.vs" />
   </ItemGroup>

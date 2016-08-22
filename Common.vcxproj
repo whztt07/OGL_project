@@ -30,12 +30,12 @@
     <ClCompile Include="engine\ogldev_basic_lighting.cpp" />
     <ClCompile Include="engine\ogldev_basic_mesh.cpp" />
     <ClCompile Include="engine\ogldev_glfw_backend.cpp" />
+    <ClCompile Include="engine\ogldev_random_texture.cpp" />
     <ClCompile Include="engine\ogldev_shadow_map_fbo.cpp" />
     <ClCompile Include="engine\ogldev_skinned_mesh.cpp" />
     <ClCompile Include="engine\ogldev_texture.cpp" />
     <ClCompile Include="engine\ogldev_util.cpp" />
     <ClCompile Include="engine\pipeline.cpp" />
-    <ClCompile Include="engine\random_texture.cpp" />
     <ClCompile Include="engine\technique.cpp" />
   </ItemGroup>
   <ItemGroup>

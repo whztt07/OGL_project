@@ -18,7 +18,7 @@
 #include "ogldev_atb.h"
 #include "skybox.h"
 #include "mesh.h"
-#include "billboard_list.h"
+#include "particle_system.h"
 
 #define WINDOW_WIDTH  1024
 #define WINDOW_HEIGHT 1024
@@ -51,6 +51,8 @@ public:
 		m_persProjInfo.zNear = 1.0f;
 		m_persProjInfo.zFar = 100.0f;
 
+		m_currentTimeMillis = GetCurrentTimeMillis();
+
 		glGetIntegerv(GL_MAJOR_VERSION, &gGLMajorVersion);
 	}
 
@@ -69,8 +71,8 @@ public:
 			return false;
 		}
 
-		Vector3f Pos(0.0f, 1.0f, -1.0f);
-		Vector3f Target(0.0f, -0.5f, 1.0f);
+		Vector3f Pos(0.0f, 0.4f, -0.5f);
+		Vector3f Target(0.0f, 0.2f, 1.0f);
 		Vector3f Up(0.0, 1.0f, 0.0f);
 
 		m_pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, Pos, Target, Up);
@@ -82,18 +84,12 @@ public:
 
 		m_LightingTech.Enable();
 		m_LightingTech.SetDirectionalLight(m_dirLight);
-		m_LightingTech.SetColorTextureUnit(0);
-		// m_LightingTech.SetNormalMapTextureUnit(2);
+		m_LightingTech.SetColorTextureUnit(COLOR_TEXTURE_UNIT_INDEX);
 
 		m_pGroundTex = new Mesh();
 
 		if (!m_pGroundTex->LoadMesh("thirdparty/content/quad.obj")) {
 			return false;
-		}
-
-		if (!m_billboardList.Init("thirdparty/content/monster_hellknight.png")) {
-			return false;
-
 		}
 
 		m_pTexture = new Texture(GL_TEXTURE_2D, "thirdparty/content/bricks.jpg");
@@ -141,7 +137,9 @@ public:
 
 		TwAddVarRO(bar, "GL Major Version", TW_TYPE_INT32, &gGLMajorVersion, " label='Major version of GL' ");
 
-		return true;
+		Vector3f ParticleSystemPos = Vector3f(0.0f, 0.0f, 1.0f);
+
+		return m_particleSystem.InitParticleSystem(ParticleSystemPos);
 	}
 
 	void Run()
@@ -151,14 +149,12 @@ public:
 
 	virtual void RenderSceneCB()
 	{
+		long long TimeNowMillis = GetCurrentTimeMillis();
+		assert(TimeNowMillis >= m_currentTimeMillis);
+		unsigned int DeltaTimeMillis = (unsigned int)(TimeNowMillis - m_currentTimeMillis);
+		m_currentTimeMillis = TimeNowMillis;
 		m_pGameCamera->OnRender();
 
-		RenderPass();
-		OgldevBackendSwapBuffers();
-	}
-
-	void RenderPass()
-	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		m_LightingTech.Enable();
@@ -174,11 +170,14 @@ public:
 
 		m_LightingTech.SetWVP(p.GetWVPTrans());
 		m_LightingTech.SetWorldMatrix(p.GetWorldTrans());
+
 		m_pGroundTex->Render();
 
-		m_billboardList.Render(p.GetVPTrans(), m_pGameCamera->GetPos());
+		m_particleSystem.Render(DeltaTimeMillis, p.GetVPTrans(), m_pGameCamera->GetPos());
 
 		m_pSkyBox->Render();
+
+		OgldevBackendSwapBuffers();
 	}
 
 	virtual void KeyboardCB(OGLDEV_KEY OgldevKey, OGLDEV_KEY_STATE OgldevKeyState)
@@ -222,6 +221,7 @@ public:
 
 private:
 
+	long long m_currentTimeMillis;
 	BasicLightingTechnique m_LightingTech;
 	Camera* m_pGameCamera;
 	DirectionalLight m_dirLight;
@@ -229,7 +229,7 @@ private:
 	Texture* m_pTexture;
 	Texture* m_pNormalMap;
 	PersProjInfo m_persProjInfo;
-	BillboardList m_billboardList;
+	ParticleSystem m_particleSystem;
 	ATB m_atb;
 	TwBar *bar;
 	SkyBox* m_pSkyBox;
