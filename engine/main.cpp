@@ -16,9 +16,10 @@
 #include "ogldev_basic_lighting.h"
 #include "ogldev_backend.h"
 #include "ogldev_atb.h"
-#include "skybox.h"
-#include "mesh.h"
-#include "particle_system.h"
+#include "ogldev_skinned_mesh.h"
+#include "skinning_technique.h"
+
+using namespace std;
 
 #define WINDOW_WIDTH  1024
 #define WINDOW_HEIGHT 1024
@@ -34,16 +35,11 @@ public:
 	Main()
 	{
 		m_pGameCamera = NULL;
-		m_pGroundTex = NULL;
-		m_pTexture = NULL;
-		m_pNormalMap = NULL;
-		m_pSkyBox = NULL;
-
-		m_dirLight.Name = "DirLight1";
-		m_dirLight.AmbientIntensity = 0.2f;
-		m_dirLight.DiffuseIntensity = 0.8f;
-		m_dirLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
-		m_dirLight.Direction = Vector3f(1.0f, 0.0f, 0.0f);
+		m_pEffect = NULL;
+		m_directionalLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
+		m_directionalLight.AmbientIntensity = 0.55f;
+		m_directionalLight.DiffuseIntensity = 0.9f;
+		m_directionalLight.Direction = Vector3f(1.0f, 0.0, 0.0);
 
 		m_persProjInfo.FOV = 60.0f;
 		m_persProjInfo.Height = WINDOW_HEIGHT;
@@ -51,7 +47,7 @@ public:
 		m_persProjInfo.zNear = 1.0f;
 		m_persProjInfo.zFar = 100.0f;
 
-		m_currentTimeMillis = GetCurrentTimeMillis();
+		m_position = Vector3f(0.0f, 0.0f, 6.0f);
 
 		glGetIntegerv(GL_MAJOR_VERSION, &gGLMajorVersion);
 	}
@@ -59,10 +55,7 @@ public:
 	virtual ~Main()
 	{
 		SAFE_DELETE(m_pGameCamera);
-		SAFE_DELETE(m_pGroundTex);
-		SAFE_DELETE(m_pTexture);
-		SAFE_DELETE(m_pNormalMap);
-		SAFE_DELETE(m_pSkyBox);
+		SAFE_DELETE(m_pEffect);
 	}
 
 	bool Init()
@@ -71,50 +64,28 @@ public:
 			return false;
 		}
 
-		Vector3f Pos(0.0f, 0.4f, -0.5f);
-		Vector3f Target(0.0f, 0.2f, 1.0f);
+		Vector3f Pos(0.0f, 3.0f, -1.0f);
+		Vector3f Target(0.0f, 0.0f, 1.0f);
 		Vector3f Up(0.0, 1.0f, 0.0f);
 
 		m_pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, Pos, Target, Up);
 
-		if (!m_LightingTech.Init()) {
+		m_pEffect = new SkinningTechnique();
+
+		if (!m_pEffect->Init()) {
 			printf("Error initializing the lighting technique\n");
 			return false;
 		}
 
-		m_LightingTech.Enable();
-		m_LightingTech.SetDirectionalLight(m_dirLight);
-		m_LightingTech.SetColorTextureUnit(COLOR_TEXTURE_UNIT_INDEX);
+		m_pEffect->Enable();
 
-		m_pGroundTex = new Mesh();
+		m_pEffect->SetColorTextureUnit(COLOR_TEXTURE_UNIT_INDEX);
+		m_pEffect->SetDirectionalLight(m_directionalLight);
+		m_pEffect->SetMatSpecularIntensity(0.0f);
+		m_pEffect->SetMatSpecularPower(0);
 
-		if (!m_pGroundTex->LoadMesh("thirdparty/content/quad.obj")) {
-			return false;
-		}
-
-		m_pTexture = new Texture(GL_TEXTURE_2D, "thirdparty/content/bricks.jpg");
-
-		if (!m_pTexture->Load()) {
-			return false;
-		}
-
-		m_pTexture->Bind(COLOR_TEXTURE_UNIT);
-
-		m_pNormalMap = new Texture(GL_TEXTURE_2D, "thirdparty/content/normal_map.jpg");
-
-		if (!m_pNormalMap->Load()) {
-			return false;
-		}
-
-		m_pSkyBox = new SkyBox(m_pGameCamera, m_persProjInfo);
-
-		if (!m_pSkyBox->Init(".",
-			"thirdparty/content/sp3right.jpg",
-			"thirdparty/content/sp3left.jpg",
-			"thirdparty/content/sp3top.jpg",
-			"thirdparty/content/sp3bot.jpg",
-			"thirdparty/content/sp3front.jpg",
-			"thirdparty/content/sp3back.jpg")) {
+		if (!m_mesh.LoadMesh("thirdparty/content/boblampclean.md5mesh")) {
+			printf("Mesh load failed\n");
 			return false;
 		}
 
@@ -128,8 +99,6 @@ public:
 
 		TwAddSeparator(bar, "", NULL);
 
-		m_dirLight.AddToATB(bar);
-
 		float refresh = 0.1f;
 		TwSetParam(bar, NULL, "refresh", TW_PARAM_FLOAT, 1, &refresh);
 
@@ -139,7 +108,7 @@ public:
 
 		Vector3f ParticleSystemPos = Vector3f(0.0f, 0.0f, 1.0f);
 
-		return m_particleSystem.InitParticleSystem(ParticleSystemPos);
+		return true;
 	}
 
 	void Run()
@@ -149,33 +118,40 @@ public:
 
 	virtual void RenderSceneCB()
 	{
-		long long TimeNowMillis = GetCurrentTimeMillis();
-		assert(TimeNowMillis >= m_currentTimeMillis);
-		unsigned int DeltaTimeMillis = (unsigned int)(TimeNowMillis - m_currentTimeMillis);
-		m_currentTimeMillis = TimeNowMillis;
+		CalcFPS();
+
 		m_pGameCamera->OnRender();
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		m_LightingTech.Enable();
+		m_pEffect->Enable();
 
-		m_pTexture->Bind(COLOR_TEXTURE_UNIT);
-		m_pNormalMap->Bind(NORMAL_TEXTURE_UNIT);
+		vector<Matrix4f> Transforms;
+
+		float RunningTime = GetRunningTime();
+
+		m_mesh.BoneTransform(RunningTime, Transforms);
+
+		for (uint i = 0; i < Transforms.size(); i++) {
+			m_pEffect->SetBoneTransform(i, Transforms[i]);
+		}
+
+		m_pEffect->SetEyeWorldPos(m_pGameCamera->GetPos());
 
 		Pipeline p;
-		p.Scale(20.0f, 20.0f, 1.0f);
-		p.Rotate(90.0f, 0.0, 0.0f);
 		p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
 		p.SetPerspectiveProj(m_persProjInfo);
+		p.Scale(0.1f, 0.1f, 0.1f);
 
-		m_LightingTech.SetWVP(p.GetWVPTrans());
-		m_LightingTech.SetWorldMatrix(p.GetWorldTrans());
+		Vector3f Pos(m_position);
+		p.WorldPos(Pos);
+		p.Rotate(270.0f, 180.0f, 0.0f);
+		m_pEffect->SetWVP(p.GetWVPTrans());
+		m_pEffect->SetWorldMatrix(p.GetWorldTrans());
 
-		m_pGroundTex->Render();
+		m_mesh.Render();
 
-		m_particleSystem.Render(DeltaTimeMillis, p.GetVPTrans(), m_pGameCamera->GetPos());
-
-		m_pSkyBox->Render();
+		RenderFPS();
 
 		OgldevBackendSwapBuffers();
 	}
@@ -221,18 +197,14 @@ public:
 
 private:
 
-	long long m_currentTimeMillis;
-	BasicLightingTechnique m_LightingTech;
+	SkinningTechnique* m_pEffect;
 	Camera* m_pGameCamera;
-	DirectionalLight m_dirLight;
-	Mesh* m_pGroundTex;
-	Texture* m_pTexture;
-	Texture* m_pNormalMap;
+	DirectionalLight m_directionalLight;
+	SkinnedMesh m_mesh;
+	Vector3f m_position;
 	PersProjInfo m_persProjInfo;
-	ParticleSystem m_particleSystem;
 	ATB m_atb;
 	TwBar *bar;
-	SkyBox* m_pSkyBox;
 };
 
 int main(int argc, char** argv)
