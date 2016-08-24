@@ -13,16 +13,21 @@
 #include "ogldev_util.h"
 #include "ogldev_pipeline.h"
 #include "ogldev_camera.h"
-#include "ogldev_basic_lighting.h"
 #include "ogldev_backend.h"
+#include "ogldev_camera.h"
+#include "ogldev_lights_common.h"
+#include "ogldev_shadow_map_fbo.h"
 #include "ogldev_atb.h"
-#include "ogldev_skinned_mesh.h"
-#include "skinning_technique.h"
-
-using namespace std;
+#include "lighting_technique.h"
+#include "csm_technique.h"
+#include "skybox.h"
+#include "mesh.h"
 
 #define WINDOW_WIDTH  1024
 #define WINDOW_HEIGHT 1024
+
+#define NUM_MESHES 5
+#define NUM_FRUSTUM_CORNERS 8
 
 Quaternion g_Rotation = Quaternion(0.707f, 0.0f, 0.0f, 0.707f);
 
@@ -35,19 +40,35 @@ public:
 	Main()
 	{
 		m_pGameCamera = NULL;
-		m_pEffect = NULL;
-		m_directionalLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
-		m_directionalLight.AmbientIntensity = 0.55f;
-		m_directionalLight.DiffuseIntensity = 0.9f;
-		m_directionalLight.Direction = Vector3f(1.0f, 0.0, 0.0);
+		m_pGroundTex = NULL;
+		m_pSkyBox = NULL;
 
-		m_persProjInfo.FOV = 60.0f;
+		m_dirLight.Name = "DirLight1";
+		m_dirLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
+		m_dirLight.AmbientIntensity = 0.2f;
+		m_dirLight.DiffuseIntensity = 0.8f;
+		m_dirLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
+		m_dirLight.Direction = Vector3f(1.0f, -1.0f, 0.0f);
+
+		m_persProjInfo.FOV = 90.0f;
 		m_persProjInfo.Height = WINDOW_HEIGHT;
 		m_persProjInfo.Width = WINDOW_WIDTH;
 		m_persProjInfo.zNear = 1.0f;
-		m_persProjInfo.zFar = 100.0f;
+		m_persProjInfo.zFar = 200.0f;
 
-		m_position = Vector3f(0.0f, 0.0f, 6.0f);
+		m_cascadeEnd[0] = m_persProjInfo.zNear;
+		m_cascadeEnd[1] = 40.0f,
+		m_cascadeEnd[2] = 120.0f,
+		m_cascadeEnd[3] = m_persProjInfo.zFar;
+
+		m_quad.GetOrientation().m_scale = Vector3f(50.0f, 100.0f, 100.0f);
+		m_quad.GetOrientation().m_pos = Vector3f(0.0f, 0.0f, 90.0f);
+		m_quad.GetOrientation().m_rotation = Vector3f(90.0f, 0.0f, 0.0f);
+
+		for (int i = 0; i < NUM_MESHES; i++) {
+			m_meshOrientation[i].m_scale = Vector3f(1.0f, 1.0f, 1.0f);
+			m_meshOrientation[i].m_pos = Vector3f(0.0f, 0.0f, 3.0f + i * 30.0f);
+		}
 
 		glGetIntegerv(GL_MAJOR_VERSION, &gGLMajorVersion);
 	}
@@ -55,7 +76,8 @@ public:
 	virtual ~Main()
 	{
 		SAFE_DELETE(m_pGameCamera);
-		SAFE_DELETE(m_pEffect);
+		SAFE_DELETE(m_pGroundTex);
+		SAFE_DELETE(m_pSkyBox);
 	}
 
 	bool Init()
@@ -64,28 +86,69 @@ public:
 			return false;
 		}
 
-		Vector3f Pos(0.0f, 3.0f, -1.0f);
-		Vector3f Target(0.0f, 0.0f, 1.0f);
+		if (!m_csmFBO.Init(WINDOW_WIDTH, WINDOW_HEIGHT)) {
+			return false;
+		}
+
+		Vector3f Pos(8.0, 21.0, -23.0);
+		//Vector3f Pos(0.0, 0.0, 0.0);
+		Vector3f Target(-0.07f, -0.44f, 0.9f);
+		//Vector3f Target(0.0f, 0.0f, 0.1f);
 		Vector3f Up(0.0, 1.0f, 0.0f);
 
 		m_pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, Pos, Target, Up);
 
-		m_pEffect = new SkinningTechnique();
-
-		if (!m_pEffect->Init()) {
-			printf("Error initializing the lighting technique\n");
+		if (!m_LightingTech.Init()) {
+			OGLDEV_ERROR("Error initializing the lighting technique\n");
 			return false;
 		}
 
-		m_pEffect->Enable();
+		m_LightingTech.Enable();
 
-		m_pEffect->SetColorTextureUnit(COLOR_TEXTURE_UNIT_INDEX);
-		m_pEffect->SetDirectionalLight(m_directionalLight);
-		m_pEffect->SetMatSpecularIntensity(0.0f);
-		m_pEffect->SetMatSpecularPower(0);
+		m_LightingTech.SetColorTextureUnit(COLOR_TEXTURE_UNIT_INDEX);
+		m_LightingTech.SetShadowMapTextureUnit();
+		m_LightingTech.SetDirectionalLight(m_dirLight);
+		m_LightingTech.SetMatSpecularIntensity(0.0f);
+		m_LightingTech.SetMatSpecularPower(0);
+		m_LightingTech.SetShadowMapSize((float)WINDOW_WIDTH, (float)WINDOW_HEIGHT);
 
-		if (!m_mesh.LoadMesh("thirdparty/content/boblampclean.md5mesh")) {
-			printf("Mesh load failed\n");
+		for (uint i = 0; i < NUM_CASCADES; i++) {
+			Matrix4f Proj;
+			Proj.InitPersProjTransform(m_persProjInfo);
+			Vector4f vView(0.0f, 0.0f, m_cascadeEnd[i + 1], 1.0f);
+			Vector4f vClip = Proj * vView;
+			vClip.Print();
+			m_LightingTech.SetCascadeEndClipSpace(i, vClip.z);
+		}
+
+		if (!m_mesh.LoadMesh("thirdparty/content/dragon.obj")) {
+			return false;
+		}
+
+		if (!m_ShadowMapEffect.Init()) {
+			printf("Error initializing the shadow map technique\n");
+			return false;
+		}
+
+		if (!m_quad.LoadMesh("thirdparty/content/quad.obj")) {
+			return false;
+		}
+
+		m_pGroundTex = new Texture(GL_TEXTURE_2D, "thirdparty/content/test.png");
+
+		if (!m_pGroundTex->Load()) {
+			return false;
+		}
+
+		m_pSkyBox = new SkyBox(m_pGameCamera, m_persProjInfo);
+
+		if (!m_pSkyBox->Init(".",
+			"thirdparty/content/sp3right.jpg",
+			"thirdparty/content/sp3left.jpg",
+			"thirdparty/content/sp3top.jpg",
+			"thirdparty/content/sp3bot.jpg",
+			"thirdparty/content/sp3front.jpg",
+			"thirdparty/content/sp3back.jpg")) {
 			return false;
 		}
 
@@ -99,14 +162,14 @@ public:
 
 		TwAddSeparator(bar, "", NULL);
 
+		m_dirLight.AddToATB(bar);
+
 		float refresh = 0.1f;
 		TwSetParam(bar, NULL, "refresh", TW_PARAM_FLOAT, 1, &refresh);
 
 		TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with OGLDEV.' "); // Message added to the help bar.
 
 		TwAddVarRO(bar, "GL Major Version", TW_TYPE_INT32, &gGLMajorVersion, " label='Major version of GL' ");
-
-		Vector3f ParticleSystemPos = Vector3f(0.0f, 0.0f, 1.0f);
 
 		return true;
 	}
@@ -118,42 +181,78 @@ public:
 
 	virtual void RenderSceneCB()
 	{
-		CalcFPS();
+		for (int i = 0; i < NUM_MESHES; i++) {
+			m_meshOrientation[i].m_rotation.y += 0.5f;
+		}
 
 		m_pGameCamera->OnRender();
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		ShadowMapPass();
+		RenderPass();
+		OgldevBackendSwapBuffers();
+	}
 
-		m_pEffect->Enable();
+	void ShadowMapPass()
+	{
+		CalcOrthoProjs();
 
-		vector<Matrix4f> Transforms;
-
-		float RunningTime = GetRunningTime();
-
-		m_mesh.BoneTransform(RunningTime, Transforms);
-
-		for (uint i = 0; i < Transforms.size(); i++) {
-			m_pEffect->SetBoneTransform(i, Transforms[i]);
-		}
-
-		m_pEffect->SetEyeWorldPos(m_pGameCamera->GetPos());
+		m_ShadowMapEffect.Enable();
 
 		Pipeline p;
+
+		p.SetCamera(Vector3f(0.0f, 0.0f, 0.0f), m_dirLight.Direction, Vector3f(0.0f, 1.0f, 0.0f));
+
+		for (uint i = 0; i < NUM_CASCADES; i++) {
+			m_csmFBO.BindForWriting(i);
+			glClear(GL_DEPTH_BUFFER_BIT);
+
+			p.SetOrthographicProj(m_shadowOrthoProjInfo[i]);
+
+			for (int i = 0; i < NUM_MESHES; i++) {
+				p.Orient(m_meshOrientation[i]);
+				m_ShadowMapEffect.SetWVP(p.GetWVOrthoPTrans());
+				m_mesh.Render();
+			}
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	void RenderPass()
+	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		m_LightingTech.Enable();
+
+		m_LightingTech.SetEyeWorldPos(m_pGameCamera->GetPos());
+
+		m_csmFBO.BindForReading();
+
+		Pipeline p;
+		p.Orient(m_quad.GetOrientation());
+
+		p.SetCamera(Vector3f(0.0f, 0.0f, 0.0f), m_dirLight.Direction, Vector3f(0.0f, 1.0f, 0.0f));
+		for (uint i = 0; i < NUM_CASCADES; i++) {
+			p.SetOrthographicProj(m_shadowOrthoProjInfo[i]);
+			m_LightingTech.SetLightWVP(i, p.GetWVOrthoPTrans());
+		}
+
 		p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
 		p.SetPerspectiveProj(m_persProjInfo);
-		p.Scale(0.1f, 0.1f, 0.1f);
+		m_LightingTech.SetWVP(p.GetWVPTrans());
+		m_LightingTech.SetWorldMatrix(p.GetWorldTrans());
+		m_pGroundTex->Bind(COLOR_TEXTURE_UNIT);
 
-		Vector3f Pos(m_position);
-		p.WorldPos(Pos);
-		p.Rotate(270.0f, 180.0f, 0.0f);
-		m_pEffect->SetWVP(p.GetWVPTrans());
-		m_pEffect->SetWorldMatrix(p.GetWorldTrans());
+		m_quad.Render();
 
-		m_mesh.Render();
+		for (int i = 0; i < NUM_MESHES; i++) {
+			p.Orient(m_meshOrientation[i]);
+			m_LightingTech.SetWVP(p.GetWVPTrans());
+			m_LightingTech.SetWorldMatrix(p.GetWorldTrans());
+			m_mesh.Render();
+		}
 
-		RenderFPS();
-
-		OgldevBackendSwapBuffers();
+		m_pSkyBox->Render();
 	}
 
 	virtual void KeyboardCB(OGLDEV_KEY OgldevKey, OGLDEV_KEY_STATE OgldevKeyState)
@@ -197,14 +296,98 @@ public:
 
 private:
 
-	SkinningTechnique* m_pEffect;
+	void CalcOrthoProjs()
+	{
+		Pipeline p;
+
+		p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
+		Matrix4f Cam = p.GetViewTrans();
+		Matrix4f CamInv = Cam.Inverse();
+
+		p.SetCamera(Vector3f(0.0f, 0.0f, 0.0f), m_dirLight.Direction, Vector3f(0.0f, 1.0f, 0.0f));
+		Matrix4f LightM = p.GetViewTrans();
+
+		float ar = m_persProjInfo.Height / m_persProjInfo.Width;
+		float tanHalfHFOV = tanf(ToRadian(m_persProjInfo.FOV / 2.0f));
+		float tanHalfVFOV = tanf(ToRadian((m_persProjInfo.FOV * ar) / 2.0f));
+
+		printf("ar %f tanHalfHFOV %f tanHalfVFOV %f\n", ar, tanHalfHFOV, tanHalfVFOV);
+
+		for (uint i = 0; i < NUM_CASCADES; i++) {
+			float xn = m_cascadeEnd[i] * tanHalfHFOV;
+			float xf = m_cascadeEnd[i + 1] * tanHalfHFOV;
+			float yn = m_cascadeEnd[i] * tanHalfVFOV;
+			float yf = m_cascadeEnd[i + 1] * tanHalfVFOV;
+
+			printf("xn %f xf %f\n", xn, xf);
+			printf("yn %f yf %f\n", yn, yf);
+
+			Vector4f frustumCorners[NUM_FRUSTUM_CORNERS] = {
+				// near face
+				Vector4f(xn,   yn, m_cascadeEnd[i], 1.0),
+				Vector4f(-xn,  yn, m_cascadeEnd[i], 1.0),
+				Vector4f(xn,  -yn, m_cascadeEnd[i], 1.0),
+				Vector4f(-xn, -yn, m_cascadeEnd[i], 1.0),
+
+				// far face
+				Vector4f(xf,   yf, m_cascadeEnd[i + 1], 1.0),
+				Vector4f(-xf,  yf, m_cascadeEnd[i + 1], 1.0),
+				Vector4f(xf,  -yf, m_cascadeEnd[i + 1], 1.0),
+				Vector4f(-xf, -yf, m_cascadeEnd[i + 1], 1.0)
+			};
+
+			Vector4f frustumCornersL[NUM_FRUSTUM_CORNERS];
+
+			float minX = std::numeric_limits<float>::max();
+			float maxX = std::numeric_limits<float>::min();
+			float minY = std::numeric_limits<float>::max();
+			float maxY = std::numeric_limits<float>::min();
+			float minZ = std::numeric_limits<float>::max();
+			float maxZ = std::numeric_limits<float>::min();
+
+			for (uint j = 0; j < NUM_FRUSTUM_CORNERS; j++) {
+				printf("Frustum: ");
+				Vector4f vW = CamInv * frustumCorners[j];
+				vW.Print();
+				printf("Light space: ");
+				frustumCornersL[j] = LightM * vW;
+				frustumCornersL[j].Print();
+				printf("\n");
+
+				minX = min(minX, frustumCornersL[j].x);
+				maxX = max(maxX, frustumCornersL[j].x);
+				minY = min(minY, frustumCornersL[j].y);
+				maxY = max(maxY, frustumCornersL[j].y);
+				minZ = min(minZ, frustumCornersL[j].z);
+				maxZ = max(maxZ, frustumCornersL[j].z);
+			}
+
+			printf("BB: %f %f %f %f %f %f\n", minX, maxX, minY, maxY, minZ, maxZ);
+
+			m_shadowOrthoProjInfo[i].r = maxX;
+			m_shadowOrthoProjInfo[i].l = minX;
+			m_shadowOrthoProjInfo[i].b = minY;
+			m_shadowOrthoProjInfo[i].t = maxY;
+			m_shadowOrthoProjInfo[i].f = maxZ;
+			m_shadowOrthoProjInfo[i].n = minZ;
+		}
+	}
+
+	LightingTechnique m_LightingTech;
+	CSMTechnique m_ShadowMapEffect;
 	Camera* m_pGameCamera;
-	DirectionalLight m_directionalLight;
-	SkinnedMesh m_mesh;
-	Vector3f m_position;
+	DirectionalLight m_dirLight;
+	Mesh m_mesh;
+	Orientation m_meshOrientation[NUM_MESHES];
+	Mesh m_quad;
+	Texture* m_pGroundTex;
+	CascadedShadowMapFBO m_csmFBO;
 	PersProjInfo m_persProjInfo;
+	OrthoProjInfo m_shadowOrthoProjInfo[NUM_CASCADES];
+	float m_cascadeEnd[NUM_CASCADES + 1];
 	ATB m_atb;
 	TwBar *bar;
+	SkyBox* m_pSkyBox;
 };
 
 int main(int argc, char** argv)

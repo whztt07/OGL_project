@@ -51,12 +51,16 @@ uniform int gNumSpotLights;
 uniform DirectionalLight gDirectionalLight;                                                 
 uniform PointLight gPointLights[MAX_POINT_LIGHTS];                                          
 uniform SpotLight gSpotLights[MAX_SPOT_LIGHTS];                                             
-uniform sampler2D gSampler;                                                                 
-uniform sampler2D gShadowMap[NUM_CASCADES];
+uniform sampler2D gSampler;
 uniform vec3 gEyeWorldPos;                                                                  
 uniform float gMatSpecularIntensity;                                                        
 uniform float gSpecularPower;
 uniform float gCascadeEndClipSpace[NUM_CASCADES];
+uniform vec2 gMapSize;
+
+uniform sampler2DShadow gShadowMap[NUM_CASCADES];
+
+#define EPSILON 0.00001
                                                                                             
 float CalcShadowFactor(int CascadeIndex, vec4 LightSpacePos)                                                  
 {                                                                                           
@@ -64,12 +68,22 @@ float CalcShadowFactor(int CascadeIndex, vec4 LightSpacePos)
     vec2 UVCoords;                                                                          
     UVCoords.x = 0.5 * ProjCoords.x + 0.5;                                                  
     UVCoords.y = 0.5 * ProjCoords.y + 0.5;                                                  
-    float z = 0.5 * ProjCoords.z + 0.5;                                                     
-    float Depth = texture(gShadowMap[CascadeIndex], UVCoords).x;                                          
-    if (Depth < z + 0.00001)                                                                 
-        return 0.5;                                                                         
-    else                                                                                    
-        return 1.0;                                                                         
+    float z = 0.5 * ProjCoords.z + 0.5;
+  
+    float xOffset = 1.0/gMapSize.x;
+    float yOffset = 1.0/gMapSize.y;
+
+    float Factor = 0.0;
+
+    for (int y = -1 ; y <= 1 ; y++) {
+        for (int x = -1 ; x <= 1 ; x++) {
+            vec2 Offsets = vec2(x * xOffset, y * yOffset);
+            vec3 UVC = vec3(UVCoords + Offsets, z + EPSILON);
+            Factor += texture(gShadowMap[CascadeIndex], UVC);
+        }
+    }
+
+	return (0.5 + (Factor / 18.0));                                                                         
 }                                                                                           
                                                                                             
 vec4 CalcLightInternal(BaseLight Light, vec3 LightDirection, vec3 Normal,            
@@ -162,5 +176,5 @@ void main()
     }                                                                                       
                                                                                             
     vec4 SampledColor = texture2D(gSampler, TexCoord0.xy);                                  
-    FragColor = SampledColor * TotalLight + CascadeIndicator;                                                  
+    FragColor = SampledColor * TotalLight;                                                  
 }
