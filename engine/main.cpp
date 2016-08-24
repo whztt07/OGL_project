@@ -54,11 +54,11 @@ public:
 		m_persProjInfo.Height = WINDOW_HEIGHT;
 		m_persProjInfo.Width = WINDOW_WIDTH;
 		m_persProjInfo.zNear = 1.0f;
-		m_persProjInfo.zFar = 210.0f;
+		m_persProjInfo.zFar = 200.0f;
 
 		m_cascadeEnd[0] = m_persProjInfo.zNear;
-		m_cascadeEnd[1] = 70.0f,
-		m_cascadeEnd[2] = 140.0f,
+		m_cascadeEnd[1] = 40.0f,
+		m_cascadeEnd[2] = 120.0f,
 		m_cascadeEnd[3] = m_persProjInfo.zFar;
 
 		m_quad.GetOrientation().m_scale = Vector3f(50.0f, 100.0f, 100.0f);
@@ -110,6 +110,7 @@ public:
 		m_LightingTech.SetDirectionalLight(m_dirLight);
 		m_LightingTech.SetMatSpecularIntensity(0.0f);
 		m_LightingTech.SetMatSpecularPower(0);
+		m_LightingTech.SetShadowMapSize((float)WINDOW_WIDTH, (float)WINDOW_HEIGHT);
 
 		for (uint i = 0; i < NUM_CASCADES; i++) {
 			Matrix4f Proj;
@@ -133,7 +134,7 @@ public:
 			return false;
 		}
 
-		m_pGroundTex = new Texture(GL_TEXTURE_2D, "thirdparty/content/wal67ar_small.jpg");
+		m_pGroundTex = new Texture(GL_TEXTURE_2D, "thirdparty/content/test.png");
 
 		if (!m_pGroundTex->Load()) {
 			return false;
