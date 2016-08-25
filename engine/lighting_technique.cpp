@@ -8,6 +8,9 @@
 
 using namespace std;
 
+#define AO_TEXTURE_UNIT               GL_TEXTURE3
+#define AO_TEXTURE_UNIT_INDEX         3
+
 LightingTechnique::LightingTechnique()
 {
 }
@@ -30,9 +33,11 @@ bool LightingTechnique::Init()
 		return false;
 	}
 
+	m_shaderTypeLocation = GetUniformLocation("gShaderType");
 	m_WVPLocation = GetUniformLocation("gWVP");
 	m_worldMatrixLocation = GetUniformLocation("gWorld");
 	m_samplerLocation = GetUniformLocation("gSampler");
+	m_aoTextureLocation = GetUniformLocation("gAOMap");
 	m_eyeWorldPosLocation = GetUniformLocation("gEyeWorldPos");
 	m_dirLightLocation.Color = GetUniformLocation("gDirectionalLight.Base.Color");
 	m_dirLightLocation.AmbientIntensity = GetUniformLocation("gDirectionalLight.Base.AmbientIntensity");
@@ -43,11 +48,14 @@ bool LightingTechnique::Init()
 	m_numPointLightsLocation = GetUniformLocation("gNumPointLights");
 	m_numSpotLightsLocation = GetUniformLocation("gNumSpotLights");
 	m_shadowMapSizeLocation = GetUniformLocation("gMapSize");
+	m_screenSizeLocation = GetUniformLocation("gScreenSize");
 
-	if (m_dirLightLocation.AmbientIntensity == INVALID_UNIFORM_LOCATION ||
+	if (m_shaderTypeLocation == INVALID_UNIFORM_LOCATION ||
+		m_dirLightLocation.AmbientIntensity == INVALID_UNIFORM_LOCATION ||
 		m_WVPLocation == INVALID_UNIFORM_LOCATION ||
 		m_worldMatrixLocation == INVALID_UNIFORM_LOCATION ||
 		m_samplerLocation == INVALID_UNIFORM_LOCATION ||
+		m_aoTextureLocation == INVALID_UNIFORM_LOCATION ||
 		m_eyeWorldPosLocation == INVALID_UNIFORM_LOCATION ||
 		m_dirLightLocation.Color == INVALID_UNIFORM_LOCATION ||
 		m_dirLightLocation.DiffuseIntensity == INVALID_UNIFORM_LOCATION ||
@@ -55,6 +63,7 @@ bool LightingTechnique::Init()
 		m_matSpecularIntensityLocation == INVALID_UNIFORM_LOCATION ||
 		m_matSpecularPowerLocation == INVALID_UNIFORM_LOCATION ||
 		m_numPointLightsLocation == INVALID_UNIFORM_LOCATION ||
+		m_screenSizeLocation == INVALID_UNIFORM_LOCATION ||
 		m_numSpotLightsLocation == INVALID_UNIFORM_LOCATION ||
 		m_shadowMapSizeLocation == INVALID_UNIFORM_LOCATION) {
 		return false;
@@ -167,7 +176,17 @@ bool LightingTechnique::Init()
 		}
 	}
 
+	Enable();
+
+	glUniform1i(m_aoTextureLocation, AO_TEXTURE_UNIT_INDEX);
+	glUniform1i(m_samplerLocation, COLOR_TEXTURE_UNIT_INDEX);
+
 	return true;
+}
+
+void LightingTechnique::SetShaderType(int ShaderType)
+{
+	glUniform1i(m_shaderTypeLocation, ShaderType);
 }
 
 void LightingTechnique::SetWVP(const Matrix4f& WVP)
@@ -188,6 +207,11 @@ void LightingTechnique::SetCascadeEndClipSpace(uint CascadeIndex, float End)
 void LightingTechnique::SetWorldMatrix(const Matrix4f& WorldInverse)
 {
 	glUniformMatrix4fv(m_worldMatrixLocation, 1, GL_TRUE, (const GLfloat*)WorldInverse.m);
+}
+
+void LightingTechnique::BindAOBuffer(IOBuffer& aoBuffer)
+{
+	aoBuffer.BindForReading(AO_TEXTURE_UNIT);
 }
 
 void LightingTechnique::SetColorTextureUnit(uint TextureUnit)
@@ -267,4 +291,9 @@ void LightingTechnique::SetSpotLights(uint NumLights, const SpotLight* pLights)
 void LightingTechnique::SetShadowMapSize(float Width, float Height)
 {
 	glUniform2f(m_shadowMapSizeLocation, Width, Height);
+}
+
+void LightingTechnique::SetScreenSize(uint Width, uint Height)
+{
+	glUniform2f(m_screenSizeLocation, (float)Width, (float)Height);
 }

@@ -21,7 +21,9 @@
   <ItemGroup>
     <ClCompile Include="engine\billboard_list.cpp" />
     <ClCompile Include="engine\billboard_technique.cpp" />
+    <ClCompile Include="engine\blur_tech.cpp" />
     <ClCompile Include="engine\csm_technique.cpp" />
+    <ClCompile Include="engine\geom_pass_tech.cpp" />
     <ClCompile Include="engine\lighting_technique.cpp" />
     <ClCompile Include="engine\main.cpp" />
     <ClCompile Include="engine\mesh.cpp" />
@@ -31,11 +33,14 @@
     <ClCompile Include="engine\skinning_technique.cpp" />
     <ClCompile Include="engine\skybox.cpp" />
     <ClCompile Include="engine\skybox_technique.cpp" />
+    <ClCompile Include="engine\ssao_technique.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\billboard_list.h" />
     <ClInclude Include="engine\billboard_technique.h" />
+    <ClInclude Include="engine\blur_tech.h" />
     <ClInclude Include="engine\csm_technique.h" />
+    <ClInclude Include="engine\geom_pass_tech.h" />
     <ClInclude Include="engine\lighting_technique.h" />
     <ClInclude Include="engine\mesh.h" />
     <ClInclude Include="engine\particle_system.h" />
@@ -44,13 +49,18 @@
     <ClInclude Include="engine\skinning_technique.h" />
     <ClInclude Include="engine\skybox.h" />
     <ClInclude Include="engine\skybox_technique.h" />
+    <ClInclude Include="engine\ssao_technique.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="engine\shaders\billboard.fs" />
     <None Include="engine\shaders\billboard.gs" />
     <None Include="engine\shaders\billboard.vs" />
+    <None Include="engine\shaders\blur.fs" />
+    <None Include="engine\shaders\blur.vs" />
     <None Include="engine\shaders\csm.fs" />
     <None Include="engine\shaders\csm.vs" />
+    <None Include="engine\shaders\geometry_pass.fs" />
+    <None Include="engine\shaders\geometry_pass.vs" />
     <None Include="engine\shaders\lighting.fs" />
     <None Include="engine\shaders\lighting.vs" />
     <None Include="engine\shaders\ps_update.fs" />
@@ -60,6 +70,8 @@
     <None Include="engine\shaders\skinning.vs" />
     <None Include="engine\shaders\skybox.fs" />
     <None Include="engine\shaders\skybox.vs" />
+    <None Include="engine\shaders\ssao.fs" />
+    <None Include="engine\shaders\ssao.vs" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9CB4C79B-C81C-4154-88AE-0B1B972FD644}</ProjectGuid>

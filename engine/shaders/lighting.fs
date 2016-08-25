@@ -4,6 +4,10 @@ const int MAX_POINT_LIGHTS = 2;
 const int MAX_SPOT_LIGHTS = 2;
 const int NUM_CASCADES = 3;
 
+#define SHADER_TYPE_SSAO    0
+#define SHADER_TYPE_NO_SSAO 1
+#define SHADER_TYPE_ONLY_AO 2
+
 in vec4 LightSpacePos[NUM_CASCADES];
 in float ClipSpacePosZ;
 in vec2 TexCoord0;
@@ -46,21 +50,29 @@ struct SpotLight
     float Cutoff;                                                                           
 };                                                                                          
                                                                                             
+uniform int gShaderType;                                                                             
 uniform int gNumPointLights;                                                                
 uniform int gNumSpotLights;                                                                 
 uniform DirectionalLight gDirectionalLight;                                                 
 uniform PointLight gPointLights[MAX_POINT_LIGHTS];                                          
 uniform SpotLight gSpotLights[MAX_SPOT_LIGHTS];                                             
 uniform sampler2D gSampler;
+uniform sampler2D gAOMap;
 uniform vec3 gEyeWorldPos;                                                                  
 uniform float gMatSpecularIntensity;                                                        
 uniform float gSpecularPower;
 uniform float gCascadeEndClipSpace[NUM_CASCADES];
 uniform vec2 gMapSize;
+uniform vec2 gScreenSize;
 
 uniform sampler2DShadow gShadowMap[NUM_CASCADES];
 
 #define EPSILON 0.00001
+
+vec2 CalcScreenTexCoord()
+{
+    return gl_FragCoord.xy / gScreenSize;
+}
                                                                                             
 float CalcShadowFactor(int CascadeIndex, vec4 LightSpacePos)                                                  
 {                                                                                           
@@ -90,6 +102,11 @@ vec4 CalcLightInternal(BaseLight Light, vec3 LightDirection, vec3 Normal,
                        float ShadowFactor)                                                  
 {                                                                                           
     vec4 AmbientColor = vec4(Light.Color * Light.AmbientIntensity, 1.0f);
+
+    if (gShaderType == SHADER_TYPE_SSAO) {
+         AmbientColor *= texture(gAOMap, CalcScreenTexCoord()).r;
+    }
+
     float DiffuseFactor = dot(Normal, -LightDirection);                                     
                                                                                             
     vec4 DiffuseColor  = vec4(0, 0, 0, 0);                                                  
@@ -175,6 +192,12 @@ void main()
         TotalLight += CalcSpotLight(gSpotLights[i], Normal);                 
     }                                                                                       
                                                                                             
-    vec4 SampledColor = texture2D(gSampler, TexCoord0.xy);                                  
-    FragColor = SampledColor * TotalLight;                                                  
+    vec4 SampledColor = texture2D(gSampler, TexCoord0.xy);
+	
+	if (gShaderType == SHADER_TYPE_ONLY_AO) {
+        FragColor = vec4(texture(gAOMap, CalcScreenTexCoord()).x);
+    }
+    else {                                  
+		FragColor = SampledColor * TotalLight;
+	}                                                  
 }

@@ -17,12 +17,12 @@ bool BlurTech::Init()
 		return false;
 	}
 
-	if (!AddShader(GL_VERTEX_SHADER, "lessons/shaders/blur.vs")) {
+	if (!AddShader(GL_VERTEX_SHADER, "engine/shaders/blur.vs")) {
 		return false;
 	}
 
 
-	if (!AddShader(GL_FRAGMENT_SHADER, "lessons/shaders/blur.fs")) {
+	if (!AddShader(GL_FRAGMENT_SHADER, "engine/shaders/blur.fs")) {
 		return false;
 	}
 

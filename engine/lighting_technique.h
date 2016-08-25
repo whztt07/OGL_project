@@ -5,6 +5,7 @@
 
 #include "technique.h"
 #include "ogldev_math_3d.h"
+#include "ogldev_io_buffer.h"
 #include "ogldev_lights_common.h"
 #include "csm_technique.h"
 
@@ -21,10 +22,12 @@ public:
 
 	virtual bool Init();
 
+	void SetShaderType(int ShaderType);
 	void SetWVP(const Matrix4f& WVP);
 	void SetLightWVP(uint CascadeIndex, const Matrix4f& LightWVP);
 	void SetCascadeEndClipSpace(uint CascadeIndex, float End);
 	void SetWorldMatrix(const Matrix4f& WVP);
+	void BindAOBuffer(IOBuffer& aoBuffer);
 	void SetColorTextureUnit(uint TextureUnit);
 	void SetShadowMapTextureUnit();
 	void SetDirectionalLight(const DirectionalLight& Light);
@@ -34,14 +37,17 @@ public:
 	void SetMatSpecularIntensity(float Intensity);
 	void SetMatSpecularPower(float Power);
 	void SetShadowMapSize(float Width, float Height);
+	void SetScreenSize(uint Width, uint Height);
 
 private:
 
+	GLuint m_shaderTypeLocation;
 	GLuint m_WVPLocation;
 	GLuint m_lightWVPLocation[NUM_CASCADES];
 	GLuint m_cascadeEndClipSpace[NUM_CASCADES];
 	GLuint m_worldMatrixLocation;
 	GLuint m_samplerLocation;
+	GLuint m_aoTextureLocation;
 	GLuint m_shadowMapLocation[NUM_CASCADES];
 	GLuint m_eyeWorldPosLocation;
 	GLuint m_matSpecularIntensityLocation;
@@ -49,6 +55,7 @@ private:
 	GLuint m_numPointLightsLocation;
 	GLuint m_numSpotLightsLocation;
 	GLuint m_shadowMapSizeLocation;
+	GLuint m_screenSizeLocation;
 
 	struct {
 		GLuint Color;
