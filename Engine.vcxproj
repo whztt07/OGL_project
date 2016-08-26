@@ -25,7 +25,6 @@
     <ClCompile Include="engine\csm_technique.cpp" />
     <ClCompile Include="engine\geom_pass_tech.cpp" />
     <ClCompile Include="engine\lighting_technique.cpp" />
-    <ClCompile Include="engine\main.cpp" />
     <ClCompile Include="engine\mesh.cpp" />
     <ClCompile Include="engine\particle_system.cpp" />
     <ClCompile Include="engine\ps_update_technique.cpp" />
@@ -82,7 +81,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
