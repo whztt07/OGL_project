@@ -21,10 +21,12 @@
   <ItemGroup>
     <ClCompile Include="src\growing_tree.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\maze.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\cell.h" />
     <ClInclude Include="src\growing_tree.h" />
+    <ClInclude Include="src\maze.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6C2ECC6F-758B-41F1-96A8-269BCA703BC6}</ProjectGuid>

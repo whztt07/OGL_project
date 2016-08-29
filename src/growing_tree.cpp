@@ -7,21 +7,6 @@
 
 #include "growing_tree.h"
 
-GrowingTree::GrowingTree(int width, int height)
-{
-	GrowingTree::width = width;
-	GrowingTree::height = height;
-	labyrinth.resize(height);
-	for (int i = 0; i < height; i++) {
-		labyrinth[i].resize(width);
-		for (int j = 0; j < width; j++) {
-			labyrinth[i][j].x = i;
-			labyrinth[i][j].y = j;
-			labyrinth[i][j].Visited = false;
-		}
-	}
-}
-
 void GrowingTree::MakeLabyrinth() {
 	//Выбираем первую ячейку откуда начнем движение
 	srand(time(NULL));

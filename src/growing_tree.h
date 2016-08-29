@@ -6,24 +6,18 @@
 #include <vector>
 
 #include "cell.h"
+#include "maze.h"
 
-#define COMMON_CELL_COUNT 5
-
-using namespace std;
-
-class GrowingTree
+class GrowingTree : public Maze
 {
 public:
 
-	GrowingTree(int width, int height);
+	GrowingTree(int width, int height) : Maze(width, height) 
+	{
+	}
 
 	void MakeLabyrinth();
 
-private:
-
-	vector<vector<Cell>> labyrinth;
-	int height;
-	int width;
 };
 
 #endif	/* GROWING_TREE_H */

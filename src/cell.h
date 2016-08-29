@@ -3,6 +3,8 @@
 #ifndef CELL_H
 #define	CELL_H
 
+#define COMMON_CELL_COUNT 10
+
 enum CellState { Close, Open };
 
 class Cell
