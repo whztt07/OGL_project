@@ -6,11 +6,11 @@
 #include <vector>
 
 #include "cell.h"
-#include "gui.h"
+#include "ogl_draw.h"
 
 using namespace std;
 
-class Maze : private GUI
+class Maze
 {
 public:
 

@@ -22,21 +22,5 @@ Maze::Maze(int width, int height)
 
 void Maze::Draw2D(int argc, char** argv)
 {
-	GLUTBackendInit(argc, argv, false, false);
-
-	if (!GLUTBackendCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false, "Tutorial 21")) {
-		return;
-	}
-
-	GUI* pApp = new GUI();
-
-	if (!pApp->Init()) {
-		return;
-	}
-
-	pApp->Run();
-
-	delete pApp;
-
-	return;
+	Draw(argc, argv);
 }

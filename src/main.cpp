@@ -3,8 +3,6 @@
 #include <conio.h>
 #include <time.h>
 
-#include "cell.h"
-#include "maze.h"
 #include "growing_tree.h"
 
 int main(int argc, char** argv) {
