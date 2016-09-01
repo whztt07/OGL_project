@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
 		c = _getch();
 		switch (c) {
 			case '1': Maze.MakeLabyrinth(); break;
-			// case '2': break;
+			case '2': Maze.Draw2D(argc, argv);  break;
 			case 27: return 1;
 			default: puts("WRONG CASE");
 		}

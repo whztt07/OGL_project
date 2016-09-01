@@ -6,10 +6,11 @@
 #include <vector>
 
 #include "cell.h"
+#include "gui.h"
 
 using namespace std;
 
-class Maze
+class Maze : private GUI
 {
 public:
 
@@ -18,6 +19,8 @@ public:
 	virtual void MakeLabyrinth()
 	{
 	}
+
+	void Draw2D(int argc, char** argv);
 
 protected:
 
