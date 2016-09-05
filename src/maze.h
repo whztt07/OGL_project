@@ -14,7 +14,7 @@ class Maze
 {
 public:
 
-	Maze(int width, int height);
+	Maze(int size);
 
 	virtual void MakeLabyrinth()
 	{
@@ -25,8 +25,7 @@ public:
 protected:
 
 	vector<vector<Cell>> labyrinth;
-	int height;
-	int width;
+	int size;
 };
 
 #endif	/* MAZE_H */

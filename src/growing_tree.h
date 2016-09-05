@@ -12,7 +12,7 @@ class GrowingTree : public Maze
 {
 public:
 
-	GrowingTree(int width, int height) : Maze(width, height) 
+	GrowingTree(int size) : Maze(size) 
 	{
 	}
 

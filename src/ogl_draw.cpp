@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cmath>
+#include <vector>
 
 #include "ogl_draw.h"
 
@@ -14,6 +15,7 @@ static GLuint VBO;
 static GLuint IBO;
 static GLuint gWorldLocation;
 static PersProjInfo gPersProjInfo;
+static GLuint MazeSize;
 
 static const char* pVSFileName = "engine/shaders/shader.vs";
 static const char* pFSFileName = "engine/shaders/shader.fs";
@@ -38,7 +40,7 @@ static void RenderSceneCB()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
-	glDrawElements(GL_LINE_LOOP, 36, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_LINES, 2*MazeSize, GL_UNSIGNED_INT, 0);
 
 	glDisableVertexAttribArray(0);
 
@@ -53,7 +55,7 @@ static void InitializeGlutCallbacks()
 
 static void CreateVertexBuffer()
 {
-	Vector3f Vertices[8];
+	std::vector<Vector3f> Vertices(MazeSize);
 	Vertices[0] = Vector3f(0.5, 0.5, -0.5);
 	Vertices[1] = Vector3f(0.5, -0.5, -0.5);
 	Vertices[2] = Vector3f(-0.5, -0.5, -0.5);
@@ -65,12 +67,12 @@ static void CreateVertexBuffer()
 
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, Vertices.size() * sizeof(Vector3f), &Vertices[0], GL_STATIC_DRAW);
 }
 
 static void CreateIndexBuffer()
 {
-	unsigned int Indices[] = {	0, 1, 2,
+	std::vector<unsigned int> Indices = {	0, 1, 2,
 								2, 3, 0,
 								0, 4, 3,
 								3, 7, 4,
@@ -85,7 +87,7 @@ static void CreateIndexBuffer()
 
 	glGenBuffers(1, &IBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, Indices.size() * sizeof(unsigned int), &Indices[0], GL_STATIC_DRAW);
 }
 
 static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
@@ -162,8 +164,10 @@ static void CompileShaders()
 	assert(gWorldLocation != 0xFFFFFFFF);
 }
 
-void Draw(int argc, char** argv)
+void Draw(int argc, char** argv, int size)
 {
+	MazeSize = (size+1)*(size+1);
+
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);

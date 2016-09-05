@@ -7,7 +7,7 @@
 
 int main(int argc, char** argv) {
 	char c;
-	GrowingTree Maze(COMMON_CELL_COUNT, COMMON_CELL_COUNT);
+	GrowingTree Maze(COMMON_CELL_COUNT);
 	while (1) {
 		system("CLS");
 		puts("      MENU:      ");

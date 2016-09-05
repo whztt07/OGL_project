@@ -5,14 +5,13 @@
 
 #include "maze.h"
 
-Maze::Maze(int width, int height)
+Maze::Maze(int size)
 {
-	Maze::width = width;
-	Maze::height = height;
-	labyrinth.resize(height);
-	for (int i = 0; i < height; i++) {
-		labyrinth[i].resize(width);
-		for (int j = 0; j < width; j++) {
+	Maze::size = size;
+	labyrinth.resize(size);
+	for (int i = 0; i < size; i++) {
+		labyrinth[i].resize(size);
+		for (int j = 0; j < size; j++) {
 			labyrinth[i][j].x = i;
 			labyrinth[i][j].y = j;
 			labyrinth[i][j].Visited = false;
@@ -22,5 +21,5 @@ Maze::Maze(int width, int height)
 
 void Maze::Draw2D(int argc, char** argv)
 {
-	Draw(argc, argv);
+	Draw(argc, argv, size);
 }

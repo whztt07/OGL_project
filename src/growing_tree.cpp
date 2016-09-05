@@ -8,14 +8,15 @@
 #include "growing_tree.h"
 
 void GrowingTree::MakeLabyrinth() {
-	//¬ыбираем первую €чейку откуда начнем движение
+	int width = size;
+	int height = size;
+
 	srand(time(NULL));
 	int startX = rand() % width;
 	int startY = rand() % height;
 
 	labyrinth[startX][startY].Visited = true;
 
-	//«аносим нашу €чейку в path и начинаем строить путь
 	vector<Cell> path;
 	path.push_back(labyrinth[startX][startY]);
 
@@ -29,7 +30,6 @@ void GrowingTree::MakeLabyrinth() {
 
 		Cell _cell = path[curr_cell_num];
 
-		//смотрим варианты, в какую сторону можно пойти
 		vector<Cell> nextStep;
 		if (_cell.x > 0 && (labyrinth[_cell.x - 1][_cell.y].Visited == false))
 			nextStep.push_back(labyrinth[_cell.x - 1][_cell.y]);
@@ -42,10 +42,8 @@ void GrowingTree::MakeLabyrinth() {
 
 		if (!nextStep.empty())
 		{
-			//выбираем сторону из возможных вариантов
 			Cell next = nextStep[rand() % nextStep.size()];
 
-			//ќткрываем сторону, в которую пошли на €чейках
 			if (next.x != _cell.x)
 			{
 				if (_cell.x - next.x > 0)
@@ -78,7 +76,6 @@ void GrowingTree::MakeLabyrinth() {
 		}
 		else
 		{
-			//если пойти никуда нельз€, возвращаемс€ к предыдущему узлу
 			path.erase(path.begin()+curr_cell_num);
 		}
 	}

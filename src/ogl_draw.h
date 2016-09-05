@@ -18,6 +18,6 @@ static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum Shad
 
 static void CompileShaders();
 
-void Draw(int argc, char** argv);
+void Draw(int argc, char** argv, int size);
 
 #endif	/* GUI_H */
