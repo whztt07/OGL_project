@@ -7,9 +7,8 @@
 
 enum CellState { Close, Open };
 
-class Cell
+struct Cell
 {
-public:
 	int x;
 	int y;
 	CellState Left;

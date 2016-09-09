@@ -15,7 +15,7 @@ static GLuint VBO;
 static GLuint IBO;
 static GLuint gWorldLocation;
 static PersProjInfo gPersProjInfo;
-static GLuint MazeSize;
+static unsigned int MazeSize;
 
 static const char* pVSFileName = "engine/shaders/shader.vs";
 static const char* pFSFileName = "engine/shaders/shader.fs";
@@ -40,7 +40,7 @@ static void RenderSceneCB()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
-	glDrawElements(GL_LINES, 2*MazeSize, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_LINES, 6*MazeSize*MazeSize, GL_UNSIGNED_INT, 0);
 
 	glDisableVertexAttribArray(0);
 
@@ -55,35 +55,53 @@ static void InitializeGlutCallbacks()
 
 static void CreateVertexBuffer()
 {
-	std::vector<Vector3f> Vertices(MazeSize);
-	Vertices[0] = Vector3f(0.5, 0.5, -0.5);
-	Vertices[1] = Vector3f(0.5, -0.5, -0.5);
-	Vertices[2] = Vector3f(-0.5, -0.5, -0.5);
-	Vertices[3] = Vector3f(-0.5, 0.5, -0.5);
-	Vertices[4] = Vector3f(0.5, 0.5, 0.5);
-	Vertices[5] = Vector3f(0.5, -0.5, 0.5);
-	Vertices[6] = Vector3f(-0.5, -0.5, 0.5);
-	Vertices[7] = Vector3f(-0.5, 0.5, 0.5);
+	float bit = (float)2 / MazeSize;
+	std::vector<Vector3f> Vertices(MazeSize*MazeSize);
+	for (int y = 0; y < MazeSize; y++)
+		for (int x = 0; x < MazeSize; x++) {
+			float cellx = bit*x - 1;
+			float celly = 1 - bit*y;
+			float cellz = 0;
+			Vertices[y*MazeSize + x] = Vector3f(cellx, celly, cellz);
+		}
 
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, Vertices.size() * sizeof(Vector3f), &Vertices[0], GL_STATIC_DRAW);
 }
 
-static void CreateIndexBuffer()
+static void CreateIndexBuffer(Cell* lab)
 {
-	std::vector<unsigned int> Indices = {	0, 1, 2,
-								2, 3, 0,
-								0, 4, 3,
-								3, 7, 4,
-								4, 0, 1,
-								1, 4, 5,
-								5, 1, 2,
-								2, 5, 6,
-								6, 2, 3,
-								3, 6, 7,
-								7, 4, 5,
-								5, 6, 7 };
+	std::vector<unsigned int> Indices;
+
+	for (int y = 0; y < MazeSize - 1; y++) {
+		for (int x = 0; x < MazeSize - 1; x++) {
+			printf("[%d][%d]: (u%d d%d l%d r%d)\n", y, x, lab[y*MazeSize + x].Top, lab[y*MazeSize + x].Bottom, lab[y*MazeSize + x].Left, lab[y*MazeSize + x].Right);
+			if (lab[y*MazeSize + x].Top == Close) {
+				Indices.push_back(y*MazeSize + x);
+				Indices.push_back(y*MazeSize + x + 1);
+				printf("Zakryvaem verh\n");
+			}
+			if (lab[y*MazeSize + x].Bottom == Close) {
+				Indices.push_back((y+1) * MazeSize + x);
+				Indices.push_back((y+1) * MazeSize + x + 1);
+				printf("Zakryvaem niz\n");
+			}
+			if (lab[y*MazeSize + x].Left == Close) {
+				Indices.push_back(y * MazeSize + x);
+				Indices.push_back((y + 1) * MazeSize + x);
+				printf("Zakryvaem levo\n");
+			}
+			if (lab[y*MazeSize + x].Right == Close) {
+				Indices.push_back(y * MazeSize + x + 1);
+				Indices.push_back((y + 1) * MazeSize + x + 1);
+				printf("Zakryvaem prav\n");
+			}
+		}
+	}
+
+	/*for (int i = 0; i < Indices.size(); i++)
+		printf("%4d",Indices[i]);*/
 
 	glGenBuffers(1, &IBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
@@ -164,9 +182,9 @@ static void CompileShaders()
 	assert(gWorldLocation != 0xFFFFFFFF);
 }
 
-void Draw(int argc, char** argv, int size)
+void Draw(int argc, char** argv, Cell* lab, int size)
 {
-	MazeSize = (size+1)*(size+1);
+	MazeSize = size+1;
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
@@ -186,7 +204,7 @@ void Draw(int argc, char** argv, int size)
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	CreateVertexBuffer();
-	CreateIndexBuffer();
+	CreateIndexBuffer(lab);
 
 	CompileShaders();
 
