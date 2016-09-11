@@ -7,11 +7,11 @@
 
 Maze::Maze(int size)
 {
-	Maze::size = size+1;
-	labyrinth.resize(size+1);
-	for (int i = 0; i <= size; i++) {
-		labyrinth[i].resize(size+1);
-		for (int j = 0; j <= size; j++) {
+	Maze::size = size;
+	labyrinth.resize(size);
+	for (int i = 0; i < size; i++) {
+		labyrinth[i].resize(size);
+		for (int j = 0; j < size; j++) {
 			labyrinth[i][j].x = i;
 			labyrinth[i][j].y = j;
 			labyrinth[i][j].Visited = false;
@@ -25,17 +25,12 @@ Maze::Maze(int size)
 
 void Maze::Draw2D(int argc, char** argv)
 {
-	Cell* maze = new Cell[size*size];
-	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < size; j++) {
-			maze[i*size + j].x = labyrinth[i][j].x;
-			maze[i*size + j].y = labyrinth[i][j].y;
-			maze[i*size + j].Visited = labyrinth[i][j].Visited;
-			maze[i*size + j].Top = labyrinth[i][j].Top;
-			maze[i*size + j].Bottom = labyrinth[i][j].Bottom;
-			maze[i*size + j].Left = labyrinth[i][j].Left;
-			maze[i*size + j].Right = labyrinth[i][j].Right;
-		}
-	}
+	int msize = size*size;
+	vector<Cell> maze(msize);
+
+	for (int i = 0; i < size; i++)
+		for (int j = 0; j < size; j++)
+			maze.push_back(labyrinth[i][j]);
+
 	Draw(argc, argv, maze, size);
 }
