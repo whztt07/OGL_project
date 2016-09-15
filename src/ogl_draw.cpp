@@ -16,6 +16,7 @@ static GLuint IBO;
 static GLuint gWorldLocation;
 static PersProjInfo gPersProjInfo;
 static unsigned int MazeSize;
+static unsigned int IndicesCount;
 
 static const char* pVSFileName = "engine/shaders/shader.vs";
 static const char* pFSFileName = "engine/shaders/shader.fs";
@@ -40,7 +41,7 @@ static void RenderSceneCB()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
-	glDrawElements(GL_POINTS, 10*MazeSize*MazeSize, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_POINTS, IndicesCount, GL_UNSIGNED_INT, 0);
 
 	glDisableVertexAttribArray(0);
 
@@ -104,6 +105,8 @@ static void CreateIndexBuffer(vector<Cell> lab)
 
 	for (int i = 0; i < Indices.size(); i++)
 		printf("%4d",Indices[i]);
+
+	IndicesCount = Indices.size();
 
 	glGenBuffers(1, &IBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
