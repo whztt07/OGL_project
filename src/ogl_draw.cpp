@@ -41,34 +41,41 @@ static void RenderSceneCB()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
-	glDrawElements(GL_POINTS, IndicesCount, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_LINES, IndicesCount, GL_UNSIGNED_INT, 0);
 
 	glDisableVertexAttribArray(0);
 
 	glutSwapBuffers();
 }
 
+static void KeyboardCB(unsigned char key, int x, int y)
+{
+	switch (key) {
+		case 27:
+			glutLeaveMainLoop();
+			break;
+	}
+}
+
 static void InitializeGlutCallbacks()
 {
 	glutDisplayFunc(RenderSceneCB);
 	glutIdleFunc(RenderSceneCB);
+	glutKeyboardFunc(KeyboardCB);
 }
 
 static void CreateVertexBuffer()
 {
 	float bit = (float) 2 / MazeSize;
 	std::vector<Vector3f> Vertices;
-	for (int y = 0; y <= MazeSize; y++)
-		for (int x = 0; x <= MazeSize; x++) {
+	for (int y = 0; y < MazeSize; y++) {
+		for (int x = 0; x < MazeSize; x++) {
 			float cellx = bit*x - 1;
 			float celly = 1 - bit*y;
 			float cellz = 0;
 			Vertices.push_back(Vector3f(cellx, celly, cellz));
 		}
-
-	/*for (int i = 0; i < Vertices.size(); i++)
-		printf("(%2.1f %2.1f %2.1f) ", Vertices[i].x, Vertices[i].y, Vertices[i].z);
-	system("PAUSE");*/
+	}
 
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -77,34 +84,28 @@ static void CreateVertexBuffer()
 
 static void CreateIndexBuffer(vector<Cell> lab)
 {
-	std::vector<unsigned int> Indices(1);
+	std::vector<unsigned int> Indices;
 
-	for (int i = 0; i < MazeSize*MazeSize; i++) {
-		//printf("[%d][%d]: (u%d d%d l%d r%d)\n", y, x, lab[y*MazeSize + x].Top, lab[y*MazeSize + x].Bottom, lab[y*MazeSize + x].Left, lab[y*MazeSize + x].Right);
-		/*if (lab[i].Top == Close) {
-			Indices.push_back(i);
-			Indices.push_back(i + 1);
-			printf("Zakryvaem verh\n");
-		}*/
-		/*if (lab[i].Bottom == Close) {
-			Indices.push_back(i + MazeSize);
-			Indices.push_back(i + MazeSize + 1);
-			printf("Zakryvaem niz\n");
-		}*/
-		/*if (lab[i].Left == Close) {
-			Indices.push_back(i);
-			Indices.push_back(i + MazeSize);
-			printf("Zakryvaem levo\n");
-		}*/
-		/*if (lab[i].Right == Close) {
-			Indices.push_back(i + 1);
-			Indices.push_back(i + MazeSize + 1);
-			printf("Zakryvaem prav\n");
-		}*/
+	for (int y = 0; y < MazeSize - 1; y++) {
+		for (int x = 0; x < MazeSize - 1; x++) {
+			if (lab[y*MazeSize + x].Top == Close) {
+				Indices.push_back(y*MazeSize + x);
+				Indices.push_back(y*MazeSize + x + 1);
+			}
+			if (lab[y*MazeSize + x].Bottom == Close) {
+				Indices.push_back((y + 1) * MazeSize + x);
+				Indices.push_back((y + 1) * MazeSize + x + 1);
+			}
+			if (lab[y*MazeSize + x].Left == Close) {
+				Indices.push_back(y * MazeSize + x);
+				Indices.push_back((y + 1) * MazeSize + x);
+			}
+			if (lab[y*MazeSize + x].Right == Close) {
+				Indices.push_back(y * MazeSize + x + 1);
+				Indices.push_back((y + 1) * MazeSize + x + 1);
+			}
+		}
 	}
-
-	for (int i = 0; i < Indices.size(); i++)
-		printf("%4d",Indices[i]);
 
 	IndicesCount = Indices.size();
 
@@ -220,6 +221,4 @@ void Draw(int argc, char** argv, vector<Cell> lab, int size)
 	gPersProjInfo.zFar = 100.0f;
 
 	glutMainLoop();
-
-	return;
 }
