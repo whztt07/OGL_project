@@ -8,18 +8,19 @@
 Maze::Maze(int size)
 {
 	Maze::size = size;
-	labyrinth.resize(size);
+
 	for (int i = 0; i < size; i++) {
-		labyrinth[i].resize(size);
+		vector<Cell> v_cell(size);
 		for (int j = 0; j < size; j++) {
-			labyrinth[i][j].x = i;
-			labyrinth[i][j].y = j;
-			labyrinth[i][j].Visited = false;
-			labyrinth[i][j].Top = Close;
-			labyrinth[i][j].Bottom = Close;
-			labyrinth[i][j].Left = Close;
-			labyrinth[i][j].Right = Close;
+			v_cell[j].x = i;
+			v_cell[j].y = j;
+			v_cell[j].Visited = false;
+			v_cell[j].Top = Close;
+			v_cell[j].Bottom = Close;
+			v_cell[j].Left = Close;
+			v_cell[j].Right = Close;
 		}
+		labyrinth.push_back(v_cell);
 	}
 }
 

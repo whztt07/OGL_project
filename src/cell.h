@@ -12,10 +12,13 @@ class Cell
 public:
 	Cell()
 	{
+		//x = 99;
+		//y = 99;
 		Left = Close;
 		Right = Close;
 		Top = Close;
 		Bottom = Close;
+		Visited = false;
 	}
 
 	int x;

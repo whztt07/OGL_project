@@ -88,6 +88,14 @@ static void CreateIndexBuffer(vector<Cell> lab)
 
 	for (int y = 0; y < MazeSize - 1; y++) {
 		for (int x = 0; x < MazeSize - 1; x++) {
+			printf("[%d][%d]: (u%d d%d l%d r%d)", y, x, lab[y*MazeSize + x].Top, lab[y*MazeSize + x].Bottom, lab[y*MazeSize + x].Left, lab[y*MazeSize + x].Right);
+			if (lab[y*MazeSize + x].Visited) {
+				printf(" : visited (%d.%d)\n", lab[y*MazeSize + x].x, lab[y*MazeSize + x].y);
+			}
+			else {
+				printf(" : not visited (%d.%d)\n", lab[y*MazeSize + x].x, lab[y*MazeSize + x].y);
+			}
+			
 			if (lab[y*MazeSize + x].Top == Close) {
 				Indices.push_back(y*MazeSize + x);
 				Indices.push_back(y*MazeSize + x + 1);
