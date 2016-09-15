@@ -11,8 +11,8 @@ int main(int argc, char** argv) {
 	while (1) {
 		system("CLS");
 		puts("      MENU:      ");
-		puts("  1 - MAKE LABIRINT  ");
-		puts("  2 - FIND A WAY (NOT WORKING) ");
+		puts("  1 - MAKE LABIRINT (NOT WORKING) ");
+		puts("  2 - FIND A WAY  ");
 		puts("  ESC - EXIT  ");
 		c = _getch();
 		switch (c) {

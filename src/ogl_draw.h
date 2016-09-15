@@ -24,6 +24,8 @@ static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum Shad
 
 static void CompileShaders();
 
+static void KeyboardCB(unsigned char key, int x, int y);
+
 void Draw(int argc, char** argv, vector<Cell> lab, int size);
 
 #endif	/* GUI_H */
