@@ -16,6 +16,8 @@ public:
 
 	Maze(int size);
 
+	~Maze();
+
 	virtual void MakeLabyrinth()
 	{
 	}
@@ -24,7 +26,7 @@ public:
 
 protected:
 
-	vector<vector<Cell>> labyrinth;
+	Cell** labyrinth;
 	int size;
 };
 

@@ -86,31 +86,33 @@ static void CreateIndexBuffer(vector<Cell> lab)
 {
 	std::vector<unsigned int> Indices;
 
-	for (int y = 0; y < MazeSize - 1; y++) {
-		for (int x = 0; x < MazeSize - 1; x++) {
-			printf("[%d][%d]: (u%d d%d l%d r%d)", y, x, lab[y*MazeSize + x].Top, lab[y*MazeSize + x].Bottom, lab[y*MazeSize + x].Left, lab[y*MazeSize + x].Right);
-			if (lab[y*MazeSize + x].Visited) {
-				printf(" : visited (%d.%d)\n", lab[y*MazeSize + x].x, lab[y*MazeSize + x].y);
+	int MS = MazeSize - 1;
+
+	for (int y = 0; y < MS; y++) {
+		for (int x = 0; x < MS; x++) {
+			printf("[%d][%d]: (u%d d%d l%d r%d)", y, x, lab[y*MS + x].Top, lab[y*MS + x].Bottom, lab[y*MS + x].Left, lab[y*MS + x].Right);
+			if (lab[y*MS + x].Visited) {
+				printf(" : visited (%d.%d)\n", lab[y*MS + x].x, lab[y*MS + x].y);
 			}
 			else {
-				printf(" : not visited (%d.%d)\n", lab[y*MazeSize + x].x, lab[y*MazeSize + x].y);
+				printf(" : not visited (%d.%d)\n", lab[y*MS + x].x, lab[y*MS + x].y);
 			}
 			
-			if (lab[y*MazeSize + x].Top == Close) {
-				Indices.push_back(y*MazeSize + x);
-				Indices.push_back(y*MazeSize + x + 1);
+			if (lab[y*MS + x].Top == Close) {
+				Indices.push_back(y * (MS + 1) + x);
+				Indices.push_back(y * (MS + 1) + x + 1);
 			}
-			if (lab[y*MazeSize + x].Bottom == Close) {
-				Indices.push_back((y + 1) * MazeSize + x);
-				Indices.push_back((y + 1) * MazeSize + x + 1);
+			if (lab[y*MS + x].Bottom == Close) {
+				Indices.push_back((y + 1) * (MS + 1) + x);
+				Indices.push_back((y + 1) * (MS + 1) + x + 1);
 			}
-			if (lab[y*MazeSize + x].Left == Close) {
-				Indices.push_back(y * MazeSize + x);
-				Indices.push_back((y + 1) * MazeSize + x);
+			if (lab[y*MS + x].Left == Close) {
+				Indices.push_back(y * (MS + 1) + x);
+				Indices.push_back((y + 1) * (MS + 1) + x);
 			}
-			if (lab[y*MazeSize + x].Right == Close) {
-				Indices.push_back(y * MazeSize + x + 1);
-				Indices.push_back((y + 1) * MazeSize + x + 1);
+			if (lab[y*MS + x].Right == Close) {
+				Indices.push_back(y * (MS + 1) + x + 1);
+				Indices.push_back((y + 1) * (MS + 1) + x + 1);
 			}
 		}
 	}

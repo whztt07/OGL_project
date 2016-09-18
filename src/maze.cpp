@@ -9,19 +9,28 @@ Maze::Maze(int size)
 {
 	Maze::size = size;
 
+	labyrinth = new Cell*[size];
+
 	for (int i = 0; i < size; i++) {
-		vector<Cell> v_cell(size);
+		labyrinth[i] = new Cell[size];
 		for (int j = 0; j < size; j++) {
-			v_cell[j].x = i;
-			v_cell[j].y = j;
-			v_cell[j].Visited = false;
-			v_cell[j].Top = Close;
-			v_cell[j].Bottom = Close;
-			v_cell[j].Left = Close;
-			v_cell[j].Right = Close;
+			labyrinth[i][j].x = i;
+			labyrinth[i][j].y = j;
+			labyrinth[i][j].Visited = false;
+			labyrinth[i][j].Top = Close;
+			labyrinth[i][j].Bottom = Close;
+			labyrinth[i][j].Left = Close;
+			labyrinth[i][j].Right = Close;
 		}
-		labyrinth.push_back(v_cell);
 	}
+}
+
+Maze::~Maze()
+{
+	for (int i = 0; i < size; i++) {
+		delete[] labyrinth[i];
+	}
+	delete[] labyrinth;
 }
 
 void Maze::Draw2D(int argc, char** argv)
@@ -29,9 +38,9 @@ void Maze::Draw2D(int argc, char** argv)
 	int msize = size*size;
 	vector<Cell> maze(msize);
 
-	for (int i = 0; i < size; i++)
-		for (int j = 0; j < size; j++)
-			maze.push_back(labyrinth[i][j]);
+	for (int i = 0, k = 0; i < size; i++)
+		for (int j = 0; j < size; j++, k++)
+			maze[k] = labyrinth[i][j];
 
 	Draw(argc, argv, maze, size);
 }
