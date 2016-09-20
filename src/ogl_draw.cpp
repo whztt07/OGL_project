@@ -70,8 +70,8 @@ static void CreateVertexBuffer()
 	std::vector<Vector3f> Vertices;
 	for (int y = 0; y < MazeSize; y++) {
 		for (int x = 0; x < MazeSize; x++) {
-			float cellx = bit*x - 1;
-			float celly = 1 - bit*y;
+			float cellx = bit * x - 1;
+			float celly = 1 - bit * y;
 			float cellz = 0;
 			Vertices.push_back(Vector3f(cellx, celly, cellz));
 		}
@@ -90,7 +90,7 @@ static void CreateIndexBuffer(vector<Cell> lab)
 
 	for (int y = 0; y < MS; y++) {
 		for (int x = 0; x < MS; x++) {
-			printf("[%d][%d]: (u%d d%d l%d r%d)", y, x, lab[y*MS + x].Top, lab[y*MS + x].Bottom, lab[y*MS + x].Left, lab[y*MS + x].Right);
+			printf("[%d][%d]: (u%d d%d l%d r%d)", x, y, lab[y*MS + x].Top, lab[y*MS + x].Bottom, lab[y*MS + x].Left, lab[y*MS + x].Right);
 			if (lab[y*MS + x].Visited) {
 				printf(" : visited (%d.%d)\n", lab[y*MS + x].x, lab[y*MS + x].y);
 			}

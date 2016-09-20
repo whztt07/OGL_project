@@ -22,6 +22,8 @@ public:
 	{
 	}
 
+	void Transpose();
+
 	void Draw2D(int argc, char** argv);
 
 protected:

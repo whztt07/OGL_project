@@ -3,7 +3,7 @@
 #ifndef CELL_H
 #define	CELL_H
 
-#define COMMON_CELL_COUNT 10
+#define COMMON_CELL_COUNT 20
 
 enum CellState { Close, Open };
 
