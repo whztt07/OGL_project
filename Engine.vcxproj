@@ -19,59 +19,65 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="engine\camera.cpp" />
-    <ClCompile Include="engine\cubemap_texture.cpp" />
-    <ClCompile Include="engine\glut_backend.cpp" />
-    <ClCompile Include="engine\io_buffer.cpp" />
-    <ClCompile Include="engine\math_3d.cpp" />
-    <ClCompile Include="engine\ogldev_app.cpp" />
-    <ClCompile Include="engine\ogldev_atb.cpp" />
-    <ClCompile Include="engine\ogldev_backend.cpp" />
-    <ClCompile Include="engine\ogldev_basic_lighting.cpp" />
-    <ClCompile Include="engine\ogldev_basic_mesh.cpp" />
-    <ClCompile Include="engine\ogldev_glfw_backend.cpp" />
-    <ClCompile Include="engine\ogldev_random_texture.cpp" />
-    <ClCompile Include="engine\ogldev_shadow_map_fbo.cpp" />
-    <ClCompile Include="engine\ogldev_skinned_mesh.cpp" />
-    <ClCompile Include="engine\ogldev_texture.cpp" />
-    <ClCompile Include="engine\ogldev_util.cpp" />
-    <ClCompile Include="engine\pipeline.cpp" />
-    <ClCompile Include="engine\technique.cpp" />
+    <ClCompile Include="engine\billboard_list.cpp" />
+    <ClCompile Include="engine\billboard_technique.cpp" />
+    <ClCompile Include="engine\blur_tech.cpp" />
+    <ClCompile Include="engine\csm_technique.cpp" />
+    <ClCompile Include="engine\geom_pass_tech.cpp" />
+    <ClCompile Include="engine\lighting_technique.cpp" />
+    <ClCompile Include="engine\mesh.cpp" />
+    <ClCompile Include="engine\particle_system.cpp" />
+    <ClCompile Include="engine\ps_update_technique.cpp" />
+    <ClCompile Include="engine\random_texture.cpp" />
+    <ClCompile Include="engine\skinning_technique.cpp" />
+    <ClCompile Include="engine\skybox.cpp" />
+    <ClCompile Include="engine\skybox_technique.cpp" />
+    <ClCompile Include="engine\ssao_technique.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="engine\ogldev_app.h" />
-    <ClInclude Include="engine\ogldev_atb.h" />
-    <ClInclude Include="engine\ogldev_backend.h" />
-    <ClInclude Include="engine\ogldev_basic_lighting.h" />
-    <ClInclude Include="engine\ogldev_basic_mesh.h" />
-    <ClInclude Include="engine\ogldev_callbacks.h" />
-    <ClInclude Include="engine\ogldev_camera.h" />
-    <ClInclude Include="engine\ogldev_cubemap_texture.h" />
-    <ClInclude Include="engine\ogldev_engine_common.h" />
-    <ClInclude Include="engine\ogldev_glfw_backend.h" />
-    <ClInclude Include="engine\ogldev_glut_backend.h" />
-    <ClInclude Include="engine\ogldev_io_buffer.h" />
-    <ClInclude Include="engine\ogldev_keys.h" />
-    <ClInclude Include="engine\ogldev_lights_common.h" />
-    <ClInclude Include="engine\ogldev_math_3d.h" />
-    <ClInclude Include="engine\ogldev_pipeline.h" />
-    <ClInclude Include="engine\ogldev_random_texture.h" />
-    <ClInclude Include="engine\ogldev_shadow_map_fbo.h" />
-    <ClInclude Include="engine\ogldev_skinned_mesh.h" />
-    <ClInclude Include="engine\ogldev_texture.h" />
-    <ClInclude Include="engine\ogldev_types.h" />
-    <ClInclude Include="engine\ogldev_util.h" />
-    <ClInclude Include="engine\technique.h" />
+    <ClInclude Include="engine\billboard_list.h" />
+    <ClInclude Include="engine\billboard_technique.h" />
+    <ClInclude Include="engine\blur_tech.h" />
+    <ClInclude Include="engine\csm_technique.h" />
+    <ClInclude Include="engine\geom_pass_tech.h" />
+    <ClInclude Include="engine\lighting_technique.h" />
+    <ClInclude Include="engine\mesh.h" />
+    <ClInclude Include="engine\particle_system.h" />
+    <ClInclude Include="engine\ps_update_technique.h" />
+    <ClInclude Include="engine\random_texture.h" />
+    <ClInclude Include="engine\skinning_technique.h" />
+    <ClInclude Include="engine\skybox.h" />
+    <ClInclude Include="engine\skybox_technique.h" />
+    <ClInclude Include="engine\ssao_technique.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="engine\shaders\basic_lighting.fs" />
-    <None Include="engine\shaders\basic_lighting.vs" />
+    <None Include="engine\shaders\billboard.fs" />
+    <None Include="engine\shaders\billboard.gs" />
+    <None Include="engine\shaders\billboard.vs" />
+    <None Include="engine\shaders\blur.fs" />
+    <None Include="engine\shaders\blur.vs" />
+    <None Include="engine\shaders\csm.fs" />
+    <None Include="engine\shaders\csm.vs" />
+    <None Include="engine\shaders\geometry_pass.fs" />
+    <None Include="engine\shaders\geometry_pass.vs" />
+    <None Include="engine\shaders\lighting.fs" />
+    <None Include="engine\shaders\lighting.vs" />
+    <None Include="engine\shaders\ps_update.fs" />
+    <None Include="engine\shaders\ps_update.gs" />
+    <None Include="engine\shaders\ps_update.vs" />
+    <None Include="engine\shaders\skinning.fs" />
+    <None Include="engine\shaders\skinning.vs" />
+    <None Include="engine\shaders\skybox.fs" />
+    <None Include="engine\shaders\skybox.vs" />
+    <None Include="engine\shaders\ssao.fs" />
+    <None Include="engine\shaders\ssao.vs" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{1BFDFA1D-6366-4EE0-A148-0084C000C117}</ProjectGuid>
+    <ProjectGuid>{9CB4C79B-C81C-4154-88AE-0B1B972FD644}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Common</RootNamespace>
+    <RootNamespace>OpenglLes1</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <ProjectName>Engine</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -119,7 +125,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(SolutionDir)thirdparty\include;$(SolutionDir)thirdparty\include\ImageMagick;$(SolutionDir)thirdparty\include\Assimp;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -136,41 +143,42 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>
-      </SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)thirdparty\include;$(ProjectDir)thirdparty\include\assimp;$(ProjectDir)thirdparty\include\ImageMagick;$(ProjectDir)thirdparty\include\ATB</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)thirdparty\include\ImageMagick;$(SolutionDir)thirdparty\include\ATB</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4251;4819</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>Common.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);glew32.lib;assimp.lib;glfx_debug.lib;CORE_DB_Magick++_.lib;glfw3.lib;glfw3dll.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)thirdparty\lib;$(ConfigurationName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -179,15 +187,15 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>

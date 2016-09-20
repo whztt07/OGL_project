@@ -19,63 +19,29 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="engine\camera.cpp" />
-    <ClCompile Include="engine\cubemap_texture.cpp" />
-    <ClCompile Include="engine\glut_backend.cpp" />
-    <ClCompile Include="engine\io_buffer.cpp" />
-    <ClCompile Include="engine\math_3d.cpp" />
-    <ClCompile Include="engine\ogldev_app.cpp" />
-    <ClCompile Include="engine\ogldev_atb.cpp" />
-    <ClCompile Include="engine\ogldev_backend.cpp" />
-    <ClCompile Include="engine\ogldev_basic_lighting.cpp" />
-    <ClCompile Include="engine\ogldev_basic_mesh.cpp" />
-    <ClCompile Include="engine\ogldev_glfw_backend.cpp" />
-    <ClCompile Include="engine\ogldev_random_texture.cpp" />
-    <ClCompile Include="engine\ogldev_shadow_map_fbo.cpp" />
-    <ClCompile Include="engine\ogldev_skinned_mesh.cpp" />
-    <ClCompile Include="engine\ogldev_texture.cpp" />
-    <ClCompile Include="engine\ogldev_util.cpp" />
-    <ClCompile Include="engine\pipeline.cpp" />
-    <ClCompile Include="engine\technique.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\maze.cpp" />
+    <ClCompile Include="src\ogl_draw.cpp" />
+    <ClCompile Include="src\recursive_bactracking.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="engine\ogldev_app.h" />
-    <ClInclude Include="engine\ogldev_atb.h" />
-    <ClInclude Include="engine\ogldev_backend.h" />
-    <ClInclude Include="engine\ogldev_basic_lighting.h" />
-    <ClInclude Include="engine\ogldev_basic_mesh.h" />
-    <ClInclude Include="engine\ogldev_callbacks.h" />
-    <ClInclude Include="engine\ogldev_camera.h" />
-    <ClInclude Include="engine\ogldev_cubemap_texture.h" />
-    <ClInclude Include="engine\ogldev_engine_common.h" />
-    <ClInclude Include="engine\ogldev_glfw_backend.h" />
-    <ClInclude Include="engine\ogldev_glut_backend.h" />
-    <ClInclude Include="engine\ogldev_io_buffer.h" />
-    <ClInclude Include="engine\ogldev_keys.h" />
-    <ClInclude Include="engine\ogldev_lights_common.h" />
-    <ClInclude Include="engine\ogldev_math_3d.h" />
-    <ClInclude Include="engine\ogldev_pipeline.h" />
-    <ClInclude Include="engine\ogldev_random_texture.h" />
-    <ClInclude Include="engine\ogldev_shadow_map_fbo.h" />
-    <ClInclude Include="engine\ogldev_skinned_mesh.h" />
-    <ClInclude Include="engine\ogldev_texture.h" />
-    <ClInclude Include="engine\ogldev_types.h" />
-    <ClInclude Include="engine\ogldev_util.h" />
-    <ClInclude Include="engine\technique.h" />
+    <ClInclude Include="src\cell.h" />
+    <ClInclude Include="src\maze.h" />
+    <ClInclude Include="src\ogl_draw.h" />
+    <ClInclude Include="src\recursive_backtracking.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="engine\shaders\basic_lighting.fs" />
-    <None Include="engine\shaders\basic_lighting.vs" />
+    <None Include="engine\shaders\shader.fs" />
+    <None Include="engine\shaders\shader.vs" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{1BFDFA1D-6366-4EE0-A148-0084C000C117}</ProjectGuid>
-    <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Common</RootNamespace>
+    <ProjectGuid>{6C2ECC6F-758B-41F1-96A8-269BCA703BC6}</ProjectGuid>
+    <RootNamespace>MainProj</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -85,20 +51,20 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -119,78 +85,57 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>true</LinkIncremental>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LinkIncremental>false</LinkIncremental>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(SolutionDir)thirdparty\include;$(SolutionDir)thirdparty\include\ImageMagick;$(SolutionDir)thirdparty\include\Assimp;$(SolutionDir)engine;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>
       </SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)thirdparty\include;$(ProjectDir)thirdparty\include\assimp;$(ProjectDir)thirdparty\include\ImageMagick;$(ProjectDir)thirdparty\include\ATB</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)thirdparty\include\ImageMagick;$(SolutionDir)thirdparty\include\ATB;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader />
+      <DisableSpecificWarnings>4251;4819</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)thirdparty\lib;$(ConfigurationName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Engine.lib;Common.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);glew32.lib;assimp.lib;glfx_debug.lib;CORE_DB_Magick++_.lib;glfw3.lib;glfw3dll.lib</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
