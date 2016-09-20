@@ -3,6 +3,8 @@
 
 # Custom for Visual Studio
 *.cs     diff=glsl
+*.gs     diff=glsl
+*.es     diff=glsl
 
 # Standard to msysgit
 *.doc	 diff=astextplain
