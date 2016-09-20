@@ -18,18 +18,20 @@ public:
 
 	~Maze();
 
-	virtual void MakeLabyrinth()
-	{
-	}
-
 	void Transpose();
 
 	void Draw2D(int argc, char** argv);
+
+	virtual void MakeLabyrinth()
+	{
+	}
 
 protected:
 
 	Cell** labyrinth;
 	int size;
+
+	void Clear();
 };
 
 #endif	/* MAZE_H */

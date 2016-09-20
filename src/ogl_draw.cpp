@@ -86,33 +86,25 @@ static void CreateIndexBuffer(vector<Cell> lab)
 {
 	std::vector<unsigned int> Indices;
 
-	int MS = MazeSize - 1;
+	int size = MazeSize - 1;
 
-	for (int y = 0; y < MS; y++) {
-		for (int x = 0; x < MS; x++) {
-			printf("[%d][%d]: (u%d d%d l%d r%d)", x, y, lab[y*MS + x].Top, lab[y*MS + x].Bottom, lab[y*MS + x].Left, lab[y*MS + x].Right);
-			if (lab[y*MS + x].Visited) {
-				printf(" : visited (%d.%d)\n", lab[y*MS + x].x, lab[y*MS + x].y);
+	for (int y = 0; y < size; y++) {
+		for (int x = 0; x < size; x++) {
+			if (lab[y*size + x].Top == Close) {
+				Indices.push_back(y * (size + 1) + x);
+				Indices.push_back(y * (size + 1) + x + 1);
 			}
-			else {
-				printf(" : not visited (%d.%d)\n", lab[y*MS + x].x, lab[y*MS + x].y);
+			if (lab[y*size + x].Bottom == Close) {
+				Indices.push_back((y + 1) * (size + 1) + x);
+				Indices.push_back((y + 1) * (size + 1) + x + 1);
 			}
-			
-			if (lab[y*MS + x].Top == Close) {
-				Indices.push_back(y * (MS + 1) + x);
-				Indices.push_back(y * (MS + 1) + x + 1);
+			if (lab[y*size + x].Left == Close) {
+				Indices.push_back(y * (size + 1) + x);
+				Indices.push_back((y + 1) * (size + 1) + x);
 			}
-			if (lab[y*MS + x].Bottom == Close) {
-				Indices.push_back((y + 1) * (MS + 1) + x);
-				Indices.push_back((y + 1) * (MS + 1) + x + 1);
-			}
-			if (lab[y*MS + x].Left == Close) {
-				Indices.push_back(y * (MS + 1) + x);
-				Indices.push_back((y + 1) * (MS + 1) + x);
-			}
-			if (lab[y*MS + x].Right == Close) {
-				Indices.push_back(y * (MS + 1) + x + 1);
-				Indices.push_back((y + 1) * (MS + 1) + x + 1);
+			if (lab[y*size + x].Right == Close) {
+				Indices.push_back(y * (size + 1) + x + 1);
+				Indices.push_back((y + 1) * (size + 1) + x + 1);
 			}
 		}
 	}

@@ -27,6 +27,11 @@ Maze::Maze(int size)
 
 Maze::~Maze()
 {
+	Clear();
+}
+
+void Maze::Clear()
+{
 	for (int i = 0; i < size; i++) {
 		delete[] labyrinth[i];
 	}
@@ -43,7 +48,9 @@ void Maze::Transpose()
 			_labyrinth[y][x] = labyrinth[x][y];
 		}
 	}
-	delete[] labyrinth;
+	
+	Clear();
+
 	labyrinth = _labyrinth;
 }
 
@@ -51,7 +58,6 @@ void Maze::Draw2D(int argc, char** argv)
 {
 	int msize = size*size;
 	vector<Cell> maze(msize);
-	//Transpose();
 
 	for (int y = 0, k = 0; y < size; y++)
 		for (int x = 0; x < size; x++, k++)
