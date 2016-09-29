@@ -3,11 +3,11 @@
 #include <conio.h>
 #include <time.h>
 
-#include "recursive_backtracking.h"
+#include "growing_tree.h"
 
 int main(int argc, char** argv) {
 	char c;
-	RecursiveBacktracking Maze(25);
+	GrowingTree Maze(25);
 	while (1) {
 		system("CLS");
 		puts("      MENU:      ");

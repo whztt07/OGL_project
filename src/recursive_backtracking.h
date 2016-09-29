@@ -12,7 +12,7 @@ class RecursiveBacktracking : public Maze
 {
 public:
 
-	RecursiveBacktracking(int size) : Maze(size)
+	RecursiveBacktracking(int _size) : Maze(_size)
 	{
 	}
 

@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\growing_tree.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\maze.cpp" />
     <ClCompile Include="src\ogl_draw.cpp" />
@@ -26,6 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\cell.h" />
+    <ClInclude Include="src\growing_tree.h" />
     <ClInclude Include="src\maze.h" />
     <ClInclude Include="src\ogl_draw.h" />
     <ClInclude Include="src\recursive_backtracking.h" />

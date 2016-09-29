@@ -5,9 +5,29 @@
 
 #include "maze.h"
 
-Maze::Maze(int size)
+Maze::Maze()
 {
-	Maze::size = size;
+	size = COMMON_CELL_COUNT;
+
+	labyrinth = new Cell*[size];
+
+	for (int y = 0; y < size; y++) {
+		labyrinth[y] = new Cell[size];
+		for (int x = 0; x < size; x++) {
+			labyrinth[y][x].x = x;
+			labyrinth[y][x].y = y;
+			labyrinth[y][x].Visited = false;
+			labyrinth[y][x].Top = Close;
+			labyrinth[y][x].Bottom = Close;
+			labyrinth[y][x].Left = Close;
+			labyrinth[y][x].Right = Close;
+		}
+	}
+}
+
+Maze::Maze(int _size)
+{
+	size = _size;
 
 	labyrinth = new Cell*[size];
 

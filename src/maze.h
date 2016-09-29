@@ -14,6 +14,8 @@ class Maze
 {
 public:
 
+	Maze();
+
 	Maze(int size);
 
 	~Maze();
