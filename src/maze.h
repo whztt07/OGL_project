@@ -16,7 +16,7 @@ public:
 
 	Maze();
 
-	Maze(int size);
+	Maze(int _size);
 
 	~Maze();
 
