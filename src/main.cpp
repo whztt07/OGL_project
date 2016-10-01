@@ -3,11 +3,11 @@
 #include <conio.h>
 #include <time.h>
 
-#include "growing_tree.h"
+#include "prim.h"
 
 int main(int argc, char** argv) {
 	char c;
-	GrowingTree Maze(25);
+	Prim Maze(25);
 	while (1) {
 		system("CLS");
 		puts("      MENU:      ");
