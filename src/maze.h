@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "cell.h"
-#include "ogl_draw.h"
+#include "ogl_draw_2D.h"
 
 using namespace std;
 

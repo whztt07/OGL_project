@@ -3,7 +3,7 @@
 #include <cmath>
 #include <vector>
 
-#include "ogl_draw.h"
+#include "ogl_draw_2D.h"
 
 #include "ogldev_util.h"
 #include "ogldev_pipeline.h"

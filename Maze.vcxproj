@@ -22,7 +22,7 @@
     <ClCompile Include="src\growing_tree.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\maze.cpp" />
-    <ClCompile Include="src\ogl_draw.cpp" />
+    <ClCompile Include="src\ogl_draw_2D.cpp" />
     <ClCompile Include="src\prim.cpp" />
     <ClCompile Include="src\recursive_bactracking.cpp" />
   </ItemGroup>
@@ -30,7 +30,7 @@
     <ClInclude Include="src\cell.h" />
     <ClInclude Include="src\growing_tree.h" />
     <ClInclude Include="src\maze.h" />
-    <ClInclude Include="src\ogl_draw.h" />
+    <ClInclude Include="src\ogl_draw_2D.h" />
     <ClInclude Include="src\prim.h" />
     <ClInclude Include="src\recursive_backtracking.h" />
   </ItemGroup>
