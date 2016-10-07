@@ -10,6 +10,9 @@
 
 #include "cell.h"
 
+#define WINDOW_WIDTH 1024
+#define WINDOW_HEIGHT 1024
+
 using namespace std;
 
 static void RenderSceneCB();

@@ -83,5 +83,5 @@ void Maze::Draw2D(int argc, char** argv)
 		for (int x = 0; x < size; x++, k++)
 			maze[k] = labyrinth[y][x];
 
-	Draw(argc, argv, maze, size);
+	//Draw(argc, argv, maze, size);
 }

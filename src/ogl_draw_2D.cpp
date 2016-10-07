@@ -8,9 +8,6 @@
 #include "ogldev_util.h"
 #include "ogldev_pipeline.h"
 
-#define WINDOW_WIDTH 1024
-#define WINDOW_HEIGHT 1024
-
 static GLuint VBO;
 static GLuint IBO;
 static GLuint gWorldLocation;
