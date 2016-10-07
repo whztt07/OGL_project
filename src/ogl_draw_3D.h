@@ -27,6 +27,8 @@
 #include "mesh.h"
 #include "lighting_technique.h"
 
+#include "cell.h"
+
 #define WINDOW_WIDTH  1024
 #define WINDOW_HEIGHT 1024
 
@@ -34,53 +36,29 @@ class Main : public ICallbacks, public OgldevApp
 {
 public:
 
-	Main()
-	{
-	}
+	Main();
 
-	virtual ~Main()
-	{
-	}
+	virtual ~Main();
 
-	bool Init()
-	{
-	}
+	bool Init();
 
-	void Run()
-	{
-	}
+	void Run();
 
-	virtual void RenderSceneCB()
-	{
-	}
+	virtual void RenderSceneCB();
 
-	void GeometryPass()
-	{
-	}
+	void GeometryPass();
 
-	void SSAOPass()
-	{
-	}
+	void SSAOPass();
 
-	void BlurPass()
-	{
-	}
+	void BlurPass();
 
-	void LightingPass()
-	{
-	}
+	void LightingPass();
 
-	virtual void KeyboardCB(OGLDEV_KEY OgldevKey, OGLDEV_KEY_STATE OgldevKeyState)
-	{
-	}
+	virtual void KeyboardCB(OGLDEV_KEY OgldevKey, OGLDEV_KEY_STATE OgldevKeyState);
 
-	virtual void PassiveMouseCB(int x, int y)
-	{
-	}
+	virtual void PassiveMouseCB(int x, int y);
 
-	virtual void MouseCB(OGLDEV_MOUSE Button, OGLDEV_KEY_STATE State, int x, int y)
-	{
-	}
+	virtual void MouseCB(OGLDEV_MOUSE Button, OGLDEV_KEY_STATE State, int x, int y);
 
 private:
 
@@ -101,3 +79,5 @@ private:
 	ATB m_atb;
 	TwBar *bar;
 };
+
+void Draw3D(int argc, char** argv, vector<Cell> lab, int size);

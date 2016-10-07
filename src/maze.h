@@ -6,7 +6,8 @@
 #include <vector>
 
 #include "cell.h"
-//#include "ogl_draw_2D.h"
+#include "ogl_draw_2D.h"
+#include "ogl_draw_3D.h"
 
 using namespace std;
 
@@ -22,7 +23,7 @@ public:
 
 	void Transpose();
 
-	void Draw2D(int argc, char** argv);
+	void Draw(int argc, char** argv);
 
 	virtual void MakeLabyrinth()
 	{

@@ -187,7 +187,7 @@ static void CompileShaders()
 	assert(gWorldLocation != 0xFFFFFFFF);
 }
 
-void Draw(int argc, char** argv, vector<Cell> lab, int size)
+void Draw2D(int argc, char** argv, vector<Cell> lab, int size)
 {
 	MazeSize = size+1;
 

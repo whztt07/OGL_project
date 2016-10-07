@@ -74,7 +74,7 @@ void Maze::Transpose()
 	labyrinth = _labyrinth;
 }
 
-void Maze::Draw2D(int argc, char** argv)
+void Maze::Draw(int argc, char** argv)
 {
 	int msize = size*size;
 	vector<Cell> maze(msize);
@@ -83,5 +83,5 @@ void Maze::Draw2D(int argc, char** argv)
 		for (int x = 0; x < size; x++, k++)
 			maze[k] = labyrinth[y][x];
 
-	//Draw(argc, argv, maze, size);
+	Draw3D(argc, argv, maze, size);
 }

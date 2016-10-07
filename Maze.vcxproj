@@ -23,6 +23,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\maze.cpp" />
     <ClCompile Include="src\ogl_draw_2D.cpp" />
+    <ClCompile Include="src\ogl_draw_3D.cpp" />
     <ClCompile Include="src\prim.cpp" />
     <ClCompile Include="src\recursive_bactracking.cpp" />
   </ItemGroup>
