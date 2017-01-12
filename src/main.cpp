@@ -7,9 +7,9 @@
 
 int main(int argc, char** argv) {
 	char c;
-	GrowingTree Maze(COMMON_CELL_COUNT);
+	GrowingTree Maze(250);
 	while (1) {
-		//system("CLS");
+		system("CLS");
 		puts("      MENU:      ");
 		puts("  1 - MAKE LABIRINT  ");
 		puts("  2 - DRAW LABIRINT (NOT WORKING) ");
@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
 		c = _getch();
 		switch (c) {
 			case '1': Maze.MakeLabyrinth(); break;
-			case '2': Maze.Draw(argc, argv); break;
+			case '2': /*Maze.Draw2D(argc, argv);*/ break;
 			case 27 : return 1;
 			default: puts("WRONG CASE");
 		}
